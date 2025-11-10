@@ -1,0 +1,1606 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/widgets.dart';
+import 'package:intl/intl.dart';
+import '../../../../data/models/meeting_point_model.dart';
+import '../../../../data/models/level_model.dart';
+import '../../../../data/models/trip_model.dart';
+import '../../../../data/sample_data/meeting_points_sample_data.dart';
+import '../../../../data/sample_data/levels_sample_data.dart';
+import '../../../../data/sample_data/sample_trips.dart';
+
+class CreateTripScreen extends StatefulWidget {
+  final String? tripId; // null = create mode, non-null = edit mode
+  
+  const CreateTripScreen({super.key, this.tripId});
+
+  @override
+  State<CreateTripScreen> createState() => _CreateTripScreenState();
+}
+
+class _CreateTripScreenState extends State<CreateTripScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _requirementsController = TextEditingController();
+  final _maxParticipantsController = TextEditingController();
+  
+  DateTime? _selectedStartDate;
+  TimeOfDay? _selectedStartTime;
+  DateTime? _selectedEndDate;
+  TimeOfDay? _selectedEndTime;
+  DateTime? _selectedCutoffDate;
+  TimeOfDay? _selectedCutoffTime;
+  MeetingPoint? _selectedMeetingPoint;
+  Level? _selectedLevel;
+  bool _isLoading = false;
+  
+  // Data lists
+  List<MeetingPoint> _meetingPoints = [];
+  List<Level> _levels = [];
+  
+  // Edit mode data
+  Trip? _existingTrip;
+  bool get _isEditMode => widget.tripId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMeetingPointsAndLevels();
+    if (_isEditMode) {
+      _loadExistingTrip();
+    }
+  }
+
+  Future<void> _loadMeetingPointsAndLevels() async {
+    // TODO: Replace with actual API calls
+    // final repo = ref.read(mainApiRepositoryProvider);
+    // final meetingPointsData = await repo.getMeetingPoints();
+    // final levelsData = await repo.getLevels();
+    
+    setState(() {
+      _meetingPoints = sampleMeetingPoints;
+      _levels = sampleLevels;
+    });
+  }
+  
+  Future<void> _loadExistingTrip() async {
+    if (widget.tripId == null) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      // TODO: Replace with actual API call
+      // final repo = ref.read(mainApiRepositoryProvider);
+      // final trip = await repo.getTripById(widget.tripId!);
+      
+      // For now, use sample data
+      final trip = SampleTrips.getTripById(widget.tripId!);
+      
+      setState(() {
+        _existingTrip = trip;
+        
+        // Populate form fields
+        _titleController.text = trip.title;
+        _descriptionController.text = trip.description;
+        _locationController.text = trip.location;
+        _maxParticipantsController.text = trip.maxParticipants.toString();
+        _requirementsController.text = trip.requirements.join(', ');
+        
+        // Set dates and times
+        _selectedStartDate = DateTime(
+          trip.startTime.year,
+          trip.startTime.month,
+          trip.startTime.day,
+        );
+        _selectedStartTime = TimeOfDay(
+          hour: trip.startTime.hour,
+          minute: trip.startTime.minute,
+        );
+        
+        _selectedEndDate = DateTime(
+          trip.endTime.year,
+          trip.endTime.month,
+          trip.endTime.day,
+        );
+        _selectedEndTime = TimeOfDay(
+          hour: trip.endTime.hour,
+          minute: trip.endTime.minute,
+        );
+        
+        // Set cutoff if available
+        if (trip.cutOff != null) {
+          _selectedCutoffDate = DateTime(
+            trip.cutOff!.year,
+            trip.cutOff!.month,
+            trip.cutOff!.day,
+          );
+          _selectedCutoffTime = TimeOfDay(
+            hour: trip.cutOff!.hour,
+            minute: trip.cutOff!.minute,
+          );
+        }
+        
+        // Find and set meeting point and level
+        // Wait for meeting points and levels to load first
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (_meetingPoints.isNotEmpty) {
+            // Match by name since we don't have IDs in sample data
+            _selectedMeetingPoint = _meetingPoints.firstWhere(
+              (mp) => mp.name.toLowerCase().contains(trip.meetingPoint.toLowerCase()),
+              orElse: () => _meetingPoints.first,
+            );
+          }
+          
+          if (_levels.isNotEmpty) {
+            // Match by difficulty name
+            _selectedLevel = _levels.firstWhere(
+              (level) => level.name.toLowerCase() == trip.difficulty.toLowerCase(),
+              orElse: () => _levels.first,
+            );
+          }
+          
+          setState(() {});
+        });
+        
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load trip: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _locationController.dispose();
+    _requirementsController.dispose();
+    _maxParticipantsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectStartDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: colors.primary,
+              surface: colors.surface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedStartDate = picked;
+        // Auto-set end date to same day if not set
+        if (_selectedEndDate == null) {
+          _selectedEndDate = picked;
+        }
+      });
+    }
+  }
+
+  Future<void> _selectEndDate() async {
+    final initialDate = _selectedEndDate ?? _selectedStartDate ?? DateTime.now().add(const Duration(days: 1));
+    final firstDate = _selectedStartDate ?? DateTime.now();
+    
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: colors.primary,
+              surface: colors.surface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => _selectedEndDate = picked);
+    }
+  }
+
+  Future<void> _selectCutoffDate() async {
+    final initialDate = _selectedCutoffDate ?? DateTime.now();
+    final lastDate = _selectedStartDate ?? DateTime.now().add(const Duration(days: 365));
+    
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime.now(),
+      lastDate: lastDate,
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: colors.primary,
+              surface: colors.surface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => _selectedCutoffDate = picked);
+    }
+  }
+
+  Future<void> _selectStartTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedStartTime ?? const TimeOfDay(hour: 9, minute: 0),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: colors.primary,
+              surface: colors.surface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => _selectedStartTime = picked);
+    }
+  }
+
+  Future<void> _selectEndTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedEndTime ?? const TimeOfDay(hour: 17, minute: 0),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: colors.primary,
+              surface: colors.surface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => _selectedEndTime = picked);
+    }
+  }
+
+  Future<void> _selectCutoffTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedCutoffTime ?? const TimeOfDay(hour: 23, minute: 59),
+      builder: (context, child) {
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: colors.primary,
+              surface: colors.surface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => _selectedCutoffTime = picked);
+    }
+  }
+
+  String _getTripDuration() {
+    if (_selectedStartDate == null || _selectedEndDate == null ||
+        _selectedStartTime == null || _selectedEndTime == null) {
+      return '';
+    }
+    
+    final startDateTime = DateTime(
+      _selectedStartDate!.year,
+      _selectedStartDate!.month,
+      _selectedStartDate!.day,
+      _selectedStartTime!.hour,
+      _selectedStartTime!.minute,
+    );
+    
+    final endDateTime = DateTime(
+      _selectedEndDate!.year,
+      _selectedEndDate!.month,
+      _selectedEndDate!.day,
+      _selectedEndTime!.hour,
+      _selectedEndTime!.minute,
+    );
+    
+    final duration = endDateTime.difference(startDateTime);
+    
+    if (duration.inDays > 0) {
+      final hours = duration.inHours % 24;
+      return '${duration.inDays} day${duration.inDays > 1 ? 's' : ''}${hours > 0 ? ' ${hours}h' : ''}';
+    } else if (duration.inHours > 0) {
+      final minutes = duration.inMinutes % 60;
+      return '${duration.inHours} hour${duration.inHours > 1 ? 's' : ''}${minutes > 0 ? ' ${minutes}m' : ''}';
+    } else {
+      return '${duration.inMinutes} minute${duration.inMinutes > 1 ? 's' : ''}';
+    }
+  }
+
+  Future<void> _handleCreateTrip() async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedStartDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select start date'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedStartTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select start time'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedEndDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select end date'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedEndTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select end time'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate end time is after start time
+    final startDateTime = DateTime(
+      _selectedStartDate!.year,
+      _selectedStartDate!.month,
+      _selectedStartDate!.day,
+      _selectedStartTime!.hour,
+      _selectedStartTime!.minute,
+    );
+    
+    final endDateTime = DateTime(
+      _selectedEndDate!.year,
+      _selectedEndDate!.month,
+      _selectedEndDate!.day,
+      _selectedEndTime!.hour,
+      _selectedEndTime!.minute,
+    );
+    
+    if (endDateTime.isBefore(startDateTime) || endDateTime.isAtSameMomentAs(startDateTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('End date/time must be after start date/time'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate cutoff is before start time (if set)
+    if (_selectedCutoffDate != null && _selectedCutoffTime != null) {
+      final cutoffDateTime = DateTime(
+        _selectedCutoffDate!.year,
+        _selectedCutoffDate!.month,
+        _selectedCutoffDate!.day,
+        _selectedCutoffTime!.hour,
+        _selectedCutoffTime!.minute,
+      );
+      
+      if (cutoffDateTime.isAfter(startDateTime) || cutoffDateTime.isAtSameMomentAs(startDateTime)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration deadline must be before trip start'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
+    if (_selectedMeetingPoint == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a meeting point'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedLevel == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a difficulty level'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // TODO: Implement actual API call to create/update trip
+      // final tripData = {
+      //   'title': _titleController.text,
+      //   'description': _descriptionController.text,
+      //   'location': _locationController.text,
+      //   'startTime': startDateTime.toIso8601String(),
+      //   'endTime': endDateTime.toIso8601String(),
+      //   'cutOff': cutoffDateTime?.toIso8601String(),
+      //   'meetingPoint': _selectedMeetingPoint!.id,
+      //   'level': _selectedLevel!.id,
+      //   'capacity': int.parse(_maxParticipantsController.text),
+      // };
+      //
+      // if (_isEditMode) {
+      //   // PUT request to update trip
+      //   await repo.updateTrip(widget.tripId!, tripData);
+      // } else {
+      //   // POST request to create trip
+      //   await repo.createTrip(tripData);
+      // }
+      
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isEditMode 
+                ? 'Trip "${_titleController.text}" updated successfully!'
+                : 'Trip "${_titleController.text}" created successfully!'
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Navigate back
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isEditMode
+                ? 'Failed to update trip: $e'
+                : 'Failed to create trip: $e'
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  String? _validateRequired(String? value, String fieldName) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required';
+    }
+    return null;
+  }
+
+  void _showMeetingPointSelector() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _MeetingPointSelectorSheet(
+        meetingPoints: _meetingPoints,
+        selectedMeetingPoint: _selectedMeetingPoint,
+        onSelected: (meetingPoint) {
+          setState(() => _selectedMeetingPoint = meetingPoint);
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  void _showLevelSelector() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _LevelSelectorSheet(
+        levels: _levels,
+        selectedLevel: _selectedLevel,
+        onSelected: (level) {
+          setState(() => _selectedLevel = level);
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: colors.background,
+      appBar: AppBar(
+        backgroundColor: colors.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colors.onSurface),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          _isEditMode ? 'Edit Trip' : 'Create Trip',
+          style: TextStyle(
+            color: colors.onSurface,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              // Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _isEditMode ? Icons.edit_road : Icons.add_road,
+                  size: 40,
+                  color: colors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Description
+              Text(
+                _isEditMode 
+                  ? 'Update trip details'
+                  : 'Create a new trip for club members',
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+
+              // Title
+              CustomTextField(
+                controller: _titleController,
+                label: 'Trip Title',
+                hint: 'e.g., Desert Safari Adventure',
+                prefixIcon: const Icon(Icons.title),
+                validator: (value) => _validateRequired(value, 'Title'),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+
+              // Description
+              CustomTextField(
+                controller: _descriptionController,
+                label: 'Description',
+                hint: 'Describe the trip details...',
+                prefixIcon: const Icon(Icons.description),
+                maxLines: 4,
+                validator: (value) => _validateRequired(value, 'Description'),
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 16),
+
+              // Location
+              CustomTextField(
+                controller: _locationController,
+                label: 'Location',
+                hint: 'e.g., Liwa Desert',
+                prefixIcon: const Icon(Icons.location_on),
+                validator: (value) => _validateRequired(value, 'Location'),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+
+              // Start Date & Time Section Header
+              Row(
+                children: [
+                  Icon(Icons.event_available, color: colors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Trip Schedule',
+                    style: TextStyle(
+                      color: colors.onSurface,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Start Date
+              GestureDetector(
+                onTap: _selectStartDate,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        color: colors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Start Date *',
+                              style: TextStyle(
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedStartDate != null
+                                  ? DateFormat('EEEE, MMMM dd, yyyy').format(_selectedStartDate!)
+                                  : 'Select start date',
+                              style: TextStyle(
+                                color: _selectedStartDate != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Start Time
+              GestureDetector(
+                onTap: _selectStartTime,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        color: colors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Start Time *',
+                              style: TextStyle(
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedStartTime != null
+                                  ? _selectedStartTime!.format(context)
+                                  : 'Select start time',
+                              style: TextStyle(
+                                color: _selectedStartTime != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // End Date
+              GestureDetector(
+                onTap: _selectEndDate,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.event,
+                        color: const Color(0xFF81C784),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'End Date *',
+                              style: TextStyle(
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedEndDate != null
+                                  ? DateFormat('EEEE, MMMM dd, yyyy').format(_selectedEndDate!)
+                                  : 'Select end date',
+                              style: TextStyle(
+                                color: _selectedEndDate != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // End Time
+              GestureDetector(
+                onTap: _selectEndTime,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.schedule,
+                        color: const Color(0xFF81C784),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'End Time *',
+                              style: TextStyle(
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedEndTime != null
+                                  ? _selectedEndTime!.format(context)
+                                  : 'Select end time',
+                              style: TextStyle(
+                                color: _selectedEndTime != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              // Duration Display
+              if (_selectedStartDate != null && _selectedEndDate != null &&
+                  _selectedStartTime != null && _selectedEndTime != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          color: colors.primary,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Duration: ${_getTripDuration()}',
+                          style: TextStyle(
+                            color: colors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 20),
+
+              // Registration Deadline Section
+              Row(
+                children: [
+                  Icon(Icons.timer_off, color: const Color(0xFFFF8A65), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Registration Deadline (Optional)',
+                    style: TextStyle(
+                      color: colors.onSurface,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Cutoff Date
+              GestureDetector(
+                onTap: _selectCutoffDate,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.event_busy,
+                        color: const Color(0xFFFF8A65),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cutoff Date',
+                              style: TextStyle(
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedCutoffDate != null
+                                  ? DateFormat('EEEE, MMMM dd, yyyy').format(_selectedCutoffDate!)
+                                  : 'Select cutoff date (optional)',
+                              style: TextStyle(
+                                color: _selectedCutoffDate != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Cutoff Time
+              GestureDetector(
+                onTap: _selectCutoffTime,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.alarm_off,
+                        color: const Color(0xFFFF8A65),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cutoff Time',
+                              style: TextStyle(
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedCutoffTime != null
+                                  ? _selectedCutoffTime!.format(context)
+                                  : 'Select cutoff time (optional)',
+                              style: TextStyle(
+                                color: _selectedCutoffTime != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Meeting Point Selector
+              Text(
+                'Meeting Point *',
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => _showMeetingPointSelector(),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.place,
+                        color: colors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _selectedMeetingPoint != null
+                                  ? _selectedMeetingPoint!.displayName
+                                  : 'Select meeting point',
+                              style: TextStyle(
+                                color: _selectedMeetingPoint != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                            // Area is already shown in displayName
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Level Selector
+              Text(
+                'Difficulty Level *',
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => _showLevelSelector(),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colors.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.landscape,
+                        color: colors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _selectedLevel != null
+                                  ? _selectedLevel!.displayName
+                                  : 'Select difficulty level',
+                              style: TextStyle(
+                                color: _selectedLevel != null
+                                    ? colors.onSurface
+                                    : colors.onSurface.withValues(alpha: 0.5),
+                                fontSize: 15,
+                              ),
+                            ),
+                            if (_selectedLevel?.description != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                _selectedLevel!.description!,
+                                style: TextStyle(
+                                  color: colors.onSurface.withValues(alpha: 0.6),
+                                  fontSize: 12,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Max Participants
+              CustomTextField(
+                controller: _maxParticipantsController,
+                label: 'Max Participants (Optional)',
+                hint: 'Leave empty for unlimited',
+                prefixIcon: const Icon(Icons.people),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+
+              // Requirements
+              CustomTextField(
+                controller: _requirementsController,
+                label: 'Requirements (Optional)',
+                hint: 'List any special requirements or equipment needed',
+                prefixIcon: const Icon(Icons.checklist),
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 32),
+
+              // Create/Update Button
+              PrimaryButton(
+                text: _isEditMode ? 'Update Trip' : 'Create Trip',
+                onPressed: _handleCreateTrip,
+                isLoading: _isLoading,
+                icon: _isEditMode ? Icons.save : Icons.check,
+              ),
+              const SizedBox(height: 16),
+
+              // Cancel Button
+              TextButton(
+                onPressed: _isLoading ? null : () => context.pop(),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: colors.onSurface.withValues(alpha: 0.7),
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MeetingPointSelectorSheet extends StatefulWidget {
+  final List<MeetingPoint> meetingPoints;
+  final MeetingPoint? selectedMeetingPoint;
+  final ValueChanged<MeetingPoint> onSelected;
+
+  const _MeetingPointSelectorSheet({
+    required this.meetingPoints,
+    required this.selectedMeetingPoint,
+    required this.onSelected,
+  });
+
+  @override
+  State<_MeetingPointSelectorSheet> createState() => _MeetingPointSelectorSheetState();
+}
+
+class _MeetingPointSelectorSheetState extends State<_MeetingPointSelectorSheet> {
+  late List<MeetingPoint> _filteredMeetingPoints;
+  final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredMeetingPoints = widget.meetingPoints;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterMeetingPoints(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredMeetingPoints = widget.meetingPoints;
+      } else {
+        _filteredMeetingPoints = widget.meetingPoints.where((mp) {
+          return mp.name.toLowerCase().contains(query.toLowerCase()) ||
+              mp.area.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Drag handle
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.onSurface.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select Meeting Point',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Search field
+                TextField(
+                  controller: _searchController,
+                  onChanged: _filterMeetingPoints,
+                  decoration: InputDecoration(
+                    hintText: 'Search by name or area...',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: colors.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Meeting points list
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _filteredMeetingPoints.length,
+              itemBuilder: (context, index) {
+                final mp = _filteredMeetingPoints[index];
+                final isSelected = widget.selectedMeetingPoint?.id == mp.id;
+                
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  elevation: isSelected ? 4 : 1,
+                  color: isSelected
+                      ? colors.primaryContainer
+                      : colors.surface,
+                  child: ListTile(
+                    onTap: () => widget.onSelected(mp),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? colors.primary.withValues(alpha: 0.2)
+                            : colors.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.place,
+                        color: isSelected ? colors.primary : colors.onSurface,
+                      ),
+                    ),
+                    title: Text(
+                      mp.name,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      ),
+                    ),
+                    subtitle: Text('Area: ${mp.area}'),
+                    trailing: isSelected
+                        ? Icon(Icons.check_circle, color: colors.primary)
+                        : null,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LevelSelectorSheet extends StatefulWidget {
+  final List<Level> levels;
+  final Level? selectedLevel;
+  final ValueChanged<Level> onSelected;
+
+  const _LevelSelectorSheet({
+    required this.levels,
+    required this.selectedLevel,
+    required this.onSelected,
+  });
+
+  @override
+  State<_LevelSelectorSheet> createState() => _LevelSelectorSheetState();
+}
+
+class _LevelSelectorSheetState extends State<_LevelSelectorSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Drag handle
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.onSurface.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select Difficulty Level',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Choose the appropriate level based on terrain and required skills',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Levels list
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: widget.levels.length,
+              itemBuilder: (context, index) {
+                final level = widget.levels[index];
+                final isSelected = widget.selectedLevel?.id == level.id;
+                
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: isSelected ? 4 : 1,
+                  color: isSelected
+                      ? colors.primaryContainer
+                      : colors.surface,
+                  child: InkWell(
+                    onTap: () => widget.onSelected(level),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _getLevelColor(level.numericLevel)
+                                      .withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: _getLevelColor(level.numericLevel),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Level ${level.numericLevel}',
+                                  style: TextStyle(
+                                    color: _getLevelColor(level.numericLevel),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  level.name,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: colors.primary,
+                                ),
+                            ],
+                          ),
+                          if (level.description != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              level.description!,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: colors.onSurface.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ],
+                          if (level.modifications != null) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.build_circle,
+                                  size: 16,
+                                  color: colors.onSurface.withValues(alpha: 0.6),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    level.modifications!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: colors.onSurface.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getLevelColor(int level) {
+    // Color coding for 8 levels
+    if (level == 1) return Colors.purple;      // Club Event (special)
+    if (level <= 3) return Colors.green;       // ANIT, Newbie (beginner)
+    if (level <= 5) return Colors.orange;      // Intermediate, Advanced
+    if (level <= 7) return Colors.red;         // Expert, Explorer
+    return Colors.blue;                        // Marshal (role)
+  }
+}

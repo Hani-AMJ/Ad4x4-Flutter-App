@@ -1,0 +1,183 @@
+import '../models/trip_model.dart';
+
+/// Sample trip data for testing
+class SampleTrips {
+  static List<Trip> getTrips() {
+    return [
+      Trip(
+        id: '1',
+        title: 'Desert Safari Adventure',
+        description:
+            'Join us for an exciting desert safari through the majestic dunes of Liwa. Perfect for beginners and experienced off-roaders alike!',
+        startTime: DateTime.now().add(const Duration(days: 5)).copyWith(hour: 6, minute: 0),
+        endTime: DateTime.now().add(const Duration(days: 5)).copyWith(hour: 18, minute: 0),
+        cutOff: DateTime.now().add(const Duration(days: 3)).copyWith(hour: 23, minute: 59),
+        location: 'Liwa Desert, Abu Dhabi',
+        difficulty: 'easy',
+        participants: 12,
+        maxParticipants: 20,
+        imageUrl: null,
+        organizer: 'Hani Al-Mansouri',
+        status: 'upcoming',
+        isJoined: true,
+        requirements: [
+          '4x4 vehicle required',
+          'Recovery equipment',
+          'Full tank of fuel',
+          'Emergency supplies',
+        ],
+        meetingPoint: 'ADNOC Station, Al Ain Road',
+      ),
+      Trip(
+        id: '2',
+        title: 'Al Wathba Fossil Dunes - ANIT Trip',
+        description:
+            'Your very first desert orientation! Perfect for complete beginners. Learn convoy rules, radio basics, and dune techniques. Short, slow, and closely supervised.',
+        startTime: DateTime.now().add(const Duration(days: 12)).copyWith(hour: 7, minute: 30),
+        endTime: DateTime.now().add(const Duration(days: 12)).copyWith(hour: 14, minute: 0),
+        cutOff: DateTime.now().add(const Duration(days: 10)).copyWith(hour: 20, minute: 0),
+        location: 'Al Wathba, Abu Dhabi',
+        difficulty: 'anit',
+        participants: 8,
+        maxParticipants: 15,
+        imageUrl: null,
+        organizer: 'Mohammed Al-Zaabi',
+        status: 'upcoming',
+        isJoined: false,
+        requirements: [
+          'Stock 4x4 acceptable',
+          'Basic safety kit provided',
+          'Radio check at briefing',
+          'No experience required',
+        ],
+        meetingPoint: 'Al Wathba Fossil Dunes Entrance',
+      ),
+      Trip(
+        id: '3',
+        title: 'Empty Quarter Expedition',
+        description:
+            'Expert-level 3-day expedition into the Empty Quarter (Rub\' al Khali). Advanced experience required. Extreme terrain and camping under the stars.',
+        startTime: DateTime.now().add(const Duration(days: 20)).copyWith(hour: 5, minute: 0),
+        endTime: DateTime.now().add(const Duration(days: 23)).copyWith(hour: 18, minute: 0),
+        cutOff: DateTime.now().add(const Duration(days: 15)).copyWith(hour: 23, minute: 59),
+        location: 'Empty Quarter, UAE-Oman Border',
+        difficulty: 'expert',
+        participants: 6,
+        maxParticipants: 10,
+        imageUrl: null,
+        organizer: 'Ahmad Al-Mansoori',
+        status: 'upcoming',
+        isJoined: false,
+        requirements: [
+          'Expert off-roader certification',
+          'Full camping gear',
+          'GPS and navigation',
+          'Satellite phone',
+          'Medical kit',
+          'Extra fuel and water',
+          'Advanced recovery equipment',
+        ],
+        meetingPoint: 'ADNOC Station, Sweihan',
+      ),
+      Trip(
+        id: '4',
+        title: 'Sunset Dune Bash',
+        description:
+            'Quick evening trip for some fun dune bashing. Watch the sunset from the top of the dunes!',
+        startTime: DateTime.now().add(const Duration(days: 2)).copyWith(hour: 16, minute: 0),
+        endTime: DateTime.now().add(const Duration(days: 2)).copyWith(hour: 20, minute: 0),
+        cutOff: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 12, minute: 0),
+        location: 'Al Ain Desert',
+        difficulty: 'medium',
+        participants: 15,
+        maxParticipants: 25,
+        imageUrl: null,
+        organizer: 'Khalid Al-Dhaheri',
+        status: 'upcoming',
+        isJoined: true,
+        requirements: [
+          '4x4 vehicle',
+          'Air down equipment',
+          'Recovery rope',
+        ],
+        meetingPoint: 'Al Ain Exit, E30 Road',
+      ),
+      Trip(
+        id: '5',
+        title: 'Hafeet Mountain Trail',
+        description:
+            'Scenic drive up Jebel Hafeet with stops at key viewpoints. Coffee break at the top!',
+        startTime: DateTime.now().add(const Duration(days: 7)).copyWith(hour: 8, minute: 0),
+        endTime: DateTime.now().add(const Duration(days: 7)).copyWith(hour: 12, minute: 0),
+        cutOff: DateTime.now().add(const Duration(days: 6)).copyWith(hour: 18, minute: 0),
+        location: 'Jebel Hafeet, Al Ain',
+        difficulty: 'easy',
+        participants: 20,
+        maxParticipants: 30,
+        imageUrl: null,
+        organizer: 'Saif Al-Ketbi',
+        status: 'upcoming',
+        isJoined: false,
+        requirements: [
+          'Any vehicle (not 4x4 required)',
+          'Camera for photos',
+        ],
+        meetingPoint: 'Jebel Hafeet Base Parking',
+      ),
+      Trip(
+        id: '6',
+        title: 'Coastal Sand Dunes',
+        description:
+            'Explore the beautiful coastal dunes near Ghantoot. Beach barbecue included!',
+        startTime: DateTime.now().add(const Duration(days: 14)).copyWith(hour: 9, minute: 0),
+        endTime: DateTime.now().add(const Duration(days: 14)).copyWith(hour: 17, minute: 0),
+        cutOff: DateTime.now().add(const Duration(days: 12)).copyWith(hour: 20, minute: 0),
+        location: 'Ghantoot Beach, Abu Dhabi',
+        difficulty: 'medium',
+        participants: 18,
+        maxParticipants: 25,
+        imageUrl: null,
+        organizer: 'Abdullah Al-Mazrouei',
+        status: 'upcoming',
+        isJoined: false,
+        requirements: [
+          '4x4 vehicle',
+          'Beach parking permit',
+          'Snorkeling gear (optional)',
+        ],
+        meetingPoint: 'Ghantoot Beach Entrance',
+      ),
+      Trip(
+        id: '7',
+        title: 'Night Desert Camp',
+        description:
+            'Overnight camping trip in the desert. Bonfire, stargazing, and traditional BBQ dinner.',
+        startTime: DateTime.now().add(const Duration(days: 18)).copyWith(hour: 15, minute: 0),
+        endTime: DateTime.now().add(const Duration(days: 19)).copyWith(hour: 10, minute: 0),
+        cutOff: DateTime.now().add(const Duration(days: 16)).copyWith(hour: 23, minute: 59),
+        location: 'Al Khatim Desert',
+        difficulty: 'medium',
+        participants: 14,
+        maxParticipants: 20,
+        imageUrl: null,
+        organizer: 'Rashid Al-Blooshi',
+        status: 'upcoming',
+        isJoined: true,
+        requirements: [
+          '4x4 vehicle',
+          'Camping equipment',
+          'Food and drinks',
+          'Warm clothing for night',
+        ],
+        meetingPoint: 'Al Ain Road Exit 312',
+      ),
+    ];
+  }
+
+  static Trip getTripById(String id) {
+    return getTrips().firstWhere(
+      (trip) => trip.id == id,
+      orElse: () => getTrips().first,
+    );
+  }
+}

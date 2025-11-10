@@ -1,0 +1,320 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/repositories/main_api_repository.dart';
+import '../../data/models/user_model.dart';
+import '../storage/local_storage.dart';
+import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+// Conditional import for web platform storage clearing
+import 'web_storage_helper_stub.dart'
+    if (dart.library.html) 'web_storage_helper_web.dart';
+
+/// Authentication Service
+/// 
+/// Handles user authentication, token management, and session persistence
+class AuthService {
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal();
+
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final MainApiRepository _repository = MainApiRepository();
+
+  // Auth state
+  String? _authToken;
+  UserModel? _currentUser;
+  bool _isAuthenticated = false;
+  bool _hasInitialized = false; // ✅ NEW - Prevent multiple initializations
+
+  // Getters
+  bool get isAuthenticated => _isAuthenticated;
+  UserModel? get currentUser => _currentUser;
+  String? get authToken => _authToken;
+
+  /// Initialize auth service and check for existing session
+  Future<void> initialize() async {
+    // ✅ CRITICAL FIX: Only initialize once for the singleton
+    if (_hasInitialized) {
+      developer.log('⚠️ AuthService already initialized, skipping...', name: 'AuthService');
+      developer.log('   Current state: isAuthenticated=$_isAuthenticated, user=${_currentUser?.username}', name: 'AuthService');
+      return;
+    }
+    
+    developer.log('🔐 Initializing AuthService (first time)...', name: 'AuthService');
+    _hasInitialized = true;
+    
+    try {
+      // Try to load existing token
+      _authToken = await _secureStorage.read(key: 'auth_token');
+      
+      if (_authToken != null) {
+        developer.log('✅ Found existing token, fetching profile...', name: 'AuthService');
+        
+        // Fetch user profile to validate token
+        await _loadUserProfile();
+        
+        if (_currentUser != null) {
+          _isAuthenticated = true;
+          developer.log('✅ Auto-login successful: ${_currentUser!.username}', name: 'AuthService');
+        } else {
+          // Token invalid, clear it
+          await _clearAuth();
+        }
+      } else {
+        developer.log('ℹ️ No existing token found', name: 'AuthService');
+      }
+    } catch (e) {
+      developer.log('❌ Auth initialization error: $e', name: 'AuthService');
+      await _clearAuth();
+    }
+  }
+
+  /// Login with username/email and password
+  Future<LoginResult> login({
+    required String login,
+    required String password,
+  }) async {
+    try {
+      developer.log('🔐 Attempting login for: $login', name: 'AuthService');
+
+      // Call login API
+      final response = await _repository.login(
+        login: login,
+        password: password,
+      );
+
+      // Extract token from response
+      final token = response['token'] as String?;
+      
+      if (token == null) {
+        return LoginResult(
+          success: false,
+          message: 'Invalid response from server',
+        );
+      }
+
+      // Store token securely
+      await _secureStorage.write(key: 'auth_token', value: token);
+      _authToken = token;
+
+      // Fetch user profile
+      await _loadUserProfile();
+
+      if (_currentUser != null) {
+        _isAuthenticated = true;
+        
+        // Store login timestamp
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('last_login', DateTime.now().millisecondsSinceEpoch);
+        
+        developer.log('✅ Login successful: ${_currentUser!.username}', name: 'AuthService');
+        
+        return LoginResult(
+          success: true,
+          message: 'Login successful',
+          user: _currentUser,
+        );
+      } else {
+        await _clearAuth();
+        return LoginResult(
+          success: false,
+          message: 'Failed to load user profile',
+        );
+      }
+    } catch (e) {
+      developer.log('❌ Login error: $e', name: 'AuthService');
+      return LoginResult(
+        success: false,
+        message: _getErrorMessage(e),
+      );
+    }
+  }
+
+  /// Logout current user
+  Future<void> logout() async {
+    developer.log('🔐 Logging out user: ${_currentUser?.username ?? "Unknown"}', name: 'AuthService');
+    developer.log('   State BEFORE logout: _isAuthenticated=$_isAuthenticated, _hasInitialized=$_hasInitialized', name: 'AuthService');
+    
+    try {
+      // Call logout API (optional - token becomes invalid anyway)
+      // await _repository.logout();
+    } catch (e) {
+      developer.log('⚠️ Logout API error (continuing anyway): $e', name: 'AuthService');
+    }
+    
+    // Clear all auth data from all storage systems
+    await _clearAuth();
+    
+    // ✅ KEEP _hasInitialized = true (already set in _clearAuth)
+    // This prevents re-reading from storage after logout
+    // The singleton stays "initialized" but with empty auth state
+    
+    // Force garbage collection of auth-related data
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    developer.log('✅ Logout successful - all auth data cleared', name: 'AuthService');
+    developer.log('   State AFTER logout: _isAuthenticated=$_isAuthenticated, _hasInitialized=$_hasInitialized', name: 'AuthService');
+    developer.log('   AuthToken: ${_authToken == null ? "null" : "EXISTS"}', name: 'AuthService');
+    
+    // Triple verification
+    if (_isAuthenticated) {
+      developer.log('❌ CRITICAL ERROR: Still authenticated after logout!', name: 'AuthService');
+      throw Exception('AuthService logout failed - still authenticated');
+    }
+    if (_authToken != null) {
+      developer.log('❌ CRITICAL ERROR: Token still exists after logout!', name: 'AuthService');
+      throw Exception('AuthService logout failed - token not cleared');
+    }
+    if (_currentUser != null) {
+      developer.log('❌ CRITICAL ERROR: User still exists after logout!', name: 'AuthService');
+      throw Exception('AuthService logout failed - user not cleared');
+    }
+  }
+
+  /// Load user profile from API
+  Future<void> _loadUserProfile() async {
+    try {
+      final profileData = await _repository.getProfile();
+      _currentUser = UserModel.fromJson(profileData);
+      developer.log('✅ Profile loaded: ${_currentUser!.username}', name: 'AuthService');
+    } catch (e) {
+      developer.log('❌ Failed to load profile: $e', name: 'AuthService');
+      _currentUser = null;
+      rethrow;
+    }
+  }
+
+  /// Refresh user profile (call after profile updates)
+  Future<bool> refreshProfile() async {
+    if (!_isAuthenticated) return false;
+    
+    try {
+      await _loadUserProfile();
+      return true;
+    } catch (e) {
+      developer.log('❌ Profile refresh error: $e', name: 'AuthService');
+      return false;
+    }
+  }
+
+  /// Clear all auth data from ALL storage systems
+  Future<void> _clearAuth() async {
+    developer.log('🧹 Clearing auth data from ALL storage systems...', name: 'AuthService');
+    
+    // Clear in-memory state FIRST
+    _authToken = null;
+    _currentUser = null;
+    _isAuthenticated = false;
+    // ✅ CRITICAL: Keep _hasInitialized = true!
+    // This prevents initialize() from re-reading storage after logout
+    // Even if a new AuthNotifier is created, it won't find any tokens
+    developer.log('✅ In-memory state cleared (_hasInitialized remains true)', name: 'AuthService');
+    
+    // Clear flutter_secure_storage
+    await _secureStorage.delete(key: 'auth_token');
+    await _secureStorage.delete(key: 'refresh_token');
+    developer.log('✅ SecureStorage tokens deleted', name: 'AuthService');
+    
+    // 🔥 CRITICAL WEB FIX: Clear browser storage directly on web platform
+    if (kIsWeb) {
+      WebStorageHelper.clearBrowserStorage();
+    }
+    
+    // Clear SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('last_login');
+    await prefs.clear(); // Clear ALL shared preferences on logout
+    developer.log('✅ SharedPreferences cleared', name: 'AuthService');
+    
+    // Clear Hive LocalStorage (auth tokens and user data from mock data era)
+    try {
+      await LocalStorage.clearAuthTokens();
+      await LocalStorage.clearUser();
+      developer.log('✅ Hive LocalStorage auth data cleared', name: 'AuthService');
+    } catch (e) {
+      developer.log('⚠️ Hive clear failed (may not be initialized): $e', name: 'AuthService');
+    }
+    
+    // Verify token deletion from flutter_secure_storage
+    final remainingToken = await _secureStorage.read(key: 'auth_token');
+    if (remainingToken != null) {
+      developer.log('⚠️ WARNING: Token still exists in SecureStorage after deletion!', name: 'AuthService');
+    } else {
+      developer.log('✅ Verified: No token in SecureStorage', name: 'AuthService');
+    }
+    
+    developer.log('✅ All auth data cleared successfully', name: 'AuthService');
+  }
+
+  /// Check if user has specific permission
+  bool hasPermission(String permissionAction) {
+    if (_currentUser == null) return false;
+    
+    return _currentUser!.hasPermission(permissionAction);
+  }
+
+  /// Check if user can create trip for specific level
+  bool canCreateTripForLevel(int levelId) {
+    if (_currentUser == null) return false;
+    
+    // Check if user has general create_trip permission
+    if (hasPermission('create_trip')) return true;
+    
+    // Check if user can create trip for this specific level
+    final permission = _currentUser!.permissions.firstWhere(
+      (p) => p.action == 'create_trip' || p.action == 'create_trip_with_approval',
+      orElse: () => Permission(id: 0, action: '', levels: []),
+    );
+    
+    return permission.levels.any((level) => level.id == levelId);
+  }
+
+  /// Check if user is marshal or admin
+  bool get isMarshalOrAdmin {
+    return hasPermission('access_marshal_panel') || 
+           hasPermission('approve_trip') ||
+           hasPermission('edit_trips');
+  }
+
+  /// Get error message from exception
+  String _getErrorMessage(dynamic error) {
+    final errorString = error.toString();
+    
+    if (errorString.contains('SocketException') || 
+        errorString.contains('NetworkException') ||
+        errorString.contains('Failed host lookup') ||
+        errorString.contains('ERR_NAME_NOT_RESOLVED')) {
+      return 'Cannot connect to server. Please check your internet connection.';
+    } else if (errorString.contains('TimeoutException') || 
+               errorString.contains('Connection timeout')) {
+      return 'Connection timeout. Server took too long to respond.';
+    } else if (errorString.contains('HandshakeException') || 
+               errorString.contains('CERTIFICATE_VERIFY_FAILED')) {
+      return 'SSL/Certificate error. Network security issue detected.';
+    } else if (errorString.contains('401')) {
+      return 'Invalid username or password.';
+    } else if (errorString.contains('403')) {
+      return 'Access forbidden. Please contact support.';
+    } else if (errorString.contains('404')) {
+      return 'Login endpoint not found. Server configuration issue.';
+    } else if (errorString.contains('500') || errorString.contains('502') || errorString.contains('503')) {
+      return 'Server error. Please try again later.';
+    } else {
+      return 'Login failed. Please try again.';
+    }
+  }
+}
+
+/// Login result model
+class LoginResult {
+  final bool success;
+  final String message;
+  final UserModel? user;
+
+  LoginResult({
+    required this.success,
+    required this.message,
+    this.user,
+  });
+}

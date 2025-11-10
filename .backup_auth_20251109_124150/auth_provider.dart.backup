@@ -1,0 +1,154 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/auth_service.dart';
+import '../../data/models/user_model.dart';
+import 'dart:developer' as developer;
+
+/// Authentication State
+class AuthState {
+  final bool isAuthenticated;
+  final UserModel? user;
+  final bool isLoading;
+  final String? error;
+
+  const AuthState({
+    this.isAuthenticated = false,
+    this.user,
+    this.isLoading = false,
+    this.error,
+  });
+
+  AuthState copyWith({
+    bool? isAuthenticated,
+    UserModel? user,
+    bool? isLoading,
+    String? error,
+  }) {
+    return AuthState(
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      user: user ?? this.user,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+}
+
+/// Authentication State Notifier
+class AuthNotifier extends StateNotifier<AuthState> {
+  final AuthService _authService;
+
+  AuthNotifier(this._authService) : super(const AuthState()) {
+    _initialize();
+  }
+
+  /// Initialize auth state from stored session
+  Future<void> _initialize() async {
+    developer.log('🔄 AuthNotifier initializing...', name: 'AuthNotifier');
+    state = state.copyWith(isLoading: true);
+    
+    await _authService.initialize();
+    
+    state = AuthState(
+      isAuthenticated: _authService.isAuthenticated,
+      user: _authService.currentUser,
+      isLoading: false,
+    );
+    
+    developer.log(
+      '✅ AuthNotifier initialized - Authenticated: ${state.isAuthenticated}, User: ${state.user?.username ?? "None"}',
+      name: 'AuthNotifier',
+    );
+  }
+
+  /// Login with username/email and password
+  Future<bool> login({
+    required String login,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final result = await _authService.login(
+        login: login,
+        password: password,
+      );
+
+      if (result.success && result.user != null) {
+        state = AuthState(
+          isAuthenticated: true,
+          user: result.user,
+          isLoading: false,
+        );
+        return true;
+      } else {
+        state = AuthState(
+          isAuthenticated: false,
+          isLoading: false,
+          error: result.message,
+        );
+        return false;
+      }
+    } catch (e) {
+      state = AuthState(
+        isAuthenticated: false,
+        isLoading: false,
+        error: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  /// Logout current user
+  Future<void> logout() async {
+    developer.log('🔐 AuthNotifier logout called', name: 'AuthNotifier');
+    developer.log('   Current state before logout: Authenticated=${state.isAuthenticated}, User=${state.user?.username}', name: 'AuthNotifier');
+    
+    state = state.copyWith(isLoading: true);
+    
+    // Clear auth service data
+    await _authService.logout();
+    developer.log('✅ AuthService.logout() completed', name: 'AuthNotifier');
+    developer.log('   AuthService state: isAuthenticated=${_authService.isAuthenticated}', name: 'AuthNotifier');
+    
+    // Force immediate state update to unauthenticated
+    state = const AuthState(
+      isAuthenticated: false,
+      user: null,
+      isLoading: false,
+    );
+    developer.log('✅ AuthNotifier state set to unauthenticated', name: 'AuthNotifier');
+    developer.log('   New state: Authenticated=${state.isAuthenticated}, User=${state.user?.username ?? "null"}', name: 'AuthNotifier');
+    
+    // Verify state was updated correctly
+    if (state.isAuthenticated) {
+      developer.log('❌ FATAL: AuthNotifier state STILL authenticated!', name: 'AuthNotifier');
+      throw Exception('❌ CRITICAL: Auth state still authenticated after logout!');
+    }
+    
+    // Verify AuthService is also cleared
+    if (_authService.isAuthenticated) {
+      developer.log('❌ FATAL: AuthService STILL authenticated!', name: 'AuthNotifier');
+      throw Exception('❌ CRITICAL: AuthService still authenticated after logout!');
+    }
+    
+    developer.log('✅ Logout complete - all verifications passed', name: 'AuthNotifier');
+  }
+
+  /// Refresh user profile data
+  Future<void> refreshProfile() async {
+    if (!state.isAuthenticated) return;
+
+    final success = await _authService.refreshProfile();
+    
+    if (success) {
+      state = state.copyWith(user: _authService.currentUser);
+    }
+  }
+}
+
+/// Auth Provider - Global access to authentication state
+/// ✅ CRITICAL: This provider creates a NEW AuthNotifier each time
+/// But AuthService is a singleton, so we reuse the same AuthService instance
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  developer.log('🔧 Creating NEW AuthNotifier instance', name: 'AuthProvider');
+  return AuthNotifier(AuthService());
+});

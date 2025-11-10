@@ -1,0 +1,581 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../../data/models/trip_model.dart';
+import '../../../../data/sample_data/sample_trips.dart';
+import '../../../../shared/widgets/widgets.dart';
+import '../../../../shared/widgets/error/error_state_widget.dart';
+
+class TripDetailsScreen extends StatefulWidget {
+  final String tripId;
+
+  const TripDetailsScreen({super.key, required this.tripId});
+
+  @override
+  State<TripDetailsScreen> createState() => _TripDetailsScreenState();
+}
+
+class _TripDetailsScreenState extends State<TripDetailsScreen> {
+  Trip? _trip;
+  bool _isLoading = true;
+  bool _isJoined = false;
+  String? _errorMessage;
+  
+  // Mock user role - TODO: Get from auth state
+  final bool _isAdmin = true; // Set to true to see admin ribbon - ENABLED FOR TESTING
+  final bool _isMarshal = false; // Set to true to see marshal features
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTripDetails();
+  }
+
+  Future<void> _loadTripDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Simulate network delay
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      // TODO: Replace with actual API call
+      // Simulate potential error (uncomment to test error state)
+      // if (widget.tripId == 'invalid') {
+      //   throw Exception('Trip not found');
+      // }
+
+      final trip = SampleTrips.getTripById(widget.tripId);
+
+      setState(() {
+        _trip = trip;
+        _isJoined = trip.isJoined;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  Future<void> _handleJoinTrip() async {
+    setState(() => _isLoading = true);
+
+    // TODO: Implement actual join/leave trip API call
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (mounted) {
+      setState(() {
+        _isJoined = !_isJoined;
+        if (_trip != null) {
+          _trip = _trip!.copyWith(
+            isJoined: _isJoined,
+            participants: _isJoined
+                ? _trip!.participants + 1
+                : _trip!.participants - 1,
+          );
+        }
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_isJoined ? 'Joined trip successfully!' : 'Left trip'),
+          backgroundColor: _isJoined ? const Color(0xFF42B883) : null,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    if (_isLoading && _trip == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const LoadingStateWidget(message: 'Loading trip details...'),
+      );
+    }
+
+    if (_errorMessage != null || _trip == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: _errorMessage?.contains('not found') == true
+            ? ErrorStateWidget.notFound(
+                onRetry: _loadTripDetails,
+                message: 'This trip could not be found. It may have been deleted.',
+              )
+            : ErrorStateWidget.network(
+                onRetry: _loadTripDetails,
+                message: 'Failed to load trip details. Please try again.',
+              ),
+      );
+    }
+
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          // Admin Ribbon (if user is admin or marshal)
+          if (_isAdmin || _isMarshal)
+            SliverToBoxAdapter(
+              child: TripAdminRibbon(
+                tripId: widget.tripId,
+                approvalStatus: TripApprovalStatus.approved,
+                onApprove: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Trip approved!')),
+                  );
+                },
+                onDecline: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Trip declined')),
+                  );
+                },
+                onEdit: () => context.push('/trips/${widget.tripId}/edit'),
+                onManageRegistrants: () {
+                  context.push(
+                    '/trips/${widget.tripId}/registrants?title=${Uri.encodeComponent(_trip?.title ?? 'Trip')}',
+                  );
+                },
+                onCheckin: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Check-in coming soon')),
+                  );
+                },
+                onExport: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Export coming soon')),
+                  );
+                },
+                onBindGallery: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Bind gallery coming soon')),
+                  );
+                },
+              ),
+            ),
+          
+          // App Bar with Image
+          SliverAppBar(
+            expandedHeight: 250,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: _trip!.imageUrl != null
+                  ? Image.network(
+                      _trip!.imageUrl!,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      color: colors.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.terrain,
+                        size: 100,
+                        color: colors.onSurface.withValues(alpha: 0.3),
+                      ),
+                    ),
+            ),
+          ),
+
+          // Content
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title Section
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _trip!.title,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDifficultyBadge(),
+                    ],
+                  ),
+                ),
+
+                // Quick Info Cards
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      InfoCard(
+                        icon: Icons.calendar_today,
+                        title: 'Start Date & Time',
+                        subtitle: DateFormat('EEEE, MMMM d, y - HH:mm').format(_trip!.startTime),
+                        iconColor: colors.primary,
+                      ),
+                      const SizedBox(height: 12),
+                      InfoCard(
+                        icon: Icons.event_available,
+                        title: 'End Date & Time',
+                        subtitle: DateFormat('EEEE, MMMM d, y - HH:mm').format(_trip!.endTime),
+                        iconColor: const Color(0xFF81C784),
+                      ),
+                      const SizedBox(height: 12),
+                      if (_trip!.cutOff != null)
+                        InfoCard(
+                          icon: Icons.timer_off,
+                          title: 'Registration Deadline',
+                          subtitle: DateFormat('EEEE, MMMM d, y - HH:mm').format(_trip!.cutOff!),
+                          iconColor: const Color(0xFFFF8A65),
+                        ),
+                      if (_trip!.cutOff != null) const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                      InfoCard(
+                        icon: Icons.location_on,
+                        title: 'Location',
+                        subtitle: _trip!.location,
+                        iconColor: const Color(0xFFE53935),
+                      ),
+                      const SizedBox(height: 12),
+                      InfoCard(
+                        icon: Icons.place,
+                        title: 'Meeting Point',
+                        subtitle: _trip!.meetingPoint,
+                        iconColor: const Color(0xFFFFC107),
+                      ),
+                      const SizedBox(height: 12),
+                      InfoCard(
+                        icon: Icons.person,
+                        title: 'Organized by',
+                        subtitle: _trip!.organizer,
+                        iconColor: const Color(0xFF42B883),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Gallery Chip (if gallery_id exists)
+                // TODO: Get gallery_id from trip API response
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: InkWell(
+                    onTap: () {
+                      // TODO: Navigate using actual gallery_id from trip
+                      // context.push('/gallery/${trip.gallery_id}');
+                      context.push('/gallery');
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            colors.primary.withValues(alpha: 0.2),
+                            Colors.purple.withValues(alpha: 0.1),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: colors.primary.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: colors.primary.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.photo_library,
+                              color: colors.primary,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Trip Gallery',
+                                  style: TextStyle(
+                                    color: colors.onSurface,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'View and share photos from this trip',
+                                  style: TextStyle(
+                                    color: colors.onSurface.withValues(alpha: 0.6),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            color: colors.onSurface.withValues(alpha: 0.4),
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Description
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Description',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _trip!.description,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: colors.onSurface.withValues(alpha: 0.8),
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Requirements
+                if (_trip!.requirements.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Requirements',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ..._trip!.requirements.map((req) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 20,
+                                    color: colors.primary,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      req,
+                                      style: theme.textTheme.bodyLarge,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                      ],
+                    ),
+                  ),
+
+                const SizedBox(height: 24),
+
+                // Participants Info
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.people, color: colors.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Participants',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.onSurface.withValues(alpha: 0.7),
+                                ),
+                              ),
+                              Text(
+                                '${_trip!.participants} / ${_trip!.maxParticipants} joined',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 100), // Space for button
+              ],
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Chat button
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(
+                    '/trips/${widget.tripId}/chat?title=${Uri.encodeComponent(_trip!.title)}',
+                  ),
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  label: const Text('Chat'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                    side: BorderSide(color: theme.colorScheme.primary),
+                    foregroundColor: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Join/Leave button
+              Expanded(
+                flex: 2,
+                child: _isJoined
+                    ? SecondaryButton(
+                        text: 'Leave Trip',
+                        onPressed: _handleJoinTrip,
+                        height: 56,
+                      )
+                    : PrimaryButton(
+                        text: 'Join Trip',
+                        onPressed: _handleJoinTrip,
+                        isLoading: _isLoading,
+                        height: 56,
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDifficultyBadge() {
+    final theme = Theme.of(context);
+    Color badgeColor;
+    int starCount;
+    String levelText;
+    IconData iconType;
+    bool isANIT = false;
+
+    switch (_trip!.difficulty.toLowerCase()) {
+      case 'anit':
+        badgeColor = const Color(0xFF4CAF50); // Green
+        starCount = 0;
+        levelText = 'ANIT (All New Into Trip)';
+        iconType = Icons.school;
+        isANIT = true;
+        break;
+      case 'easy':
+        badgeColor = const Color(0xFF42B883); // Green
+        starCount = 1;
+        levelText = 'Newbie/Club Event';
+        iconType = Icons.star;
+        break;
+      case 'medium':
+        badgeColor = const Color(0xFFFFC107); // Amber
+        starCount = 2;
+        levelText = 'Intermediate';
+        iconType = Icons.star;
+        break;
+      case 'hard':
+        badgeColor = const Color(0xFFFF9800); // Orange
+        starCount = 3;
+        levelText = 'Advanced';
+        iconType = Icons.star;
+        break;
+      case 'expert':
+        badgeColor = const Color(0xFFE53935); // Red
+        starCount = 4;
+        levelText = 'Expert/Explorer/Marshal';
+        iconType = Icons.star;
+        break;
+      default:
+        badgeColor = const Color(0xFF64B5F6);
+        starCount = 1;
+        levelText = 'Unknown';
+        iconType = Icons.star;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ANIT icon or Star icons based on difficulty
+          if (isANIT)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(
+                iconType,
+                size: 18,
+                color: badgeColor,
+              ),
+            )
+          else
+            ...List.generate(starCount, (index) => Padding(
+              padding: EdgeInsets.only(right: index < starCount - 1 ? 2 : 8),
+              child: Icon(
+                Icons.star,
+                size: 18,
+                color: badgeColor,
+              ),
+            )),
+          Text(
+            levelText,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: badgeColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

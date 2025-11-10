@@ -1,0 +1,198 @@
+{
+  "version": "1.1",
+  "brand": "AD4x4",
+  "description": "Charcoal-based dark theme update with gold accents; light theme aligned. Suitable for Flutter theming.",
+  "modes": {
+    "dark": {
+      "primary": "#C5A13E",
+      "onPrimary": "#101010",
+      "background": "#1B1B1B",
+      "surface": "#242424",
+      "surfaceVariant": "#2A2A2A",
+      "onSurface": "#EDEDED",
+      "outline": "#3A3A3A",
+      "success": "#42B883",
+      "warning": "#FFC107",
+      "error": "#E53935",
+      "info": "#64B5F6",
+      "neutral100": "#141414",
+      "neutral200": "#171717",
+      "neutral300": "#1E1E1E",
+      "neutral400": "#262626",
+      "neutral500": "#3C3C3C",
+      "neutral600": "#575757",
+      "neutral700": "#7A7A7A",
+      "neutral800": "#B0B0B0",
+      "neutral900": "#EDEDED",
+      "elevation": {
+        "level0": "transparent",
+        "level1": "#242424",
+        "level2": "#282828",
+        "level3": "#2C2C2C",
+        "level4": "#303030"
+      },
+      "gradients": {
+        "app": "linear-gradient(180deg, #1C1C1C 0%, #161616 100%)"
+      },
+      "components": {
+        "appBar": {
+          "bg": "#1B1B1B",
+          "fg": "#EDEDED"
+        },
+        "card": {
+          "bg": "#242424",
+          "fg": "#EDEDED",
+          "border": "#2F2F2F"
+        },
+        "chip": {
+          "bg": "#2A2A2A",
+          "fg": "#EDEDED"
+        },
+        "input": {
+          "bg": "#1E1E1E",
+          "fg": "#EDEDED",
+          "border": "#343434",
+          "hint": "#9A9A9A"
+        },
+        "listTile": {
+          "bg": "#242424",
+          "fg": "#EDEDED",
+          "subtitle": "#B0B0B0"
+        },
+        "navBar": {
+          "bg": "#1B1B1B",
+          "fg": "#B0B0B0",
+          "active": "#C5A13E"
+        }
+      },
+      "badges": {
+        "newbie": "#38B26E",
+        "intermediate": "#E0B223",
+        "advanced": "#D9822B",
+        "explorer": "#DA5547",
+        "marshal": "#4BA3C7"
+      },
+      "roles": {
+        "ctaPrimary": {
+          "bg": "#C5A13E",
+          "fg": "#101010"
+        },
+        "ctaSecondary": {
+          "bg": "#2A2A2A",
+          "fg": "#EDEDED",
+          "border": "#3A3A3A"
+        },
+        "success": {
+          "bg": "#203A2F",
+          "fg": "#42B883"
+        },
+        "warning": {
+          "bg": "#3A2F20",
+          "fg": "#FFC107"
+        },
+        "error": {
+          "bg": "#3A2321",
+          "fg": "#E53935"
+        },
+        "info": {
+          "bg": "#203044",
+          "fg": "#64B5F6"
+        }
+      }
+    },
+    "light": {
+      "primary": "#C5A13E",
+      "onPrimary": "#101010",
+      "background": "#F7F7F7",
+      "surface": "#FFFFFF",
+      "surfaceVariant": "#F2F2F2",
+      "onSurface": "#1B1B1B",
+      "outline": "#E1E1E1",
+      "success": "#259D6D",
+      "warning": "#B38700",
+      "error": "#C62828",
+      "info": "#1976D2",
+      "neutral100": "#FFFFFF",
+      "neutral200": "#FAFAFA",
+      "neutral300": "#F4F4F4",
+      "neutral400": "#EEEEEE",
+      "neutral500": "#E6E6E6",
+      "neutral600": "#CFCFCF",
+      "neutral700": "#9E9E9E",
+      "neutral800": "#6E6E6E",
+      "neutral900": "#1B1B1B",
+      "elevation": {
+        "level0": "#FFFFFF",
+        "level1": "#FFFFFF",
+        "level2": "#FFFFFF",
+        "level3": "#FFFFFF",
+        "level4": "#FFFFFF"
+      },
+      "components": {
+        "appBar": {
+          "bg": "#FFFFFF",
+          "fg": "#1B1B1B"
+        },
+        "card": {
+          "bg": "#FFFFFF",
+          "fg": "#1B1B1B",
+          "border": "#EAEAEA"
+        },
+        "chip": {
+          "bg": "#F2F2F2",
+          "fg": "#1B1B1B"
+        },
+        "input": {
+          "bg": "#FFFFFF",
+          "fg": "#1B1B1B",
+          "border": "#E1E1E1",
+          "hint": "#7A7A7A"
+        },
+        "listTile": {
+          "bg": "#FFFFFF",
+          "fg": "#1B1B1B",
+          "subtitle": "#6E6E6E"
+        },
+        "navBar": {
+          "bg": "#FFFFFF",
+          "fg": "#6E6E6E",
+          "active": "#C5A13E"
+        }
+      },
+      "badges": {
+        "newbie": "#2E7D32",
+        "intermediate": "#B28704",
+        "advanced": "#A05A12",
+        "explorer": "#B23A32",
+        "marshal": "#0E88B1"
+      },
+      "roles": {
+        "ctaPrimary": {
+          "bg": "#C5A13E",
+          "fg": "#101010"
+        },
+        "ctaSecondary": {
+          "bg": "#FFFFFF",
+          "fg": "#1B1B1B",
+          "border": "#E1E1E1"
+        },
+        "success": {
+          "bg": "#E7F5EF",
+          "fg": "#259D6D"
+        },
+        "warning": {
+          "bg": "#FFF6DD",
+          "fg": "#B38700"
+        },
+        "error": {
+          "bg": "#FDECEA",
+          "fg": "#C62828"
+        },
+        "info": {
+          "bg": "#E9F2FB",
+          "fg": "#1976D2"
+        }
+      }
+    }
+  }
+}
