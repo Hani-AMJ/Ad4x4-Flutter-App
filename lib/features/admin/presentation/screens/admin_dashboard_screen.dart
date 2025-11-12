@@ -143,13 +143,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: colors.primary.withValues(alpha: 0.2),
-                  child: Text(
-                    user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : 'A',
-                    style: TextStyle(
-                      color: colors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  backgroundImage: user.avatar != null && user.avatar!.isNotEmpty
+                      ? NetworkImage(
+                          user.avatar!.startsWith('http')
+                              ? user.avatar!
+                              : 'https://media.ad4x4.com${user.avatar}',
+                        )
+                      : null,
+                  child: user.avatar == null || user.avatar!.isEmpty
+                      ? Text(
+                          user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : 'A',
+                          style: TextStyle(
+                            color: colors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(width: 8),
                 Column(
@@ -162,12 +171,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Text(
-                      user.level?.displayName ?? 'Member',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onSurface.withValues(alpha: 0.6),
+                    if (user.level?.displayName != null && user.level!.displayName!.isNotEmpty)
+                      Text(
+                        user.level!.displayName!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ],

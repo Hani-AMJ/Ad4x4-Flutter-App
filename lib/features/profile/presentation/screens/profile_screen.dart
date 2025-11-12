@@ -70,6 +70,11 @@ class ProfileScreen extends ConsumerWidget {
                     // Avatar
                     UserAvatar(
                       name: userName,
+                      imageUrl: user.avatar != null && user.avatar!.isNotEmpty 
+                          ? (user.avatar!.startsWith('http') 
+                              ? user.avatar 
+                              : 'https://media.ad4x4.com${user.avatar}')
+                          : null,
                       radius: 60,
                     ),
                     const SizedBox(height: 16),
@@ -123,7 +128,7 @@ class ProfileScreen extends ConsumerWidget {
                     _StatItem(
                       icon: Icons.directions_car,
                       label: 'Trips',
-                      value: '24',
+                      value: '${user.tripCount ?? 0}',
                       colors: colors,
                     ),
                     Container(
@@ -134,7 +139,7 @@ class ProfileScreen extends ConsumerWidget {
                     _StatItem(
                       icon: Icons.photo_library,
                       label: 'Photos',
-                      value: '156',
+                      value: '0',  // TODO: Add photo count from Gallery API
                       colors: colors,
                     ),
                     Container(
@@ -144,8 +149,8 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     _StatItem(
                       icon: Icons.local_fire_department,
-                      label: 'Points',
-                      value: '1,240',
+                      label: 'Level',
+                      value: '${user.level?.numericLevel ?? 0}',
                       colors: colors,
                     ),
                   ],
@@ -185,6 +190,79 @@ class ProfileScreen extends ConsumerWidget {
               ),
 
               const Divider(height: 1),
+
+              // Vehicle Information (if available)
+              if (user.carBrand != null || user.carModel != null)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Vehicle Information',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      InfoCard(
+                        icon: Icons.directions_car,
+                        title: 'Vehicle',
+                        subtitle: '${user.carBrand ?? ''} ${user.carModel ?? ''} ${user.carYear != null ? '(${user.carYear})' : ''}'.trim(),
+                        iconColor: const Color(0xFF64B5F6),
+                      ),
+                      if (user.carColor != null) ...[
+                        const SizedBox(height: 12),
+                        InfoCard(
+                          icon: Icons.palette,
+                          title: 'Color',
+                          subtitle: user.carColor!,
+                          iconColor: const Color(0xFF9C27B0),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+              if (user.carBrand != null || user.carModel != null)
+                const Divider(height: 1),
+
+              // Emergency Contact (if available)
+              if (user.iceName != null || user.icePhone != null)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Emergency Contact',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (user.iceName != null)
+                        InfoCard(
+                          icon: Icons.person_outline,
+                          title: 'ICE Contact',
+                          subtitle: user.iceName!,
+                          iconColor: const Color(0xFFFF5722),
+                        ),
+                      if (user.icePhone != null) ...[
+                        const SizedBox(height: 12),
+                        InfoCard(
+                          icon: Icons.phone,
+                          title: 'ICE Phone',
+                          subtitle: user.icePhone!,
+                          iconColor: const Color(0xFFFF5722),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+              if (user.iceName != null || user.icePhone != null)
+                const Divider(height: 1),
 
               // Quick Actions
               Padding(

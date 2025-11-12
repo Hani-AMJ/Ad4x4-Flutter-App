@@ -10,8 +10,27 @@ class UserModel {
   final int tripCount;
   final String? dateJoined;
   final String? profileImage;
+  final String? avatar;  // Avatar URL from API
   final String? phoneNumber;
+  final String? phone;  // Alternative phone field name
   final bool isActive;
+  final bool paidMember;
+  
+  // Vehicle Information
+  final String? carBrand;
+  final String? carModel;
+  final int? carYear;
+  final String? carColor;
+  final String? carImage;
+  
+  // Additional Profile Fields
+  final String? dob;  // Date of birth
+  final String? iceName;  // In Case of Emergency contact name
+  final String? icePhone;  // In Case of Emergency contact phone
+  final String? city;
+  final String? gender;
+  final String? nationality;
+  final String? title;
 
   UserModel({
     required this.id,
@@ -24,8 +43,23 @@ class UserModel {
     this.tripCount = 0,
     this.dateJoined,
     this.profileImage,
+    this.avatar,
     this.phoneNumber,
+    this.phone,
     this.isActive = true,
+    this.paidMember = false,
+    this.carBrand,
+    this.carModel,
+    this.carYear,
+    this.carColor,
+    this.carImage,
+    this.dob,
+    this.iceName,
+    this.icePhone,
+    this.city,
+    this.gender,
+    this.nationality,
+    this.title,
   });
 
   /// Display name: "First Last" or username if empty
@@ -59,8 +93,23 @@ class UserModel {
       tripCount: json['trip_count'] as int? ?? json['tripCount'] as int? ?? 0,
       dateJoined: json['date_joined'] as String? ?? json['dateJoined'] as String?,
       profileImage: json['profile_image'] as String? ?? json['profileImage'] as String?,
+      avatar: json['avatar'] as String?,
       phoneNumber: json['phone_number'] as String? ?? json['phoneNumber'] as String?,
+      phone: json['phone'] as String?,
       isActive: json['is_active'] as bool? ?? json['isActive'] as bool? ?? true,
+      paidMember: json['paid_member'] as bool? ?? json['paidMember'] as bool? ?? false,
+      carBrand: json['car_brand'] as String? ?? json['carBrand'] as String?,
+      carModel: json['car_model'] as String? ?? json['carModel'] as String?,
+      carYear: json['car_year'] as int? ?? json['carYear'] as int?,
+      carColor: json['car_color'] as String? ?? json['carColor'] as String?,
+      carImage: json['car_image'] as String? ?? json['carImage'] as String?,
+      dob: json['dob'] as String?,
+      iceName: json['ice_name'] as String? ?? json['iceName'] as String?,
+      icePhone: json['ice_phone'] as String? ?? json['icePhone'] as String?,
+      city: json['city'] as String?,
+      gender: json['gender'] is Map? ? json['gender']['name'] : json['gender'] as String?,
+      nationality: json['nationality'] is Map? ? json['nationality']['name'] : json['nationality'] as String?,
+      title: json['title'] as String?,
     );
   }
 
@@ -77,8 +126,23 @@ class UserModel {
       'trip_count': tripCount,
       'date_joined': dateJoined,
       'profile_image': profileImage,
+      'avatar': avatar,
       'phone_number': phoneNumber,
+      'phone': phone,
       'is_active': isActive,
+      'paid_member': paidMember,
+      'car_brand': carBrand,
+      'car_model': carModel,
+      'car_year': carYear,
+      'car_color': carColor,
+      'car_image': carImage,
+      'dob': dob,
+      'ice_name': iceName,
+      'ice_phone': icePhone,
+      'city': city,
+      'gender': gender,
+      'nationality': nationality,
+      'title': title,
     };
   }
 }

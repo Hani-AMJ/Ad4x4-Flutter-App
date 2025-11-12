@@ -59,6 +59,7 @@ import '../../features/admin/presentation/screens/admin_comments_moderation_scre
 import '../../features/admin/presentation/screens/admin_registration_analytics_screen.dart';
 import '../../features/admin/presentation/screens/admin_bulk_registrations_screen.dart';
 import '../../features/admin/presentation/screens/admin_waitlist_management_screen.dart';
+import '../../features/splash/presentation/screens/splash_screen.dart';
 
 /// 🔄 V2: Clean Riverpod-based Router with Simplified Auth Guards
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -66,7 +67,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final authStateNotifier = _AuthStateNotifierV2(ref);
   
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     debugLogDiagnostics: true,
     refreshListenable: authStateNotifier,
     redirect: (context, state) {
@@ -75,10 +76,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isLoading = authState?.isLoading ?? false;
       final currentLocation = state.matchedLocation;
       
-      // Check if current page is auth page or debug page
+      // Check if current page is auth page, splash page, or debug page
       final isAuthPage = currentLocation == '/login' || 
                         currentLocation == '/register' ||
                         currentLocation == '/forgot-password';
+      
+      final isSplashPage = currentLocation == '/splash';
       
       // Debug pages are always accessible (no auth required)
       final isDebugPage = currentLocation.startsWith('/debug');
@@ -88,6 +91,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // Wait for auth to finish loading
       if (isLoading) {
         print('⏳ [Router] Loading auth state...');
+        return null;
+      }
+      
+      // Allow splash page without authentication (will handle its own navigation)
+      if (isSplashPage) {
+        print('🌟 [Router] Splash page - allowing access');
         return null;
       }
       
@@ -111,6 +120,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      // Splash Screen Route
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      
       // Auth Routes
       GoRoute(
         path: '/login',
