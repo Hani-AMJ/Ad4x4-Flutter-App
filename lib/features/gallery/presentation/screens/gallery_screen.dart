@@ -218,7 +218,7 @@ class _AlbumCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    album.coverImageUrl,
+                    album.coverImage,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(

@@ -61,7 +61,6 @@ class _LogbookTimelineScreenState extends ConsumerState<LogbookTimelineScreen> {
       final response = await _repository.getLogbookEntries(
         memberId: user.id,
         page: _currentPage,
-        pageSize: 20,
       );
 
       // Parse response

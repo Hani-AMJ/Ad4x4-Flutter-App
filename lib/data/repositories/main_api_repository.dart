@@ -1199,7 +1199,7 @@ class MainApiRepository {
     }
 
     final response = await _apiClient.get(
-      MainApiEndpoints.globalSearch,
+      '/api/search/',
       queryParameters: queryParams,
     );
     return response.data;

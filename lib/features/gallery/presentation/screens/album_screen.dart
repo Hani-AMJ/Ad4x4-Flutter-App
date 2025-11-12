@@ -423,7 +423,7 @@ class _PhotoThumbnail extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Image.network(
-              photo.thumbnailUrl,
+              photo.thumbnailImage,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Icon(
