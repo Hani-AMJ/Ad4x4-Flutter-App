@@ -30,21 +30,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Check if Gallery API is authenticated
-      final isGalleryAuth = ref.read(isGalleryAuthenticatedProvider);
-      
-      if (!isGalleryAuth) {
-        print('⚠️ [GalleryScreen] Gallery API not authenticated, using mock data');
-        // Use mock data as fallback
-        final albums = SampleGallery.getAlbums();
-        setState(() {
-          _albums = albums;
-          _isLoading = false;
-        });
-        return;
-      }
-
       print('📸 [GalleryScreen] Fetching galleries from API...');
+      
+      // Try to fetch from API regardless of auth state
+      // The repository will handle authentication
       final response = await _galleryRepository.getGalleries(page: 1, limit: 20);
       
       // Parse response
@@ -61,13 +50,25 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
         }
       }
 
-      print('✅ [GalleryScreen] Loaded ${albums.length} albums from API');
-      setState(() {
-        _albums = albums;
-        _isLoading = false;
-      });
+      if (albums.isEmpty) {
+        print('⚠️ [GalleryScreen] No albums returned from API, using mock data');
+        // If API returns empty, use mock data
+        final mockAlbums = SampleGallery.getAlbums();
+        setState(() {
+          _albums = mockAlbums;
+          _isLoading = false;
+        });
+      } else {
+        print('✅ [GalleryScreen] Loaded ${albums.length} albums from API');
+        setState(() {
+          _albums = albums;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       print('❌ [GalleryScreen] Error loading albums: $e');
+      print('   Response type: ${e.runtimeType}');
+      
       // Fallback to mock data on error
       final albums = SampleGallery.getAlbums();
       setState(() {
@@ -78,8 +79,13 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load albums: Using sample data'),
+            content: const Text('Could not load galleries from server. Showing sample data.'),
             backgroundColor: Colors.orange,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _loadAlbums,
+            ),
           ),
         );
       }
