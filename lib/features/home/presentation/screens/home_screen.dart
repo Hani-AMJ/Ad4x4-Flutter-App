@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../shared/widgets/home/upcoming_trips_carousel.dart';
+import '../../../../shared/widgets/home/member_progress_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -135,36 +137,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Recent Activity Section
+              // Member Progress Widget
+              const MemberProgressWidget(),
+              const SizedBox(height: 24),
+
+              // Upcoming Trips Section
               Text(
-                'Recent Activity',
+                'Upcoming Trips',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
-              _ActivityCard(
-                icon: Icons.directions_car,
-                title: 'Upcoming Desert Safari',
-                subtitle: 'This Friday, 6:00 AM',
-                trailing: 'Join',
-                onTap: () => context.push('/trips/upcoming-safari'),
-              ),
-              const SizedBox(height: 12),
-              _ActivityCard(
-                icon: Icons.event,
-                title: 'Annual BBQ Event',
-                subtitle: 'Next Saturday, 5:00 PM',
-                trailing: 'Register',
-                onTap: () => context.push('/events/annual-bbq'),
-              ),
-              const SizedBox(height: 12),
-              _ActivityCard(
-                icon: Icons.photo_camera,
-                title: 'New Photos Added',
-                subtitle: 'Last Week\'s Trip Album',
-                trailing: 'View',
-                onTap: () => context.push('/gallery/album/last-week'),
+              const UpcomingTripsCarousel(),
+              const SizedBox(height: 24),
+
+              // Logbook Link
+              Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: colors.primary.withValues(alpha: 0.2),
+                    child: Icon(Icons.edit_note, color: colors.primary),
+                  ),
+                  title: const Text('My Logbook'),
+                  subtitle: const Text('View your trip sign-offs and progress'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/logbook'),
+                ),
               ),
             ],
           ),
