@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../data/sample_data/sample_trips.dart';
+import 'dart:async';
+import '../../../../data/repositories/main_api_repository.dart';
 
-class GlobalSearchScreen extends StatefulWidget {
+class GlobalSearchScreen extends ConsumerStatefulWidget {
   const GlobalSearchScreen({super.key});
 
   @override
-  State<GlobalSearchScreen> createState() => _GlobalSearchScreenState();
+  ConsumerState<GlobalSearchScreen> createState() => _GlobalSearchScreenState();
 }
 
-class _GlobalSearchScreenState extends State<GlobalSearchScreen> with SingleTickerProviderStateMixin {
+class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> with SingleTickerProviderStateMixin {
+  final _repository = MainApiRepository();
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
+  Timer? _debounceTimer;
   
   bool _isSearching = false;
   String _searchQuery = '';
@@ -33,6 +37,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> with SingleTick
   @override
   void dispose() {
     _searchController.dispose();
+    _debounceTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -50,145 +55,203 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> with SingleTick
       return;
     }
 
-    setState(() {
-      _searchQuery = _searchController.text;
-      _performSearch(_searchQuery);
+    // Debounce search
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+      _performSearch(_searchController.text);
     });
   }
 
-  void _performSearch(String query) {
+  /// Perform search using real API
+  Future<void> _performSearch(String query) async {
     if (query.isEmpty) return;
 
     setState(() => _isSearching = true);
 
-    // Simulate search delay
-    Future.delayed(const Duration(milliseconds: 300), () {
-      final lowercaseQuery = query.toLowerCase();
+    try {
+      print('🔍 [Search] Searching for: $query');
 
-      // Search trips
-      _tripResults = SampleTrips.getTrips()
-          .where((trip) =>
-              trip.title.toLowerCase().contains(lowercaseQuery) ||
-              trip.description.toLowerCase().contains(lowercaseQuery) ||
-              (trip.location?.toLowerCase() ?? '').contains(lowercaseQuery))
-          .map((trip) => SearchResult(
-                type: SearchResultType.trip,
-                id: trip.id.toString(),
-                title: trip.title,
-                subtitle: trip.location ?? 'Location TBA',
-                description: trip.description,
-                metadata: '${trip.participants}/${trip.maxParticipants} participants',
-              ))
-          .toList();
+      // Search all types
+      final allResponse = await _repository.globalSearch(query: query, limit: 50);
+      
+      // Search by type for categorized results
+      final tripResponse = await _repository.globalSearch(query: query, type: 'trip', limit: 20);
+      final memberResponse = await _repository.globalSearch(query: query, type: 'member', limit: 20);
+      
+      // Parse results
+      _allResults = _parseSearchResults(allResponse);
+      _tripResults = _parseSearchResults(tripResponse, filterType: SearchResultType.trip);
+      _memberResults = _parseSearchResults(memberResponse, filterType: SearchResultType.member);
+      
+      // Try gallery and news (may not be implemented in API)
+      try {
+        final galleryResponse = await _repository.globalSearch(query: query, type: 'gallery', limit: 20);
+        _photoResults = _parseSearchResults(galleryResponse, filterType: SearchResultType.photo);
+      } catch (e) {
+        print('⚠️ [Search] Gallery search not available: $e');
+        _photoResults = [];
+      }
 
-      // Search members (mock data)
-      _memberResults = _searchMembers(lowercaseQuery);
+      try {
+        final newsResponse = await _repository.globalSearch(query: query, type: 'news', limit: 20);
+        _newsResults = _parseSearchResults(newsResponse, filterType: SearchResultType.news);
+      } catch (e) {
+        print('⚠️ [Search] News search not available: $e');
+        _newsResults = [];
+      }
 
-      // Search photos (mock data)
-      _photoResults = _searchPhotos(lowercaseQuery);
-
-      // Search news (mock data)
-      _newsResults = _searchNews(lowercaseQuery);
-
-      // Combine all results
-      _allResults = [
-        ..._tripResults,
-        ..._memberResults,
-        ..._photoResults,
-        ..._newsResults,
-      ];
+      print('✅ [Search] Found ${_allResults.length} total results');
 
       setState(() => _isSearching = false);
-    });
+    } catch (e) {
+      print('❌ [Search] Error: $e');
+      setState(() {
+        _isSearching = false;
+        _allResults.clear();
+        _tripResults.clear();
+        _memberResults.clear();
+        _photoResults.clear();
+        _newsResults.clear();
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Search failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  List<SearchResult> _searchMembers(String query) {
-    final members = [
-      SearchResult(
-        type: SearchResultType.member,
-        id: '1',
-        title: 'Mohammed Al-Zaabi',
-        subtitle: 'Member #M2001',
-        description: 'Marshal, Expert off-roader',
-        metadata: '150+ trips',
-      ),
-      SearchResult(
-        type: SearchResultType.member,
-        id: '2',
-        title: 'Ahmad Al-Mansoori',
-        subtitle: 'Member #M2015',
-        description: 'Advanced level, Trip organizer',
-        metadata: '85 trips',
-      ),
-      SearchResult(
-        type: SearchResultType.member,
-        id: '3',
-        title: 'Khalid Al-Dhaheri',
-        subtitle: 'Member #M2032',
-        description: 'Intermediate level',
-        metadata: '42 trips',
-      ),
-    ];
+  /// Parse search results from API response
+  List<SearchResult> _parseSearchResults(Map<String, dynamic> response, {SearchResultType? filterType}) {
+    final List<SearchResult> results = [];
+    
+    // API may return results in different formats
+    final data = response['results'] ?? response['data'] ?? response;
+    
+    if (data is List) {
+      for (var item in data) {
+        try {
+          final type = _determineResultType(item);
+          
+          // Filter by type if specified
+          if (filterType != null && type != filterType) continue;
 
-    return members
-        .where((member) =>
-            member.title.toLowerCase().contains(query) ||
-            member.subtitle.toLowerCase().contains(query))
-        .toList();
+          results.add(_createSearchResult(item, type));
+        } catch (e) {
+          print('⚠️ [Search] Error parsing result: $e');
+        }
+      }
+    }
+    
+    return results;
   }
 
-  List<SearchResult> _searchPhotos(String query) {
-    final photos = [
-      SearchResult(
-        type: SearchResultType.photo,
-        id: '1',
-        title: 'Empty Quarter Sunset',
-        subtitle: 'Desert Expedition - Nov 2024',
-        description: 'Amazing sunset over the dunes',
-        metadata: '24 photos',
-      ),
-      SearchResult(
-        type: SearchResultType.photo,
-        id: '2',
-        title: 'Liwa Dune Bash',
-        subtitle: 'Safari Adventure - Oct 2024',
-        description: 'Epic dune bashing action shots',
-        metadata: '35 photos',
-      ),
-    ];
+  /// Determine result type from API data
+  SearchResultType _determineResultType(Map<String, dynamic> item) {
+    // Check type field if present
+    if (item['type'] != null) {
+      final typeStr = item['type'].toString().toLowerCase();
+      if (typeStr.contains('trip')) return SearchResultType.trip;
+      if (typeStr.contains('member') || typeStr.contains('user')) return SearchResultType.member;
+      if (typeStr.contains('photo') || typeStr.contains('gallery')) return SearchResultType.photo;
+      if (typeStr.contains('news') || typeStr.contains('article')) return SearchResultType.news;
+    }
 
-    return photos
-        .where((photo) =>
-            photo.title.toLowerCase().contains(query) ||
-            photo.subtitle.toLowerCase().contains(query))
-        .toList();
+    // Infer from fields
+    if (item['start_time'] != null || item['max_participants'] != null) {
+      return SearchResultType.trip;
+    } else if (item['first_name'] != null || item['username'] != null) {
+      return SearchResultType.member;
+    } else if (item['url'] != null && item['caption'] != null) {
+      return SearchResultType.photo;
+    } else if (item['published_at'] != null || item['content'] != null) {
+      return SearchResultType.news;
+    }
+
+    return SearchResultType.trip; // Default
   }
 
-  List<SearchResult> _searchNews(String query) {
-    final news = [
-      SearchResult(
-        type: SearchResultType.news,
-        id: '1',
-        title: 'Club Annual Meeting Announced',
-        subtitle: 'Event - Dec 15, 2024',
-        description: 'Join us for the annual club meeting and elections',
-        metadata: '2 days ago',
-      ),
-      SearchResult(
-        type: SearchResultType.news,
-        id: '2',
-        title: 'New Safety Guidelines Released',
-        subtitle: 'Important Update',
-        description: 'Updated safety protocols for desert trips',
-        metadata: '1 week ago',
-      ),
-    ];
+  /// Create SearchResult from API data
+  SearchResult _createSearchResult(Map<String, dynamic> item, SearchResultType type) {
+    switch (type) {
+      case SearchResultType.trip:
+        return SearchResult(
+          type: SearchResultType.trip,
+          id: item['id'].toString(),
+          title: item['title'] ?? 'Untitled Trip',
+          subtitle: item['location'] ?? item['destination'] ?? 'Location TBA',
+          description: item['description'] ?? '',
+          metadata: item['start_time'] != null 
+              ? _formatDate(item['start_time'])
+              : '${item['participants'] ?? 0}/${item['max_participants'] ?? 0} participants',
+        );
 
-    return news
-        .where((newsItem) =>
-            newsItem.title.toLowerCase().contains(query) ||
-            newsItem.description.toLowerCase().contains(query))
-        .toList();
+      case SearchResultType.member:
+        final firstName = item['first_name'] ?? item['firstName'] ?? '';
+        final lastName = item['last_name'] ?? item['lastName'] ?? '';
+        final fullName = '$firstName $lastName'.trim();
+        
+        return SearchResult(
+          type: SearchResultType.member,
+          id: item['id'].toString(),
+          title: fullName.isNotEmpty ? fullName : (item['username'] ?? 'Unknown'),
+          subtitle: item['email'] ?? 'Member #${item['id']}',
+          description: item['level']?['display_name'] ?? item['level']?['displayName'] ?? 'Member',
+          metadata: '${item['trip_count'] ?? item['tripCount'] ?? 0} trips',
+        );
+
+      case SearchResultType.photo:
+        return SearchResult(
+          type: SearchResultType.photo,
+          id: item['id'].toString(),
+          title: item['title'] ?? item['caption'] ?? 'Photo',
+          subtitle: item['album_title'] ?? item['gallery_name'] ?? 'Gallery',
+          description: item['caption'] ?? item['description'] ?? '',
+          metadata: '${item['likes'] ?? 0} likes',
+        );
+
+      case SearchResultType.news:
+        return SearchResult(
+          type: SearchResultType.news,
+          id: item['id'].toString(),
+          title: item['title'] ?? 'News Article',
+          subtitle: item['category'] ?? 'News',
+          description: item['content'] ?? item['description'] ?? '',
+          metadata: item['published_at'] != null 
+              ? _formatDate(item['published_at'])
+              : 'Recent',
+        );
+    }
+  }
+
+  /// Format date string
+  String _formatDate(dynamic dateStr) {
+    try {
+      final date = DateTime.parse(dateStr.toString());
+      final now = DateTime.now();
+      final diff = now.difference(date);
+
+      if (diff.inDays == 0) {
+        return 'Today';
+      } else if (diff.inDays == 1) {
+        return 'Yesterday';
+      } else if (diff.inDays < 7) {
+        return '${diff.inDays} days ago';
+      } else if (diff.inDays < 30) {
+        return '${(diff.inDays / 7).floor()} weeks ago';
+      } else {
+        return '${date.month}/${date.day}/${date.year}';
+      }
+    } catch (e) {
+      return dateStr.toString();
+    }
   }
 
   @override
@@ -364,16 +427,18 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> with SingleTick
                 fontSize: 13,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              result.description,
-              style: TextStyle(
-                color: colors.onSurface.withValues(alpha: 0.5),
-                fontSize: 12,
+            if (result.description.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                result.description,
+                style: TextStyle(
+                  color: colors.onSurface.withValues(alpha: 0.5),
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
+            ],
             const SizedBox(height: 8),
             Row(
               children: [
@@ -414,9 +479,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> with SingleTick
               context.push('/members/${result.id}');
               break;
             case SearchResultType.photo:
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Photo gallery coming soon')),
-              );
+              context.push('/gallery/album/${result.id}');
               break;
             case SearchResultType.news:
               ScaffoldMessenger.of(context).showSnackBar(

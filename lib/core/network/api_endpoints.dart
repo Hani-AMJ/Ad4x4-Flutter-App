@@ -52,6 +52,9 @@ class ApiEndpoints {
   static String memberProfile(String id) => '/api/members/$id';
   static const String memberSearch = '/api/members/search';
   static const String memberStats = '/api/members/stats';
+  
+  // Global Search Endpoint
+  static const String globalSearch = '/api/search/';
 
   // Notification Endpoints
   static const String notifications = '/api/notifications';

@@ -1168,4 +1168,40 @@ class MainApiRepository {
     );
     return response.data;
   }
+
+  // ============================================================================
+  // GLOBAL SEARCH ENDPOINT
+  // ============================================================================
+
+  /// Global search across trips, members, gallery, and news
+  /// 
+  /// Endpoint: GET /api/search/?q=keyword&type=trip|member|gallery|news&limit=20&offset=0
+  /// 
+  /// Parameters:
+  /// - q: Search query string
+  /// - type: Optional filter by entity type (trip, member, gallery, news)
+  /// - limit: Results per page (default: 20)
+  /// - offset: Pagination offset (default: 0)
+  Future<Map<String, dynamic>> globalSearch({
+    required String query,
+    String? type,
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'q': query,
+      'limit': limit,
+      'offset': offset,
+    };
+    
+    if (type != null && type.isNotEmpty) {
+      queryParams['type'] = type;
+    }
+
+    final response = await _apiClient.get(
+      MainApiEndpoints.globalSearch,
+      queryParameters: queryParams,
+    );
+    return response.data;
+  }
 }
