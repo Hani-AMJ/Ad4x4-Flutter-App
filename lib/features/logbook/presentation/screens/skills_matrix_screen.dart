@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/models/logbook_model.dart';
@@ -65,7 +66,15 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
       final List<LogbookSkill> skills = [];
       if (skillsData is List) {
         for (var item in skillsData) {
-          skills.add(LogbookSkill.fromJson(item as Map<String, dynamic>));
+          if (item != null && item is Map<String, dynamic>) {
+            try {
+              skills.add(LogbookSkill.fromJson(item));
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('Failed to parse skill: $e');
+              }
+            }
+          }
         }
       }
 
@@ -74,7 +83,15 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
       final List<MemberSkillStatus> memberSkills = [];
       if (memberSkillsData is List) {
         for (var item in memberSkillsData) {
-          memberSkills.add(MemberSkillStatus.fromJson(item as Map<String, dynamic>));
+          if (item != null && item is Map<String, dynamic>) {
+            try {
+              memberSkills.add(MemberSkillStatus.fromJson(item));
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('Failed to parse member skill: $e');
+              }
+            }
+          }
         }
       }
 

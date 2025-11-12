@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -78,7 +79,15 @@ class _TripHistoryWithLogbookScreenState
 
       if (data is List) {
         for (var item in data) {
-          newTrips.add(TripHistoryItem.fromJson(item as Map<String, dynamic>));
+          if (item != null && item is Map<String, dynamic>) {
+            try {
+              newTrips.add(TripHistoryItem.fromJson(item));
+            } catch (e) {
+              if (kDebugMode) {
+                debugPrint('Failed to parse trip history item: $e');
+              }
+            }
+          }
         }
       }
 
@@ -119,7 +128,15 @@ class _TripHistoryWithLogbookScreenState
 
         if (data is List) {
           for (var item in data) {
-            entries.add(LogbookEntry.fromJson(item as Map<String, dynamic>));
+            if (item != null && item is Map<String, dynamic>) {
+              try {
+                entries.add(LogbookEntry.fromJson(item));
+              } catch (e) {
+                if (kDebugMode) {
+                  debugPrint('Failed to parse logbook entry: $e');
+                }
+              }
+            }
           }
         }
 
