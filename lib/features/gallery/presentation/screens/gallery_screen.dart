@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/album_model.dart';
 import '../../../../data/sample_data/sample_gallery.dart';
+import '../../../../data/repositories/gallery_api_repository.dart';
+import '../../../../core/providers/gallery_auth_provider.dart';
 import '../../../../shared/widgets/widgets.dart';
 
-class GalleryScreen extends StatefulWidget {
+class GalleryScreen extends ConsumerStatefulWidget {
   const GalleryScreen({super.key});
 
   @override
-  State<GalleryScreen> createState() => _GalleryScreenState();
+  ConsumerState<GalleryScreen> createState() => _GalleryScreenState();
 }
 
-class _GalleryScreenState extends State<GalleryScreen> {
+class _GalleryScreenState extends ConsumerState<GalleryScreen> {
+  final _galleryRepository = GalleryApiRepository();
   List<Album> _albums = [];
   bool _isLoading = true;
 
@@ -25,16 +29,61 @@ class _GalleryScreenState extends State<GalleryScreen> {
   Future<void> _loadAlbums() async {
     setState(() => _isLoading = true);
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      // Check if Gallery API is authenticated
+      final isGalleryAuth = ref.read(isGalleryAuthenticatedProvider);
+      
+      if (!isGalleryAuth) {
+        print('⚠️ [GalleryScreen] Gallery API not authenticated, using mock data');
+        // Use mock data as fallback
+        final albums = SampleGallery.getAlbums();
+        setState(() {
+          _albums = albums;
+          _isLoading = false;
+        });
+        return;
+      }
 
-    // TODO: Replace with actual API call
-    final albums = SampleGallery.getAlbums();
+      print('📸 [GalleryScreen] Fetching galleries from API...');
+      final response = await _galleryRepository.getGalleries(page: 1, limit: 20);
+      
+      // Parse response
+      final List<Album> albums = [];
+      final data = response['data'] ?? response['galleries'] ?? response;
+      
+      if (data is List) {
+        for (var item in data) {
+          try {
+            albums.add(Album.fromJson(item as Map<String, dynamic>));
+          } catch (e) {
+            print('⚠️ [GalleryScreen] Error parsing album: $e');
+          }
+        }
+      }
 
-    setState(() {
-      _albums = albums;
-      _isLoading = false;
-    });
+      print('✅ [GalleryScreen] Loaded ${albums.length} albums from API');
+      setState(() {
+        _albums = albums;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('❌ [GalleryScreen] Error loading albums: $e');
+      // Fallback to mock data on error
+      final albums = SampleGallery.getAlbums();
+      setState(() {
+        _albums = albums;
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load albums: Using sample data'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -58,27 +107,34 @@ class _GalleryScreenState extends State<GalleryScreen> {
       ),
       body: Column(
         children: [
-          // Mock Data Banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.orange.withValues(alpha: 0.2),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.orange, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '🔄 Using Mock Data - Gallery API Integration Pending',
-                    style: TextStyle(
-                      color: Colors.orange[800],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+          // Auth Status Banner (only show if not authenticated)
+          Consumer(
+            builder: (context, ref, child) {
+              final isGalleryAuth = ref.watch(isGalleryAuthenticatedProvider);
+              if (isGalleryAuth) return const SizedBox.shrink();
+              
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.orange.withValues(alpha: 0.2),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '🔄 Using Mock Data - Gallery API Authentication Pending',
+                        style: TextStyle(
+                          color: Colors.orange[800],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
           // Main Content
           Expanded(
@@ -111,7 +167,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                       final album = _albums[index];
                       return _AlbumCard(
                         album: album,
-                        onTap: () => context.push('/gallery/album/${album.id}'),
+                        onTap: () => context.push('/gallery/album/${album.id}'),  // ID is now int
                       );
                     },
                   ),

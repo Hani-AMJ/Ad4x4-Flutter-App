@@ -2,15 +2,27 @@ import 'package:dio/dio.dart';
 import '../../core/config/api_config.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/gallery_api_endpoints.dart';
+import '../../core/providers/gallery_auth_provider.dart';
 
 /// Gallery API Repository
 /// 
 /// Handles all API calls to the Gallery API (Node.js media service)
+/// Automatically includes Gallery API authentication token in requests
 class GalleryApiRepository {
   final ApiClient _apiClient;
 
   GalleryApiRepository({ApiClient? apiClient})
       : _apiClient = apiClient ?? ApiClient(baseUrl: ApiConfig.galleryApiBaseUrl);
+
+  /// Get request options with Gallery API auth token
+  Future<Options> _getAuthOptions() async {
+    final token = await getGalleryAuthToken();
+    return Options(
+      headers: {
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+  }
 
   // ============================================================================
   // GALLERIES (ALBUMS)
@@ -21,27 +33,35 @@ class GalleryApiRepository {
     int page = 1,
     int limit = 8,
   }) async {
+    final options = await _getAuthOptions();
     final response = await _apiClient.get(
       GalleryApiEndpoints.galleries,
       queryParameters: {
         'page': page,
         'limit': limit,
       },
+      options: options,
     );
     return response.data;
   }
 
   /// Get gallery detail
   Future<Map<String, dynamic>> getGalleryDetail(int id) async {
-    final response = await _apiClient.get(GalleryApiEndpoints.galleryDetail(id));
+    final options = await _getAuthOptions();
+    final response = await _apiClient.get(
+      GalleryApiEndpoints.galleryDetail(id),
+      options: options,
+    );
     return response.data;
   }
 
   /// Create gallery (server-to-server, typically done by Main API)
   Future<Map<String, dynamic>> createGallery(Map<String, dynamic> data) async {
+    final options = await _getAuthOptions();
     final response = await _apiClient.post(
       GalleryApiEndpoints.galleries,
       data: data,
+      options: options,
     );
     return response.data;
   }
@@ -56,12 +76,14 @@ class GalleryApiRepository {
     int page = 1,
     int limit = 50,
   }) async {
+    final options = await _getAuthOptions();
     final response = await _apiClient.get(
       GalleryApiEndpoints.galleryPhotos(galleryId),
       queryParameters: {
         'page': page,
         'limit': limit,
       },
+      options: options,
     );
     return response.data;
   }
@@ -72,6 +94,7 @@ class GalleryApiRepository {
     int page = 1,
     int limit = 20,
   }) async {
+    final options = await _getAuthOptions();
     final response = await _apiClient.get(
       GalleryApiEndpoints.photoSearch,
       queryParameters: {
@@ -79,6 +102,7 @@ class GalleryApiRepository {
         'page': page,
         'limit': limit,
       },
+      options: options,
     );
     return response.data;
   }
@@ -91,9 +115,11 @@ class GalleryApiRepository {
   Future<Map<String, dynamic>> createUploadSession({
     required int galleryId,
   }) async {
+    final options = await _getAuthOptions();
     final response = await _apiClient.post(
       GalleryApiEndpoints.uploadSession,
       data: {'gallery_id': galleryId},
+      options: options,
     );
     return response.data;
   }
@@ -105,6 +131,7 @@ class GalleryApiRepository {
     String? caption,
     ProgressCallback? onProgress,
   }) async {
+    final options = await _getAuthOptions();
     final formData = FormData.fromMap({
       'session_id': sessionId,
       'file': await MultipartFile.fromFile(filePath),
@@ -114,6 +141,7 @@ class GalleryApiRepository {
     final response = await _apiClient.post(
       GalleryApiEndpoints.upload,
       data: formData,
+      options: options,
     );
     return response.data;
   }
@@ -124,11 +152,19 @@ class GalleryApiRepository {
 
   /// Like photo
   Future<void> likePhoto(int photoId) async {
-    await _apiClient.post(GalleryApiEndpoints.photoLike(photoId));
+    final options = await _getAuthOptions();
+    await _apiClient.post(
+      GalleryApiEndpoints.photoLike(photoId),
+      options: options,
+    );
   }
 
   /// Unlike photo
   Future<void> unlikePhoto(int photoId) async {
-    await _apiClient.post(GalleryApiEndpoints.photoUnlike(photoId));
+    final options = await _getAuthOptions();
+    await _apiClient.post(
+      GalleryApiEndpoints.photoUnlike(photoId),
+      options: options,
+    );
   }
 }

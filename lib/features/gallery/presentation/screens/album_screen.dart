@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/album_model.dart';
 import '../../../../data/sample_data/sample_gallery.dart';
+import '../../../../data/repositories/gallery_api_repository.dart';
+import '../../../../core/providers/gallery_auth_provider.dart';
 import '../../../../shared/widgets/widgets.dart';
 
-class AlbumScreen extends StatefulWidget {
+class AlbumScreen extends ConsumerStatefulWidget {
   final String albumId;
 
   const AlbumScreen({super.key, required this.albumId});
 
   @override
-  State<AlbumScreen> createState() => _AlbumScreenState();
+  ConsumerState<AlbumScreen> createState() => _AlbumScreenState();
 }
 
-class _AlbumScreenState extends State<AlbumScreen> {
+class _AlbumScreenState extends ConsumerState<AlbumScreen> {
+  final _galleryRepository = GalleryApiRepository();
   Album? _album;
   List<Photo> _photos = [];
   bool _isLoading = true;
@@ -27,30 +31,129 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Future<void> _loadAlbumPhotos() async {
     setState(() => _isLoading = true);
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      // Parse albumId (can be String from route)
+      final albumIdInt = int.parse(widget.albumId);
+      
+      // Check if Gallery API is authenticated
+      final isGalleryAuth = ref.read(isGalleryAuthenticatedProvider);
+      
+      if (!isGalleryAuth) {
+        print('⚠️ [AlbumScreen] Gallery API not authenticated, using mock data');
+        // Use mock data as fallback
+        final album = SampleGallery.getAlbumById(albumIdInt);
+        final photos = SampleGallery.getPhotosForAlbum(albumIdInt);
+        setState(() {
+          _album = album;
+          _photos = photos;
+          _isLoading = false;
+        });
+        return;
+      }
 
-    // TODO: Replace with actual API call
-    final album = SampleGallery.getAlbumById(widget.albumId);
-    final photos = SampleGallery.getPhotosForAlbum(widget.albumId);
+      print('📸 [AlbumScreen] Fetching album details from API...');
+      
+      // Fetch album details
+      final albumResponse = await _galleryRepository.getGalleryDetail(albumIdInt);
+      final album = Album.fromJson(albumResponse['data'] ?? albumResponse);
+      
+      // Fetch photos
+      final photosResponse = await _galleryRepository.getGalleryPhotos(
+        galleryId: albumIdInt,
+        page: 1,
+        limit: 100,
+      );
+      
+      final List<Photo> photos = [];
+      final data = photosResponse['data'] ?? photosResponse['photos'] ?? photosResponse;
+      
+      if (data is List) {
+        for (var item in data) {
+          try {
+            photos.add(Photo.fromJson(item as Map<String, dynamic>));
+          } catch (e) {
+            print('⚠️ [AlbumScreen] Error parsing photo: $e');
+          }
+        }
+      }
 
-    setState(() {
-      _album = album;
-      _photos = photos;
-      _isLoading = false;
-    });
+      print('✅ [AlbumScreen] Loaded album with ${photos.length} photos');
+      setState(() {
+        _album = album;
+        _photos = photos;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('❌ [AlbumScreen] Error loading album: $e');
+      // Fallback to mock data
+      try {
+        final albumIdInt = int.parse(widget.albumId);
+        final album = SampleGallery.getAlbumById(albumIdInt);
+        final photos = SampleGallery.getPhotosForAlbum(albumIdInt);
+        setState(() {
+          _album = album;
+          _photos = photos;
+          _isLoading = false;
+        });
+      } catch (e2) {
+        setState(() {
+          _album = null;
+          _photos = [];
+          _isLoading = false;
+        });
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load album: Using sample data'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleLike(int index) async {
+    final photo = _photos[index];
+    final wasLiked = photo.isLiked;
+    
+    // Optimistic update
     setState(() {
-      final photo = _photos[index];
       _photos[index] = photo.copyWith(
         isLiked: !photo.isLiked,
         likes: photo.isLiked ? photo.likes - 1 : photo.likes + 1,
       );
     });
 
-    // TODO: Implement actual like API call
+    try {
+      // Check if Gallery API is authenticated
+      final isGalleryAuth = ref.read(isGalleryAuthenticatedProvider);
+      if (!isGalleryAuth) {
+        print('⚠️ [AlbumScreen] Gallery API not authenticated, like action local only');
+        return;
+      }
+
+      // Call like/unlike API
+      if (wasLiked) {
+        await _galleryRepository.unlikePhoto(photo.id);
+        print('✅ [AlbumScreen] Photo ${photo.id} unliked');
+      } else {
+        await _galleryRepository.likePhoto(photo.id);
+        print('✅ [AlbumScreen] Photo ${photo.id} liked');
+      }
+    } catch (e) {
+      print('❌ [AlbumScreen] Error toggling like: $e');
+      // Revert on error
+      setState(() {
+        _photos[index] = photo;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update like status')),
+        );
+      }
+    }
   }
 
   @override

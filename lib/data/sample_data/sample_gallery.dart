@@ -5,7 +5,7 @@ class SampleGallery {
   static List<Album> getAlbums() {
     return [
       Album(
-        id: '1',
+        id: 1,
         title: 'Desert Safari 2024',
         description: 'Amazing desert adventure with the crew',
         coverImageUrl: 'https://picsum.photos/seed/desert1/400/300',
@@ -14,7 +14,7 @@ class SampleGallery {
         createdBy: 'Hani Al-Mansouri',
       ),
       Album(
-        id: '2',
+        id: 2,
         title: 'Empty Quarter Expedition',
         description: '3-day journey through the Empty Quarter',
         coverImageUrl: 'https://picsum.photos/seed/desert2/400/300',
@@ -23,7 +23,7 @@ class SampleGallery {
         createdBy: 'Ahmad Al-Mansoori',
       ),
       Album(
-        id: '3',
+        id: 3,
         title: 'Sunset Dune Bash',
         description: 'Evening fun on the dunes',
         coverImageUrl: 'https://picsum.photos/seed/sunset1/400/300',
@@ -32,7 +32,7 @@ class SampleGallery {
         createdBy: 'Khalid Al-Dhaheri',
       ),
       Album(
-        id: '4',
+        id: 4,
         title: 'Hafeet Mountain Trail',
         description: 'Scenic drive up Jebel Hafeet',
         coverImageUrl: 'https://picsum.photos/seed/mountain1/400/300',
@@ -41,7 +41,7 @@ class SampleGallery {
         createdBy: 'Saif Al-Ketbi',
       ),
       Album(
-        id: '5',
+        id: 5,
         title: 'Night Desert Camp',
         description: 'Camping under the stars',
         coverImageUrl: 'https://picsum.photos/seed/camp1/400/300',
@@ -50,7 +50,7 @@ class SampleGallery {
         createdBy: 'Rashid Al-Blooshi',
       ),
       Album(
-        id: '6',
+        id: 6,
         title: 'Coastal Dunes Adventure',
         description: 'Beach and dunes combination',
         coverImageUrl: 'https://picsum.photos/seed/coast1/400/300',
@@ -61,19 +61,19 @@ class SampleGallery {
     ];
   }
 
-  static Album getAlbumById(String id) {
+  static Album getAlbumById(int id) {
     return getAlbums().firstWhere(
       (album) => album.id == id,
       orElse: () => getAlbums().first,
     );
   }
 
-  static List<Photo> getPhotosForAlbum(String albumId) {
+  static List<Photo> getPhotosForAlbum(int albumId) {
     // Generate sample photos for the album
     return List.generate(
       12,
       (index) => Photo(
-        id: '${albumId}_photo_$index',
+        id: albumId * 100 + index,  // Generate unique int ID
         url: 'https://picsum.photos/seed/photo${albumId}_$index/800/600',
         thumbnailUrl: 'https://picsum.photos/seed/photo${albumId}_$index/200/150',
         caption: 'Amazing moment from the trip #${index + 1}',

@@ -5,6 +5,7 @@ import 'core/config/brand_tokens.dart';
 import 'core/router/app_router.dart';
 import 'shared/theme/app_theme.dart';
 import 'features/trips/presentation/providers/trips_provider.dart';
+import 'core/providers/gallery_auto_auth.dart';
 
 /// Root application widget
 /// 
@@ -30,8 +31,15 @@ class _AD4x4AppState extends ConsumerState<AD4x4App>
     // ✅ Register app lifecycle observer
     WidgetsBinding.instance.addObserver(this);
     
+    // ✅ Initialize Gallery auto-authentication
+    // This watches main auth and auto-syncs Gallery API token
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(galleryAutoAuthProvider);
+    });
+    
     if (kDebugMode) {
       print('🔄 [AppLifecycle] Observer registered');
+      print('📸 [AppLifecycle] Gallery auto-auth initialized');
     }
   }
   
