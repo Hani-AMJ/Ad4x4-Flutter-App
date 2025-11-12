@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// User avatar with fallback to initials
@@ -33,8 +34,18 @@ class UserAvatar extends StatelessWidget {
       radius: radius,
       backgroundColor: colors.primary,
       foregroundColor: colors.onPrimary,
-      backgroundImage: imageUrl != null ? NetworkImage(imageUrl!) : null,
-      child: imageUrl == null
+      backgroundImage: imageUrl != null && imageUrl!.isNotEmpty 
+          ? NetworkImage(imageUrl!) 
+          : null,
+      onBackgroundImageError: imageUrl != null 
+          ? (exception, stackTrace) {
+              // Image failed to load - fallback to initials (handled by child)
+              if (kDebugMode) {
+                debugPrint('Failed to load avatar image: $exception');
+              }
+            }
+          : null,
+      child: imageUrl == null || imageUrl!.isEmpty
           ? Text(
               _getInitials(),
               style: TextStyle(

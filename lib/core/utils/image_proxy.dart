@@ -10,29 +10,15 @@ class ImageProxy {
   
   /// Get image URL for display
   /// 
-  /// Proxies images to work around CORS restrictions on web platform
-  /// Backend serves HTTPS but needs CORS headers configured
+  /// Returns original URL - backend now has CORS headers configured
   static String getProxiedUrl(String? imageUrl) {
     // Return empty string for null/empty URLs
     if (imageUrl == null || imageUrl.isEmpty) {
       return '';
     }
     
-    // On native platforms, return original URL
-    if (!isWeb) {
-      return imageUrl;
-    }
-    
-    // On web, proxy all backend images to avoid CORS issues
-    // This is temporary until backend adds CORS headers
-    if (imageUrl.contains('ap.ad4x4.com') || imageUrl.contains('media.ad4x4.com')) {
-      final uri = Uri.base;
-      final origin = '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
-      final encodedUrl = Uri.encodeComponent(imageUrl);
-      return '$origin/imageproxy?url=$encodedUrl';
-    }
-    
-    // Other URLs (CDN, etc.) return as-is
+    // Backend (ap.ad4x4.com, media.ad4x4.com) now supports CORS
+    // Return original URLs directly - no proxy needed!
     return imageUrl;
   }
   
