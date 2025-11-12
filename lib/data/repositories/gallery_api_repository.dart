@@ -138,10 +138,13 @@ class GalleryApiRepository {
       if (caption != null) 'caption': caption,
     });
 
-    final response = await _apiClient.post(
+    // Use Dio directly for upload progress callback
+    final dio = _apiClient.dio;
+    final response = await dio.post(
       GalleryApiEndpoints.upload,
       data: formData,
       options: options,
+      onSendProgress: onProgress,
     );
     return response.data;
   }
@@ -166,5 +169,54 @@ class GalleryApiRepository {
       GalleryApiEndpoints.photoUnlike(photoId),
       options: options,
     );
+  }
+
+  // ============================================================================
+  // FAVORITES
+  // ============================================================================
+
+  /// Get user's favorite photos
+  Future<Map<String, dynamic>> getFavoritePhotos({
+    int page = 1,
+    int limit = 50,
+  }) async {
+    final options = await _getAuthOptions();
+    final response = await _apiClient.get(
+      '/api/favorites',
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+      },
+      options: options,
+    );
+    return response.data;
+  }
+
+  /// Add photo to favorites
+  Future<void> addToFavorites(int photoId) async {
+    final options = await _getAuthOptions();
+    await _apiClient.post(
+      '/api/favorites/$photoId',
+      options: options,
+    );
+  }
+
+  /// Remove photo from favorites
+  Future<void> removeFromFavorites(int photoId) async {
+    final options = await _getAuthOptions();
+    await _apiClient.delete(
+      '/api/favorites/$photoId',
+      options: options,
+    );
+  }
+
+  /// Check if photo is favorited
+  Future<bool> isFavorited(int photoId) async {
+    final options = await _getAuthOptions();
+    final response = await _apiClient.get(
+      '/api/favorites/$photoId/status',
+      options: options,
+    );
+    return response.data['is_favorited'] as bool? ?? false;
   }
 }

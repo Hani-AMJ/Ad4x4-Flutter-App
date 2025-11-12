@@ -23,9 +23,15 @@ import '../../features/events/presentation/screens/events_list_screen.dart';
 import '../../features/events/presentation/screens/event_details_screen.dart';
 import '../../features/gallery/presentation/screens/gallery_screen.dart';
 import '../../features/gallery/presentation/screens/album_screen.dart';
+import '../../features/gallery/presentation/screens/photo_upload_screen.dart';
+// Full-screen photo viewer is opened with Navigator.push, not GoRouter
+// import '../../features/gallery/presentation/screens/full_screen_photo_viewer.dart';
+import '../../features/gallery/presentation/screens/favorites_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/logbook/presentation/screens/logbook_timeline_screen.dart';
+import '../../features/logbook/presentation/screens/skills_matrix_screen.dart';
+import '../../features/logbook/presentation/screens/trip_history_with_logbook_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/members/presentation/screens/members_list_screen.dart';
 import '../../features/members/presentation/screens/member_details_screen.dart';
@@ -233,6 +239,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return AlbumScreen(albumId: albumId);
         },
       ),
+      GoRoute(
+        path: '/gallery/upload/:galleryId',
+        name: 'upload-photos',
+        builder: (context, state) {
+          final galleryId = int.parse(state.pathParameters['galleryId']!);
+          final galleryTitle = state.uri.queryParameters['galleryTitle'] ?? 'Gallery';
+          return PhotoUploadScreen(
+            galleryId: galleryId,
+            galleryTitle: galleryTitle,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/gallery/favorites',
+        name: 'favorites',
+        builder: (context, state) => const FavoritesScreen(),
+      ),
 
       // Member Routes
       GoRoute(
@@ -266,6 +289,24 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/logbook',
         name: 'logbook',
         builder: (context, state) => const LogbookTimelineScreen(),
+      ),
+      GoRoute(
+        path: '/logbook/skills-matrix',
+        name: 'skills-matrix',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['memberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return SkillsMatrixScreen(memberId: memberId);
+        },
+      ),
+      GoRoute(
+        path: '/logbook/trip-history',
+        name: 'trip-history-logbook',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['memberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return TripHistoryWithLogbookScreen(memberId: memberId);
+        },
       ),
 
       // Vehicle Routes

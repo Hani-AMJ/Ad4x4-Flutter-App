@@ -27,10 +27,15 @@ class _UpcomingTripsCarouselState extends State<UpcomingTripsCarousel> {
 
   Future<void> _loadUpcomingTrips() async {
     try {
+      // Get all upcoming trips (filtering by date)
+      final now = DateTime.now();
+      final startTimeAfter = now.toIso8601String();
+      
       final response = await _repository.getTrips(
-        status: 'approved',
+        startTimeAfter: startTimeAfter,
         page: 1,
         pageSize: 5,
+        ordering: 'startTime', // Earliest first
       );
 
       final List<TripListItem> trips = [];
