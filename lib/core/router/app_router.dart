@@ -29,6 +29,7 @@ import '../../features/gallery/presentation/screens/photo_upload_screen.dart';
 import '../../features/gallery/presentation/screens/favorites_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/logbook/presentation/screens/logbook_home_screen.dart';
 import '../../features/logbook/presentation/screens/logbook_timeline_screen.dart';
 import '../../features/logbook/presentation/screens/skills_matrix_screen.dart';
 import '../../features/logbook/presentation/screens/trip_history_with_logbook_screen.dart';
@@ -288,6 +289,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/logbook',
         name: 'logbook',
+        builder: (context, state) => const LogbookHomeScreen(),
+      ),
+      GoRoute(
+        path: '/logbook/entries',
+        name: 'logbook-entries',
         builder: (context, state) => const LogbookTimelineScreen(),
       ),
       GoRoute(

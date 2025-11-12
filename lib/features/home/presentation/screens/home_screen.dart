@@ -151,20 +151,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 16),
               const UpcomingTripsCarousel(),
               const SizedBox(height: 24),
-
-              // Logbook Link
-              Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: colors.primary.withValues(alpha: 0.2),
-                    child: Icon(Icons.edit_note, color: colors.primary),
-                  ),
-                  title: const Text('My Logbook'),
-                  subtitle: const Text('View your trip sign-offs and progress'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push('/logbook'),
-                ),
-              ),
             ],
           ),
         ),
@@ -181,9 +167,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               context.push('/trips');
               break;
             case 2:
-              context.push('/gallery');
+              context.push('/logbook');
               break;
             case 3:
+              context.push('/gallery');
+              break;
+            case 4:
               context.push('/profile');
               break;
           }
@@ -198,6 +187,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
             label: 'Trips',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.book_outlined),
+            selectedIcon: Icon(Icons.book),
+            label: 'Logbook',
           ),
           NavigationDestination(
             icon: Icon(Icons.photo_library_outlined),
