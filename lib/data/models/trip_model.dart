@@ -1,5 +1,6 @@
 import 'user_model.dart';
 import 'meeting_point_model.dart' as mp;
+import '../../core/utils/status_helpers.dart';
 
 /// BasicMember - Simplified member data used in trip responses
 /// 
@@ -250,6 +251,8 @@ class Trip {
   final List<TripRegistration> registered;
   final List<TripWaitlist> waitlist;
   final List<String> requirements;
+  final bool isRegistered;  // Read-only: User registration status from API
+  final bool isWaitlisted;  // Read-only: User waitlist status from API
 
   Trip({
     required this.id,
@@ -275,6 +278,8 @@ class Trip {
     this.registered = const [],
     this.waitlist = const [],
     this.requirements = const [],
+    this.isRegistered = false,
+    this.isWaitlisted = false,
   });
 
   // Computed properties for backward compatibility
@@ -284,10 +289,11 @@ class Trip {
   String get difficulty => level.name;
   
   // Status based on dates and approval
+  // ✅ FIXED: Use status helpers to correctly check backend codes (A, P, D)
   String get status {
     final now = DateTime.now();
-    if (approvalStatus == 'declined') return 'cancelled';
-    if (approvalStatus == 'pending') return 'pending';
+    if (isDeclined(approvalStatus)) return 'cancelled';
+    if (isPending(approvalStatus)) return 'pending';
     if (now.isBefore(startTime)) return 'upcoming';
     if (now.isAfter(endTime)) return 'completed';
     return 'ongoing';
@@ -359,6 +365,8 @@ class Trip {
               ?.map((e) => e as String)
               .toList() ??
           [],
+      isRegistered: json['is_registered'] as bool? ?? json['isRegistered'] as bool? ?? false,
+      isWaitlisted: json['is_waitlisted'] as bool? ?? json['isWaitlisted'] as bool? ?? false,
     );
   }
 
@@ -387,6 +395,8 @@ class Trip {
       'registered': registered.map((r) => r.toJson()).toList(),
       'waitlist': waitlist.map((w) => w.toJson()).toList(),
       'requirements': requirements,
+      'is_registered': isRegistered,
+      'is_waitlisted': isWaitlisted,
     };
   }
 
@@ -414,6 +424,8 @@ class Trip {
     List<TripRegistration>? registered,
     List<TripWaitlist>? waitlist,
     List<String>? requirements,
+    bool? isRegistered,
+    bool? isWaitlisted,
   }) {
     return Trip(
       id: id ?? this.id,
@@ -439,6 +451,8 @@ class Trip {
       registered: registered ?? this.registered,
       waitlist: waitlist ?? this.waitlist,
       requirements: requirements ?? this.requirements,
+      isRegistered: isRegistered ?? this.isRegistered,
+      isWaitlisted: isWaitlisted ?? this.isWaitlisted,
     );
   }
 }
@@ -462,7 +476,8 @@ class TripListItem {
   final String approvalStatus;
   final bool allowWaitlist;
   final DateTime created;
-  final bool isRegistered;  // User registration status
+  final bool isRegistered;  // Read-only: User registration status from API
+  final bool isWaitlisted;  // Read-only: User waitlist status from API
 
   TripListItem({
     required this.id,
@@ -483,6 +498,7 @@ class TripListItem {
     this.allowWaitlist = true,
     required this.created,
     this.isRegistered = false,
+    this.isWaitlisted = false,
   });
 
   // Computed properties
@@ -492,10 +508,11 @@ class TripListItem {
   String get difficulty => level.name;
   bool get isFull => registeredCount >= capacity;
   
+  // ✅ FIXED: Use status helpers to correctly check backend codes (A, P, D)
   String get status {
     final now = DateTime.now();
-    if (approvalStatus == 'declined') return 'cancelled';
-    if (approvalStatus == 'pending') return 'pending';
+    if (isDeclined(approvalStatus)) return 'cancelled';
+    if (isPending(approvalStatus)) return 'pending';
     if (now.isBefore(startTime)) return 'upcoming';
     if (now.isAfter(endTime)) return 'completed';
     return 'ongoing';
@@ -533,6 +550,7 @@ class TripListItem {
       allowWaitlist: json['allow_waitlist'] as bool? ?? json['allowWaitlist'] as bool? ?? true,
       created: DateTime.parse(createdStr),
       isRegistered: json['is_registered'] as bool? ?? json['isRegistered'] as bool? ?? false,
+      isWaitlisted: json['is_waitlisted'] as bool? ?? json['isWaitlisted'] as bool? ?? false,
     );
   }
 
@@ -555,6 +573,8 @@ class TripListItem {
       'approval_status': approvalStatus,
       'allow_waitlist': allowWaitlist,
       'created': created.toIso8601String(),
+      'is_registered': isRegistered,
+      'is_waitlisted': isWaitlisted,
     };
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/main_api_repository.dart';
 import '../../data/repositories/gallery_api_repository.dart';
 import '../network/api_client.dart';
+import '../services/image_upload_service.dart';
 import '../config/api_config.dart';
 
 /// Main API Client Provider
@@ -24,4 +25,10 @@ final mainApiRepositoryProvider = Provider<MainApiRepository>((ref) {
 final galleryApiRepositoryProvider = Provider<GalleryApiRepository>((ref) {
   final apiClient = ref.watch(galleryApiClientProvider);
   return GalleryApiRepository(apiClient: apiClient);
+});
+
+/// Image Upload Service Provider
+final imageUploadServiceProvider = Provider<ImageUploadService>((ref) {
+  final apiClient = ref.watch(mainApiClientProvider);
+  return ImageUploadService(apiClient.dio);
 });

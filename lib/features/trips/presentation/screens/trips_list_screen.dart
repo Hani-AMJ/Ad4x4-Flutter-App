@@ -8,6 +8,7 @@ import '../../../../data/models/trip_filters.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../../../shared/widgets/error/error_state_widget.dart';
 import '../providers/trips_provider.dart';
+import '../widgets/trips_map_view.dart';
 
 class TripsListScreen extends ConsumerStatefulWidget {
   const TripsListScreen({super.key});
@@ -23,7 +24,15 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
+    
+    // Listen to tab changes to update map view
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        // Trigger rebuild when tab changes
+        setState(() {});
+      }
+    });
     
     // Load trips on first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -53,7 +62,11 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
     // Watch trips state
     final tripsState = ref.watch(tripsProvider);
     final authState = ref.watch(authProviderV2);
-    final currentUserId = authState.user?.id ?? 0;
+    final currentUser = authState.user;
+    final currentUserId = currentUser?.id ?? 0;
+    
+    // Check if user can create trips
+    final canCreateTrip = currentUser?.hasPermission('create_trip') ?? false;
     
     // Get filtered trips for each tab
     final allTrips = tripsState.allTrips;
@@ -73,6 +86,20 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          // Create Trip button (only show if user has permission)
+          if (canCreateTrip)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                onPressed: () => context.push('/trips/create'),
+                icon: const Icon(Icons.add_circle),
+                iconSize: 32,
+                color: colors.primary,
+                tooltip: 'Create Trip',
+              ),
+            ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(100), // Adjust based on filters bar height
           child: Column(
@@ -137,30 +164,6 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
                       ],
                     ),
                   ),
-                  Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Past Trips'),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colors.primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${tripsState.totalCount}',  // Show total count from API
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: colors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ],
@@ -185,19 +188,12 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
                             children: [
                               _buildTripsList(upcomingTrips, tripsState.filters, showLoadMore: false, showJoinedBadge: false),
                               _buildTripsList(myTrips, tripsState.filters, showLoadMore: false, showJoinedBadge: true),
-                              _buildTripsList(allTrips, tripsState.filters, showLoadMore: true, showJoinedBadge: false),
                             ],
                           ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/trips/create'),
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
-        icon: const Icon(Icons.add),
-        label: const Text('Create Trip'),
-      ),
+      // Removed floatingActionButton - now in app bar
     );
   }
 
@@ -266,7 +262,7 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
           }
 
           final trip = trips[index];
-          // Use trip.isRegistered field from API (backend provides this)
+          // Use trip.isRegistered and trip.isWaitlisted fields from API (backend provides these)
           // Fallback: Check if user is the trip lead
           final authState = ref.watch(authProviderV2);
           final currentUserId = authState.user?.id ?? 0;
@@ -279,10 +275,12 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
               date: DateFormat('EEE, MMM d, y').format(trip.startTime),
               location: trip.location,
               difficulty: trip.level.name,
+              levelNumeric: trip.level.numericLevel, // ✅ Pass numeric level for icon/color mapping
               participants: trip.registeredCount,
               maxParticipants: trip.capacity,
               imageUrl: trip.imageUrl,
               isJoined: isJoined,
+              isWaitlisted: trip.isWaitlisted,
               onTap: () => context.push('/trips/${trip.id}'),
             ),
           );
@@ -296,9 +294,6 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
     List<TripListItem> upcomingTrips,
     List<TripListItem> myTrips,
   ) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
     // Get all trips based on current tab
     List<TripListItem> displayTrips;
     switch (_tabController.index) {
@@ -308,156 +303,19 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
       case 1:
         displayTrips = myTrips;
         break;
-      case 2:
-        displayTrips = allTrips;
-        break;
       default:
         displayTrips = upcomingTrips;
     }
 
-    return Stack(
-      children: [
-        // Map placeholder
-        Container(
-          color: colors.surfaceContainerHighest,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.map,
-                  size: 80,
-                  color: colors.primary.withValues(alpha: 0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Map View',
-                  style: TextStyle(
-                    color: colors.onSurface,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Interactive map with ${displayTrips.length} trip${displayTrips.length != 1 ? 's' : ''}',
-                  style: TextStyle(
-                    color: colors.onSurface.withValues(alpha: 0.6),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.symmetric(horizontal: 32),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: colors.primary.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.construction,
-                        color: colors.primary,
-                        size: 32,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Map Integration Coming Soon',
-                        style: TextStyle(
-                          color: colors.onSurface,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'We\'ll show trip meeting points on an interactive map with clustering and custom markers.',
-                        style: TextStyle(
-                          color: colors.onSurface.withValues(alpha: 0.6),
-                          fontSize: 13,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Trip list overlay at bottom
-        if (displayTrips.isNotEmpty)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 180,
-              decoration: BoxDecoration(
-                color: colors.surface,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Handle bar
-                  Center(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 12),
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: colors.onSurface.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  // Trips list
-                  Expanded(
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: displayTrips.length,
-                      itemBuilder: (context, index) {
-                        final trip = displayTrips[index];
-                        return Container(
-                          width: 280,
-                          margin: const EdgeInsets.only(right: 16),
-                          child: TripCard(
-                            title: trip.title,
-                            date: DateFormat('MMM d').format(trip.startTime),
-                            location: trip.location,
-                            difficulty: trip.level.name,
-                            participants: trip.registeredCount,
-                            maxParticipants: trip.capacity,
-                            imageUrl: trip.imageUrl,
-                            isJoined: trip.isRegistered,
-                            onTap: () => context.push('/trips/${trip.id}'),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
+    // Use the new TripsMapView widget with exit button
+    return TripsMapView(
+      trips: displayTrips,
+      onClose: () {
+        // Switch back to list view
+        ref.read(tripsProvider.notifier).updateFilters(
+          ref.read(tripsProvider).filters.copyWith(view: TripViewMode.list),
+        );
+      },
     );
   }
 }

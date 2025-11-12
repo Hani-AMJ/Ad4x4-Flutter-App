@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/providers/auth_provider_v2.dart'; // V2 - Clean implementation
+import '../../../../core/providers/auth_provider_v2.dart';
+import 'package:flutter/foundation.dart'; // V2 - Clean implementation
 import '../../../../shared/widgets/widgets.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -188,6 +189,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // TODO: Show privacy policy
               },
             ),
+
+            // Debug section (development only)
+            if (kDebugMode || kIsWeb) ...[
+              const Divider(height: 32),
+              _SectionHeader(title: 'Debug'),
+              _SettingsTile(
+                icon: Icons.bug_report,
+                title: 'Permission Debug',
+                subtitle: 'Check your admin permissions',
+                onTap: () => context.push('/debug/permissions'),
+              ),
+              _SettingsTile(
+                icon: Icons.code,
+                title: 'Auth Debug',
+                subtitle: 'View authentication details',
+                onTap: () => context.push('/debug/auth'),
+              ),
+            ],
 
             const SizedBox(height: 32),
 

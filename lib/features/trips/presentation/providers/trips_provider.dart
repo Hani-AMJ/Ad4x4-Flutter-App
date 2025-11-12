@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../data/models/trip_filters.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 
 /// Trips State - Manages trips data and loading state
+/// 
+/// ✅ PHASE 3: Enhanced with lastRefreshTime for smart refresh
 class TripsState {
   final List<TripListItem> trips;          // Currently loaded trips
   final int totalCount;                     // Total trips in database
@@ -16,6 +19,7 @@ class TripsState {
   final String? errorMessage;
   final TripFilters filters;
   final Set<int> registeredTripIds;         // Trip IDs where user is registered
+  final DateTime? lastRefreshTime;          // ✅ PHASE 3: Track last refresh time
 
   const TripsState({
     this.trips = const [],
@@ -27,7 +31,15 @@ class TripsState {
     this.errorMessage,
     this.filters = const TripFilters(),
     this.registeredTripIds = const {},
+    this.lastRefreshTime,
   });
+
+  /// ✅ PHASE 3: Check if data is stale (older than 5 minutes)
+  bool get isStale {
+    if (lastRefreshTime == null) return true;
+    final age = DateTime.now().difference(lastRefreshTime!);
+    return age.inMinutes >= 5;
+  }
 
   TripsState copyWith({
     List<TripListItem>? trips,
@@ -39,6 +51,7 @@ class TripsState {
     String? errorMessage,
     TripFilters? filters,
     Set<int>? registeredTripIds,
+    DateTime? lastRefreshTime,  // ✅ PHASE 3: Add lastRefreshTime
   }) {
     return TripsState(
       trips: trips ?? this.trips,
@@ -50,20 +63,21 @@ class TripsState {
       errorMessage: errorMessage,
       filters: filters ?? this.filters,
       registeredTripIds: registeredTripIds ?? this.registeredTripIds,
+      lastRefreshTime: lastRefreshTime ?? this.lastRefreshTime,  // ✅ PHASE 3
     );
   }
 
   // Filter trips by status
   List<TripListItem> get allTrips {
-    // API returns data pre-sorted (newest first via -start_time ordering)
+    // API returns upcoming trips only (filtered by startTimeAfter in loadTrips)
+    // Sorted by start_time based on filters.ordering
     return trips;
   }
   
   List<TripListItem> get upcomingTrips {
-    final now = DateTime.now();
-    // Get trips that haven't started yet (future trips)
-    final upcoming = trips.where((trip) => trip.startTime.isAfter(now)).toList();
-    // Sort by start time (soonest first for upcoming - ascending order)
+    // API already filters for upcoming trips via startTimeAfter parameter
+    // Just need to sort by start time (soonest first)
+    final upcoming = List<TripListItem>.from(trips);
     upcoming.sort((a, b) => a.startTime.compareTo(b.startTime));
     return upcoming;
   }
@@ -71,13 +85,16 @@ class TripsState {
   List<TripListItem> getMyTrips(int userId) {
     if (userId == 0) return []; // Not logged in
     
+    final now = DateTime.now();
     final myTrips = trips.where((trip) {
-      // Show trips where user is the lead
-      // TODO: When backend adds 'is_registered' flag, also include registered trips
-      return trip.lead.id == userId;
+      // ✅ Show trips where user is registered OR waitlisted OR is the lead
+      // ✅ Only show UPCOMING trips (future trips only)
+      return (trip.isRegistered || trip.isWaitlisted || trip.lead.id == userId) && 
+             trip.startTime.isAfter(now);
     }).toList();
     
-    // API returns pre-sorted (newest first), no need to re-sort
+    // Sort by start time ascending (soonest first for My Trips)
+    myTrips.sort((a, b) => a.startTime.compareTo(b.startTime));
     return myTrips;
   }
 }
@@ -89,27 +106,31 @@ class TripsNotifier extends StateNotifier<TripsState> {
   TripsNotifier(this._ref) : super(const TripsState());
 
   /// Load user's registered trip IDs
-  /// WORKAROUND: Since API doesn't provide is_registered field in trips list,
-  /// we check trips where user is the lead (guaranteed to show badge)
-  /// TODO: Backend should add is_registered field to trips list API response
+  /// ✅ DEPRECATED: No longer needed - API now provides isRegistered field directly
+  /// Kept for backward compatibility but returns empty set
   Future<Set<int>> _loadRegisteredTripIds() async {
     try {
       final authState = _ref.read(authProviderV2);
       final userId = authState.user?.id;
       
       if (userId == null) {
-        print('⚠️  [TripsProvider] No user ID - skipping registered trips fetch');
+        if (kDebugMode) {
+          print('⚠️  [TripsProvider] No user ID - user not authenticated');
+        }
         return {};
       }
       
-      print('🔄 [TripsProvider] Using lead-based registration detection for user $userId');
-      print('⚠️  [TripsProvider] LIMITATION: Only trips where user is lead will show "Joined" badge');
-      print('💡 [TripsProvider] Backend needs to add is_registered field to trips list API');
+      if (kDebugMode) {
+        print('✅ [TripsProvider] Using API-provided isRegistered field for user $userId');
+        print('   No need to fetch registered trip IDs separately');
+      }
       
-      // Return empty set - we'll check lead status directly in the trip data
+      // Return empty set - isRegistered field is now provided by API
       return {};
     } catch (e) {
-      print('❌ [TripsProvider] Error: $e');
+      if (kDebugMode) {
+        print('❌ [TripsProvider] Error: $e');
+      }
       return {};
     }
   }
@@ -131,19 +152,25 @@ class TripsNotifier extends StateNotifier<TripsState> {
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
       
-      print('🔄 [TripsProvider] Loading first page of trips (50 items)...');
+      print('🔄 [TripsProvider] Loading upcoming trips (pageSize: 200)...');
       
       // Load registered trip IDs in parallel
       final registeredIdsFuture = _loadRegisteredTripIds();
       
+      // ✅ For upcoming/my trips, fetch from now onwards with larger pageSize
+      // to ensure all user's registered trips are included
+      final now = DateTime.now();
+      final startTimeFilter = updatedFilters.startDate?.toIso8601String() ?? 
+                             now.toIso8601String(); // Default to now for upcoming trips
+      
       final response = await repository.getTrips(
-        startTimeAfter: updatedFilters.startDate?.toIso8601String(),
+        startTimeAfter: startTimeFilter,
         startTimeBefore: updatedFilters.endDate?.toIso8601String(),
         ordering: updatedFilters.ordering,
         levelId: updatedFilters.levelId,
         meetingPointArea: updatedFilters.area,
         page: 1,
-        pageSize: 50, // Initial load: 50 trips for fast display
+        pageSize: 200, // ✅ Increased from 50 to 200 to capture more user trips
       );
 
       // Get total count
@@ -183,7 +210,6 @@ class TripsNotifier extends StateNotifier<TripsState> {
       }
       
       // Debug: Check upcoming trips count in loaded data
-      final now = DateTime.now();
       final upcomingCount = loadedTrips.where((trip) => trip.startTime.isAfter(now)).length;
       print('   📅 Upcoming trips in loaded data: $upcomingCount');
       print('   ✅ Registered trips: ${registeredIds.length}');
@@ -195,6 +221,7 @@ class TripsNotifier extends StateNotifier<TripsState> {
         hasMore: hasNext,
         isLoading: false,
         registeredTripIds: registeredIds,
+        lastRefreshTime: DateTime.now(),  // ✅ PHASE 3: Track refresh time
       );
     } catch (e, stackTrace) {
       print('❌ [TripsProvider] Error loading trips: $e');
@@ -279,15 +306,41 @@ class TripsNotifier extends StateNotifier<TripsState> {
   Future<void> updateFilters(TripFilters filters) async {
     print('🔄 [TripsProvider] Updating filters:');
     print('   Date Range: ${filters.dateRange}');
-    print('   Status: ${filters.status}');
     print('   Start Date: ${filters.startDate}');
     print('   End Date: ${filters.endDate}');
+    print('   Level: ${filters.levelId}');
+    print('   Area: ${filters.area}');
     await loadTrips(filters: filters);
   }
 
   /// Refresh trips (reload with current filters)
   Future<void> refresh() async {
     await loadTrips();
+  }
+
+  /// Remove a trip from cached list (when 404 encountered)
+  /// 
+  /// ✅ PHASE 2: Smart cache invalidation
+  /// Called when a trip is found to be deleted (404 error)
+  void removeTripFromCache(int tripId) {
+    final updatedTrips = state.trips.where((t) => t.id != tripId).toList();
+    final removedCount = state.trips.length - updatedTrips.length;
+    
+    if (removedCount > 0) {
+      state = state.copyWith(
+        trips: updatedTrips,
+        totalCount: state.totalCount - removedCount,
+      );
+      
+      if (kDebugMode) {
+        print('🗑️ [TripsProvider] Removed deleted trip $tripId from cache');
+        print('   Trips count: ${state.trips.length} → ${updatedTrips.length}');
+      }
+    } else {
+      if (kDebugMode) {
+        print('⚠️ [TripsProvider] Trip $tripId not found in cache to remove');
+      }
+    }
   }
 }
 
@@ -306,6 +359,8 @@ final tripsAutoLoadProvider = Provider<void>((ref) {
 
 /// Single Trip Detail Provider
 /// Fetches full trip details including registered members and waitlist
+/// 
+/// ✅ Enhanced: Preserves ApiException with status code for better error handling
 final tripDetailProvider = FutureProvider.autoDispose.family<Trip, int>((ref, tripId) async {
   final repository = ref.watch(mainApiRepositoryProvider);
   
@@ -313,7 +368,15 @@ final tripDetailProvider = FutureProvider.autoDispose.family<Trip, int>((ref, tr
     final response = await repository.getTripDetail(tripId);
     return Trip.fromJson(response);
   } catch (e) {
-    throw Exception('Failed to load trip details: $e');
+    // ✅ Preserve original ApiException with status code information
+    if (e is ApiException) {
+      rethrow;  // Keep status code for 404 detection
+    }
+    // Wrap other exceptions
+    throw ApiException(
+      message: 'Failed to load trip details: $e',
+      statusCode: 0,
+    );
   }
 });
 
@@ -324,6 +387,8 @@ class TripActionsNotifier extends StateNotifier<AsyncValue<void>> {
   TripActionsNotifier(this._ref) : super(const AsyncValue.data(null));
 
   /// Register for a trip
+  /// 
+  /// ✅ PHASE 2: Enhanced with 404 detection and cache cleanup
   Future<void> register(int tripId, {int? vehicleCapacity}) async {
     state = const AsyncValue.loading();
     
@@ -336,11 +401,22 @@ class TripActionsNotifier extends StateNotifier<AsyncValue<void>> {
       
       state = const AsyncValue.data(null);
     } catch (e, stack) {
+      // ✅ Check if trip was deleted (404 error)
+      if (e is ApiException && e.isNotFound) {
+        if (kDebugMode) {
+          print('🗑️ [TripActions] Trip $tripId not found (404) - removing from cache');
+        }
+        // Remove from cache
+        _ref.read(tripsProvider.notifier).removeTripFromCache(tripId);
+      }
+      
       state = AsyncValue.error(e, stack);
     }
   }
 
   /// Unregister from a trip
+  /// 
+  /// ✅ PHASE 2: Enhanced with 404 detection and cache cleanup
   Future<void> unregister(int tripId) async {
     state = const AsyncValue.loading();
     
@@ -353,11 +429,22 @@ class TripActionsNotifier extends StateNotifier<AsyncValue<void>> {
       
       state = const AsyncValue.data(null);
     } catch (e, stack) {
+      // ✅ Check if trip was deleted (404 error)
+      if (e is ApiException && e.isNotFound) {
+        if (kDebugMode) {
+          print('🗑️ [TripActions] Trip $tripId not found (404) - removing from cache');
+        }
+        // Remove from cache
+        _ref.read(tripsProvider.notifier).removeTripFromCache(tripId);
+      }
+      
       state = AsyncValue.error(e, stack);
     }
   }
 
   /// Join waitlist
+  /// 
+  /// ✅ PHASE 2: Enhanced with 404 detection and cache cleanup
   Future<void> joinWaitlist(int tripId) async {
     state = const AsyncValue.loading();
     
@@ -370,6 +457,15 @@ class TripActionsNotifier extends StateNotifier<AsyncValue<void>> {
       
       state = const AsyncValue.data(null);
     } catch (e, stack) {
+      // ✅ Check if trip was deleted (404 error)
+      if (e is ApiException && e.isNotFound) {
+        if (kDebugMode) {
+          print('🗑️ [TripActions] Trip $tripId not found (404) - removing from cache');
+        }
+        // Remove from cache
+        _ref.read(tripsProvider.notifier).removeTripFromCache(tripId);
+      }
+      
       state = AsyncValue.error(e, stack);
     }
   }

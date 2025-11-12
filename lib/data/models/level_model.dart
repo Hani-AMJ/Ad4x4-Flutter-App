@@ -20,9 +20,9 @@ class Level {
 
   factory Level.fromJson(Map<String, dynamic> json) {
     return Level(
-      id: json['id'] as int,
+      id: json['id'] is int ? json['id'] as int : int.parse(json['id'].toString()),
       name: json['name'] as String? ?? 'Unknown',
-      numericLevel: json['numericLevel'] as int? ?? 0,
+      numericLevel: json['numeric_level'] as int? ?? json['numericLevel'] as int? ?? 0,
       active: json['active'] as bool? ?? true,
       description: json['description'] as String?,
       modifications: json['modifications'] as String?,

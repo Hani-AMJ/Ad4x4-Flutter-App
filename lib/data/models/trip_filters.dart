@@ -6,83 +6,82 @@ import 'package:flutter/material.dart';
 class TripFilters {
   final TripViewMode view;
   final TripDateRange dateRange;
-  final TripStatus status;
+  // Status filter removed - redundant without Past Trips tab
   final int? levelId;
   final String? area;
-  final DateTime? customStartDate;
-  final DateTime? customEndDate;
   final String ordering;
 
   const TripFilters({
     this.view = TripViewMode.list,
-    this.dateRange = TripDateRange.all,  // Changed from thisWeek to all
-    this.status = TripStatus.all,        // Changed from upcoming to all
+    this.dateRange = TripDateRange.all,
     this.levelId,
     this.area,
-    this.customStartDate,
-    this.customEndDate,
-    this.ordering = '-start_time',  // Descending order (newest first) directly from API
+    this.ordering = 'start_time',  // ✅ Ascending order (soonest first) for upcoming trips
   });
 
   TripFilters copyWith({
     TripViewMode? view,
     TripDateRange? dateRange,
-    TripStatus? status,
     int? levelId,
     String? area,
-    DateTime? customStartDate,
-    DateTime? customEndDate,
     String? ordering,
   }) {
     return TripFilters(
       view: view ?? this.view,
       dateRange: dateRange ?? this.dateRange,
-      status: status ?? this.status,
       levelId: levelId ?? this.levelId,
       area: area ?? this.area,
-      customStartDate: customStartDate ?? this.customStartDate,
-      customEndDate: customEndDate ?? this.customEndDate,
       ordering: ordering ?? this.ordering,
     );
   }
 
-  /// Get start date based on filter
+  /// Get start date based on filter (calendar week logic: Monday to Sunday)
   DateTime? get startDate {
-    if (dateRange == TripDateRange.custom && customStartDate != null) {
-      return customStartDate;
-    }
-
     final now = DateTime.now();
+    
     switch (dateRange) {
       case TripDateRange.thisWeek:
-        return now;
+        // Start of this week (Monday)
+        final daysFromMonday = (now.weekday - DateTime.monday) % 7;
+        return now.subtract(Duration(days: daysFromMonday)).copyWith(
+          hour: 0, minute: 0, second: 0, millisecond: 0,
+        );
+        
       case TripDateRange.nextWeek:
-        return now.add(const Duration(days: 7));
-      case TripDateRange.thisMonth:
-        return now;
-      case TripDateRange.custom:
-        return customStartDate;
+        // Start of next week (Monday)
+        final daysFromMonday = (now.weekday - DateTime.monday) % 7;
+        final thisMonday = now.subtract(Duration(days: daysFromMonday));
+        return thisMonday.add(const Duration(days: 7)).copyWith(
+          hour: 0, minute: 0, second: 0, millisecond: 0,
+        );
+        
       case TripDateRange.all:
         return null;
     }
   }
 
-  /// Get end date based on filter
+  /// Get end date based on filter (calendar week logic: Monday to Sunday)
   DateTime? get endDate {
-    if (dateRange == TripDateRange.custom && customEndDate != null) {
-      return customEndDate;
-    }
-
     final now = DateTime.now();
+    
     switch (dateRange) {
       case TripDateRange.thisWeek:
-        return now.add(const Duration(days: 7));
+        // End of this week (Sunday 23:59:59)
+        final daysFromMonday = (now.weekday - DateTime.monday) % 7;
+        final thisMonday = now.subtract(Duration(days: daysFromMonday));
+        return thisMonday.add(const Duration(days: 6)).copyWith(
+          hour: 23, minute: 59, second: 59, millisecond: 999,
+        );
+        
       case TripDateRange.nextWeek:
-        return now.add(const Duration(days: 14));
-      case TripDateRange.thisMonth:
-        return DateTime(now.year, now.month + 1, 0);
-      case TripDateRange.custom:
-        return customEndDate;
+        // End of next week (Sunday 23:59:59)
+        final daysFromMonday = (now.weekday - DateTime.monday) % 7;
+        final thisMonday = now.subtract(Duration(days: daysFromMonday));
+        final nextMonday = thisMonday.add(const Duration(days: 7));
+        return nextMonday.add(const Duration(days: 6)).copyWith(
+          hour: 23, minute: 59, second: 59, millisecond: 999,
+        );
+        
       case TripDateRange.all:
         return null;
     }
@@ -92,17 +91,15 @@ class TripFilters {
   bool get isDefault {
     return view == TripViewMode.list &&
         dateRange == TripDateRange.all &&
-        status == TripStatus.all &&
         levelId == null &&
         area == null &&
-        ordering == '-start_time';
+        ordering == 'start_time';
   }
 
   /// Get active filter count
   int get activeFilterCount {
     int count = 0;
     if (dateRange != TripDateRange.all) count++;
-    if (status != TripStatus.all) count++;
     if (levelId != null) count++;
     if (area != null) count++;
     return count;
@@ -112,11 +109,8 @@ class TripFilters {
     return {
       'view': view.name,
       'dateRange': dateRange.name,
-      'status': status.name,
       'levelId': levelId,
       'area': area,
-      'customStartDate': customStartDate?.toIso8601String(),
-      'customEndDate': customEndDate?.toIso8601String(),
       'ordering': ordering,
     };
   }
@@ -130,17 +124,16 @@ enum TripViewMode {
 enum TripDateRange {
   thisWeek,
   nextWeek,
-  thisMonth,
-  custom,
   all,
 }
 
-enum TripStatus {
-  upcoming,
-  ongoing,
-  completed,
-  all,
-}
+// Status filter removed - redundant without Past Trips tab
+// enum TripStatus {
+//   upcoming,
+//   ongoing,
+//   completed,
+//   all,
+// }
 
 extension TripViewModeExtension on TripViewMode {
   String get displayName {
@@ -169,27 +162,10 @@ extension TripDateRangeExtension on TripDateRange {
         return 'This Week';
       case TripDateRange.nextWeek:
         return 'Next Week';
-      case TripDateRange.thisMonth:
-        return 'This Month';
-      case TripDateRange.custom:
-        return 'Custom Range';
       case TripDateRange.all:
-        return 'All Time';
-    }
-  }
-}
-
-extension TripStatusExtension on TripStatus {
-  String get displayName {
-    switch (this) {
-      case TripStatus.upcoming:
-        return 'Upcoming';
-      case TripStatus.ongoing:
-        return 'Ongoing';
-      case TripStatus.completed:
-        return 'Completed';
-      case TripStatus.all:
         return 'All';
     }
   }
 }
+
+// Status extension removed - redundant without Past Trips tab

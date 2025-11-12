@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../providers/trips_provider.dart';
 import '../../../../core/utils/text_utils.dart';
 import '../../../../core/utils/image_proxy.dart';
+import '../../../../core/utils/status_helpers.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../shared/widgets/admin/trip_admin_ribbon.dart';
 
@@ -186,7 +188,11 @@ class TripDetailsScreen extends ConsumerWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _buildLevelBadge(trip.level.displayName ?? trip.level.name, colors),
+                          _buildLevelBadge(
+                            trip.level.displayName ?? trip.level.name,
+                            trip.level.numericLevel, // ✅ Pass numeric level for icon/color mapping
+                            colors,
+                          ),
                           _buildStatusBadge(_getStatusText(trip), colors),
                         ],
                       ),
@@ -255,6 +261,84 @@ class TripDetailsScreen extends ConsumerWidget {
         error: (error, stack) {
           print('❌ Trip details error: $error');
           print('Stack trace: $stack');
+          
+          // ✅ PHASE 1: Enhanced error handling with 404 detection
+          // Check if this is a 404 error (trip deleted or not found)
+          final apiException = error is ApiException ? error : null;
+          final is404 = apiException?.isNotFound ?? 
+                        error.toString().contains('404') ||
+                        error.toString().toLowerCase().contains('not found');
+          
+          if (is404) {
+            // ✅ PHASE 2: Remove deleted trip from cache
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              try {
+                ref.read(tripsProvider.notifier).removeTripFromCache(
+                  int.parse(tripId),
+                );
+              } catch (e) {
+                print('⚠️ Failed to remove trip from cache: $e');
+              }
+            });
+            
+            // ✅ Show trip deleted/not available message
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                      size: 80,
+                      color: colors.onSurface.withValues(alpha: 0.4),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Trip No Longer Available',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'This trip has been deleted or is no longer accessible.',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.7),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'It may have been cancelled by the organizer or removed by an administrator.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.5),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // ✅ Auto-navigate back to trips list
+                        context.go('/trips');
+                      },
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text('Back to Trips'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          // ✅ Other errors - show retry option with enhanced messaging
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -270,10 +354,20 @@ class TripDetailsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    error.toString(),
+                    apiException?.userFriendlyMessage ?? error.toString(),
                     style: theme.textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
+                  if (apiException?.actionGuidance != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      apiException!.actionGuidance,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.6),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () => Navigator.pop(context),
@@ -295,23 +389,76 @@ class TripDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLevelBadge(String level, ColorScheme colors) {
+  // ✅ Get icon and color based on level numeric - exact match to trip card and filter
+  ({IconData icon, Color color}) _getLevelIconAndColor(int? levelNumeric, String levelName) {
+    // If levelNumeric provided, use exact mapping
+    if (levelNumeric != null) {
+      if (levelNumeric == 1) {
+        return (icon: Icons.event, color: const Color(0xFF8E44AD)); // Club Event - Purple
+      } else if (levelNumeric == 2) {
+        return (icon: Icons.school, color: const Color(0xFF27AE60)); // ANIT - Dark Green
+      } else if (levelNumeric == 3) {
+        return (icon: Icons.school, color: const Color(0xFF2ECC71)); // Newbie - Light Green
+      } else if (levelNumeric == 4) {
+        return (icon: Icons.trending_up, color: const Color(0xFF3498DB)); // Intermediate - Blue
+      } else if (levelNumeric == 5) {
+        return (icon: Icons.speed, color: const Color(0xFFE67E22)); // Advanced - Orange
+      } else if (levelNumeric == 6) {
+        return (icon: Icons.star, color: const Color(0xFFF39C12)); // Expert - Golden Yellow
+      } else if (levelNumeric == 7) {
+        return (icon: Icons.explore, color: const Color(0xFFE74C3C)); // Explorer - Red
+      } else if (levelNumeric == 8) {
+        return (icon: Icons.shield, color: const Color(0xFFF39C12)); // Marshal - Golden Yellow
+      } else if (levelNumeric == 9) {
+        return (icon: Icons.workspace_premium, color: const Color(0xFF34495E)); // Board Member - Dark Blue
+      }
+    }
+    
+    // Fallback to name-based matching for backward compatibility
+    final name = levelName.toLowerCase();
+    if (name.contains('club event')) {
+      return (icon: Icons.event, color: const Color(0xFF8E44AD));
+    } else if (name.contains('anit')) {
+      return (icon: Icons.school, color: const Color(0xFF27AE60));
+    } else if (name.contains('newbie')) {
+      return (icon: Icons.school, color: const Color(0xFF2ECC71));
+    } else if (name.contains('intermediate')) {
+      return (icon: Icons.trending_up, color: const Color(0xFF3498DB));
+    } else if (name.contains('advanc')) {  // Matches both "advance" and "advanced"
+      return (icon: Icons.speed, color: const Color(0xFFE67E22));
+    } else if (name.contains('expert')) {
+      return (icon: Icons.star, color: const Color(0xFFF39C12));
+    } else if (name.contains('explorer')) {
+      return (icon: Icons.explore, color: const Color(0xFFE74C3C));
+    } else if (name.contains('marshal')) {
+      return (icon: Icons.shield, color: const Color(0xFFF39C12));
+    } else if (name.contains('board')) {
+      return (icon: Icons.workspace_premium, color: const Color(0xFF34495E));
+    }
+    
+    // Default fallback
+    return (icon: Icons.terrain, color: const Color(0xFF64B5F6));
+  }
+
+  Widget _buildLevelBadge(String level, int? levelNumeric, ColorScheme colors) {
+    final levelData = _getLevelIconAndColor(levelNumeric, level);
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.2),
+        color: levelData.color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.primary),
+        border: Border.all(color: levelData.color),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.trending_up, size: 16, color: colors.primary),
+          Icon(levelData.icon, size: 16, color: levelData.color),
           const SizedBox(width: 4),
           Text(
             level,
             style: TextStyle(
-              color: colors.primary,
+              color: levelData.color,
               fontWeight: FontWeight.bold,
               fontSize: 13,
             ),
@@ -409,12 +556,13 @@ class TripDetailsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Section Header
               Row(
                 children: [
-                  Icon(Icons.person, color: colors.primary),
+                  Icon(Icons.groups, color: colors.primary),
                   const SizedBox(width: 8),
                   const Text(
-                    'Trip Organizer',
+                    'Trip Leadership',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -423,6 +571,8 @@ class TripDetailsScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 12),
+              
+              // Trip Lead
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
@@ -437,13 +587,36 @@ class TripDetailsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                title: Text(
-                  trip.lead.displayName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        trip.lead.displayName,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green, width: 1),
+                      ),
+                      child: const Text(
+                        'TRIP LEAD',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 4),
                     if (trip.lead.level != null)
                       Text('Level: ${trip.lead.level}${trip.lead.tripCount != null ? ' • ${trip.lead.tripCount} trips' : ''}'),
                     if (trip.lead.carBrand != null && trip.lead.carModel != null)
@@ -457,6 +630,84 @@ class TripDetailsScreen extends ConsumerWidget {
                       )
                     : null,
               ),
+              
+              // Deputy Marshals (if any)
+              if (trip.deputyLeads != null && (trip.deputyLeads as List).isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  child: Text(
+                    'Deputy Marshals (${(trip.deputyLeads as List).length})',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: colors.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+                ...(trip.deputyLeads as List).map((deputy) => Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue.withValues(alpha: 0.2),
+                          child: Text(
+                            deputy.firstName?.isNotEmpty == true
+                                ? deputy.firstName![0].toUpperCase()
+                                : deputy.username[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                deputy.displayName,
+                                style: const TextStyle(fontWeight: FontWeight.w500),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.blue, width: 1),
+                              ),
+                              child: const Text(
+                                'DEPUTY',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            if (deputy.level != null)
+                              Text('Level: ${deputy.level}${deputy.tripCount != null ? ' • ${deputy.tripCount} trips' : ''}'),
+                            if (deputy.carBrand != null && deputy.carModel != null)
+                              Text('Vehicle: ${deputy.carBrand} ${deputy.carModel}'),
+                          ],
+                        ),
+                        trailing: deputy.phone != null
+                            ? IconButton(
+                                icon: const Icon(Icons.phone),
+                                onPressed: () => _launchPhone(deputy.phone!),
+                              )
+                            : null,
+                      ),
+                    )),
+              ],
             ],
           ),
         ),
@@ -769,9 +1020,10 @@ class TripDetailsScreen extends ConsumerWidget {
     final authState = ref.watch(authProviderV2);
     final currentUserId = authState.user?.id ?? 0;
 
-    // Check user registration status
-    final isRegistered = trip.registered.any((reg) => reg.member.id == currentUserId);
-    final isOnWaitlist = trip.waitlist.any((wait) => wait.member.id == currentUserId);
+    // ✅ Use API-provided fields (server-side calculation)
+    // This eliminates the need to iterate through registered/waitlist arrays
+    final isRegistered = trip.isRegistered ?? false;
+    final isOnWaitlist = trip.isWaitlisted ?? false;
     final isFull = trip.registeredCount >= trip.capacity;
     final hasWaitlist = trip.allowWaitlist;
 
@@ -855,8 +1107,8 @@ class TripDetailsScreen extends ConsumerWidget {
   }
 
   String _getRegistrationLabel(bool isRegistered, bool isOnWaitlist, bool isFull, bool hasWaitlist) {
-    if (isRegistered) return 'Unregister';
-    if (isOnWaitlist) return 'Leave Waitlist';
+    if (isRegistered) return 'Registered';  // Show status, clicking will unregister
+    if (isOnWaitlist) return 'Waitlisted';  // Show status, clicking will leave waitlist
     if (isFull && hasWaitlist) return 'Join Waitlist';
     if (isFull) return 'Trip Full';
     return 'Register';
@@ -1049,9 +1301,9 @@ class TripDetailsScreen extends ConsumerWidget {
     if (trip.deputyLeads.any((deputy) => deputy.id == currentUser.id)) return true;
     
     // Check if user has board/admin permissions
-    // Permission actions: 'approve_trips', 'manage_trips', 'view_all_trips'
-    if (currentUser.hasPermission('approve_trips') || 
-        currentUser.hasPermission('manage_trips')) {
+    // Permission actions: 'approve_trip', 'edit_trips'
+    if (currentUser.hasPermission('approve_trip') || 
+        currentUser.hasPermission('edit_trips')) {
       return true;
     }
     
@@ -1059,13 +1311,17 @@ class TripDetailsScreen extends ConsumerWidget {
   }
 
   /// Convert string approval status to enum
+  /// Convert backend approval status code to enum
+  /// ✅ FIXED: Backend returns "A", "P", "D" (single letters), not full words
   TripApprovalStatus _getTripApprovalStatus(String status) {
-    switch (status.toLowerCase()) {
-      case 'approved':
+    // Use status helper to correctly parse backend codes
+    final parsed = parseApprovalStatus(status);
+    switch (parsed) {
+      case ApprovalStatus.approved:
         return TripApprovalStatus.approved;
-      case 'declined':
+      case ApprovalStatus.declined:
         return TripApprovalStatus.declined;
-      default:
+      case ApprovalStatus.pending:
         return TripApprovalStatus.pending;
     }
   }

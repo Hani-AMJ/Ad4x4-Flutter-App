@@ -236,15 +236,47 @@ class ApiClient {
   Dio get dio => _dio;
 }
 
-/// Custom API Exception
+/// Custom API Exception with enhanced error handling
+/// 
+/// Provides helper methods for common HTTP status codes and user-friendly messages
 class ApiException implements Exception {
   final String message;
   final int statusCode;
+  final dynamic data;
 
   ApiException({
     required this.message,
     required this.statusCode,
+    this.data,
   });
+
+  /// Helper methods for common status codes
+  bool get isNotFound => statusCode == 404;
+  bool get isForbidden => statusCode == 403;
+  bool get isUnauthorized => statusCode == 401;
+  bool get isBadRequest => statusCode == 400;
+  bool get isServerError => statusCode >= 500;
+  bool get isClientError => statusCode >= 400 && statusCode < 500;
+
+  /// User-friendly error messages based on status code
+  String get userFriendlyMessage {
+    if (isNotFound) return 'This content is no longer available';
+    if (isForbidden) return 'You don\'t have permission to access this';
+    if (isUnauthorized) return 'Please log in again';
+    if (isBadRequest) return 'Invalid request';
+    if (isServerError) return 'Server error, please try again later';
+    return message;
+  }
+
+  /// Action guidance for users based on error type
+  String get actionGuidance {
+    if (isNotFound) return 'The content may have been deleted or is no longer accessible.';
+    if (isForbidden) return 'Contact an administrator if you believe this is an error.';
+    if (isUnauthorized) return 'Your session has expired. Please log in again.';
+    if (isBadRequest) return 'Please check your input and try again.';
+    if (isServerError) return 'Our servers are experiencing issues. Please try again in a few moments.';
+    return 'Please try again or contact support if the problem persists.';
+  }
 
   @override
   String toString() => message;

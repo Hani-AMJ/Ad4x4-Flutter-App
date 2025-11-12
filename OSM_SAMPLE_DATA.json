@@ -1,0 +1,45 @@
+{
+  "place_id": 40300131,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "way",
+  "osm_id": 101518589,
+  "lat": "24.1732514",
+  "lon": "55.7355864",
+  "class": "tourism",
+  "type": "zoo",
+  "place_rank": 30,
+  "importance": 0.28179444113349733,
+  "addresstype": "tourism",
+  "name": "Al Ain Zoo",
+  "display_name": "Al Ain Zoo, Al Ruqiy Street, Falaj Hazza', Al Ain, Abu Dhabi Emirate, United Arab Emirates",
+  "address": {
+    "tourism": "Al Ain Zoo",
+    "road": "Al Ruqiy Street",
+    "city": "Falaj Hazza'",
+    "county": "Al Ain",
+    "state": "Abu Dhabi Emirate",
+    "ISO3166-2-lvl4": "AE-AZ",
+    "country": "United Arab Emirates",
+    "country_code": "ae"
+  },
+  "extratags": {
+    "barrier": "fence",
+    "wikidata": "Q3845012",
+    "wikipedia": "ar:حديقة حيوانات العين",
+    "wikipedia:ar": "حديقة حيوانات العين",
+    "wikipedia:en": "Al Ain Zoo",
+    "wikimedia_commons": "Category:Al Ain Zoo"
+  },
+  "namedetails": {
+    "name": "حديقة العين للحيوانات",
+    "name:ar": "حديقة العين للحيوانات",
+    "name:en": "Al Ain Zoo",
+    "name:fa": "باغ‌وحش العین"
+  },
+  "boundingbox": [
+    "24.1618400",
+    "24.1847240",
+    "55.7224331",
+    "55.7450970"
+  ]
+}

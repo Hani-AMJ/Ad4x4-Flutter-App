@@ -15,8 +15,16 @@ class MainApiEndpoints {
   static const String registerAPNS = '/api/device/apns/';
 
   // Trips endpoints
-  static const String trips = '/api/trips/';
-  static String tripDetail(int id) => '/api/trips/$id/';
+  // ⚠️ CRITICAL: Django API has different trailing slash rules for different operations!
+  // - POST /api/trips (create) - NO trailing slash
+  // - GET /api/trips/ (list) - HAS trailing slash
+  // - PUT /api/trips/{id} (update) - NO trailing slash
+  // - GET /api/trips/{id}/ (detail) - HAS trailing slash
+  static const String tripsList = '/api/trips/';  // For GET (list trips)
+  static const String tripsCreate = '/api/trips';  // For POST (create trip)
+  static String tripDetail(int id) => '/api/trips/$id/';  // For GET (trip details)
+  static String tripUpdate(int id) => '/api/trips/$id';  // For PUT/PATCH (update trip)
+  static String tripDelete(int id) => '/api/trips/$id';  // For DELETE
   static String tripRegister(int id) => '/api/trips/$id/register';
   static String tripUnregister(int id) => '/api/trips/$id/unregister';
   static String tripWaitlist(int id) => '/api/trips/$id/waitlist';
@@ -40,7 +48,7 @@ class MainApiEndpoints {
   static const String createTripRequest = '/api/triprequests';
 
   // Meeting points
-  static const String meetingPoints = '/api/meetingpoints';
+  static const String meetingPoints = '/api/meetingpoints/';  // ✅ FIXED: Added trailing slash per API docs
 
   // Levels
   static const String levels = '/api/levels/';
@@ -56,6 +64,7 @@ class MainApiEndpoints {
   static const String logbookEntries = '/api/logbookentries/';
   static const String logbookSkills = '/api/logbookskills/';
   static const String logbookSkillReferences = '/api/logbookskillreferences';
+  static String createTripLogbookEntry(int tripId) => '/api/trips/$tripId/logbook-entries';
 
   // Club news
   static const String clubNews = '/api/clubnews/';
@@ -71,4 +80,14 @@ class MainApiEndpoints {
 
   // Search (future unified endpoint)
   static const String search = '/api/search';
+
+  // Upgrade requests
+  // ✅ FIXED: Corrected to match API docs - no hyphen in "upgraderequests"
+  static const String upgradeRequests = '/api/upgraderequests/';
+  static String upgradeRequestDetail(int id) => '/api/upgraderequests/$id/';
+  static String upgradeRequestVote(int id) => '/api/upgraderequests/$id/vote';
+  static String upgradeRequestApprove(int id) => '/api/upgraderequests/$id/approve';
+  static String upgradeRequestDecline(int id) => '/api/upgraderequests/$id/decline';
+  static String upgradeRequestComments(int id) => '/api/upgraderequests/$id/comments';
+  static String upgradeRequestCommentDelete(int commentId) => '/api/upgraderequestcomments/$commentId/';
 }

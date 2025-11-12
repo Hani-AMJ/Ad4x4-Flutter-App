@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/auth_provider_v2.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final authState = ref.watch(authProviderV2);
+    final user = authState.user;
+
+    // Check if user has admin permissions
+    // Allow access for Admins, Board Members, and Marshals
+    final hasAdminAccess = user != null && _hasAnyAdminPermission(user);
 
     return Scaffold(
       appBar: AppBar(
@@ -30,6 +38,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          // Admin Panel button (only visible to admins)
+          if (hasAdminAccess)
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings),
+              tooltip: 'Admin Panel',
+              onPressed: () => context.push('/admin'),
+            ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () => context.push('/notifications'),
@@ -108,6 +123,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: const Color(0xFFE91E63),
                     onTap: () => context.push('/trip-requests'),
                   ),
+                  // Admin Panel card (only visible to admins)
+                  if (hasAdminAccess)
+                    _QuickActionCard(
+                      icon: Icons.admin_panel_settings,
+                      title: 'Admin Panel',
+                      color: const Color(0xFF9C27B0),
+                      onTap: () => context.push('/admin'),
+                    ),
                 ],
               ),
               const SizedBox(height: 32),
@@ -190,6 +213,38 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  /// Check if user has any admin/marshal/board permissions
+  bool _hasAnyAdminPermission(dynamic user) {
+    final adminPermissions = [
+      // Trip management
+      'create_trip',
+      'create_trip_with_approval',
+      'edit_trips',
+      'delete_trips',
+      'approve_trip',
+      'edit_trip_registrations',
+      
+      // Member management
+      'view_members',
+      'edit_membership_payments',
+      
+      // Meeting points (FIXED: use plural forms)
+      'create_meeting_points',
+      'edit_meeting_points',
+      'delete_meeting_points',
+      
+      // Marshal panel (NEW: added marshal access)
+      'access_marshal_panel',
+      'create_logbook_entries',
+      'sign_logbook_skills',
+      
+      // Upgrade requests
+      'view_upgrade_req',
+      'approve_upgrade_req',
+    ];
+    return adminPermissions.any((permission) => user.hasPermission(permission));
   }
 }
 

@@ -33,8 +33,32 @@ import '../../features/vehicles/presentation/screens/add_vehicle_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/search/presentation/screens/global_search_screen.dart';
 import '../../features/debug/auth_debug_screen.dart';
-
-import 'dart:developer' as developer;
+import '../../features/debug/permission_debug_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_home_screen.dart';
+import '../../features/admin/presentation/screens/admin_trips_pending_screen.dart';
+import '../../features/admin/presentation/screens/admin_trips_all_screen.dart';
+import '../../features/admin/presentation/screens/admin_trips_wizard_screen.dart';
+import '../../features/admin/presentation/screens/admin_trip_edit_screen.dart';
+import '../../features/admin/presentation/screens/admin_trip_registrants_screen.dart';
+import '../../features/admin/presentation/screens/admin_members_list_screen.dart';
+import '../../features/admin/presentation/screens/admin_member_details_screen.dart';
+import '../../features/admin/presentation/screens/admin_member_edit_screen.dart';
+import '../../features/admin/presentation/screens/admin_meeting_points_screen.dart';
+import '../../features/admin/presentation/screens/admin_meeting_point_form_screen.dart';
+import '../../features/admin/presentation/screens/admin_upgrade_requests_screen.dart';
+import '../../features/admin/presentation/screens/admin_upgrade_request_details_screen.dart';
+import '../../features/admin/presentation/screens/admin_create_upgrade_request_screen.dart';
+import '../../features/admin/presentation/screens/admin_logbook_entries_screen.dart';
+import '../../features/admin/presentation/screens/admin_create_logbook_entry_screen.dart';
+import '../../features/admin/presentation/screens/admin_sign_off_skills_screen.dart';
+import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart';
+// Phase 3B - Enhanced Trip Management Screens
+import '../../features/admin/presentation/screens/admin_trip_media_screen.dart';
+import '../../features/admin/presentation/screens/admin_comments_moderation_screen.dart';
+import '../../features/admin/presentation/screens/admin_registration_analytics_screen.dart';
+import '../../features/admin/presentation/screens/admin_bulk_registrations_screen.dart';
+import '../../features/admin/presentation/screens/admin_waitlist_management_screen.dart';
 
 /// 🔄 V2: Clean Riverpod-based Router with Simplified Auth Guards
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -134,8 +158,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/trips/:id/edit',
         name: 'edit-trip',
         builder: (context, state) {
-          final tripId = state.pathParameters['id']!;
-          return CreateTripScreen(tripId: tripId);
+          final tripId = int.parse(state.pathParameters['id']!);
+          return AdminTripEditScreen(tripId: tripId);
         },
       ),
       GoRoute(
@@ -245,6 +269,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'auth-debug',
         builder: (context, state) => const AuthDebugScreen(),
       ),
+      GoRoute(
+        path: '/debug/permissions',
+        name: 'permission-debug',
+        builder: (context, state) => const PermissionDebugScreen(),
+      ),
 
       // Notifications
       GoRoute(
@@ -258,6 +287,239 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/search',
         name: 'search',
         builder: (context, state) => const GlobalSearchScreen(),
+      ),
+
+      // Admin Routes (Permission-gated)
+      ShellRoute(
+        builder: (context, state, child) {
+          // Admin shell - wraps all admin routes with dashboard layout
+          return AdminDashboardScreen(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: '/admin',
+            name: 'admin',
+            redirect: (context, state) {
+              // Redirect /admin to /admin/dashboard (default admin page)
+              return '/admin/dashboard';
+            },
+          ),
+          GoRoute(
+            path: '/admin/dashboard',
+            name: 'admin-dashboard',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminDashboardHomeScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/trips/pending',
+            name: 'admin-trips-pending',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminTripsPendingScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/trips/all',
+            name: 'admin-trips-all',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminTripsAllScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/trips/wizard',
+            name: 'admin-trips-wizard',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminTripsWizardScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/trips/:id/registrants',
+            name: 'admin-trip-registrants',
+            pageBuilder: (context, state) {
+              final tripId = int.parse(state.pathParameters['id']!);
+              return NoTransitionPage(
+                child: AdminTripRegistrantsScreen(tripId: tripId),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/members',
+            name: 'admin-members',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminMembersListScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/members/:id',
+            name: 'admin-member-details',
+            pageBuilder: (context, state) {
+              final memberId = int.parse(state.pathParameters['id']!);
+              return NoTransitionPage(
+                child: AdminMemberDetailsScreen(memberId: memberId),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/members/:id/edit',
+            name: 'admin-member-edit',
+            pageBuilder: (context, state) {
+              final memberId = int.parse(state.pathParameters['id']!);
+              return NoTransitionPage(
+                child: AdminMemberEditScreen(memberId: memberId),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/meeting-points',
+            name: 'admin-meeting-points',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminMeetingPointsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/meeting-points/create',
+            name: 'admin-meeting-point-create',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminMeetingPointFormScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/meeting-points/:id/edit',
+            name: 'admin-meeting-point-edit',
+            pageBuilder: (context, state) {
+              final id = int.parse(state.pathParameters['id']!);
+              return NoTransitionPage(
+                child: AdminMeetingPointFormScreen(meetingPointId: id),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/upgrade-requests',
+            name: 'admin-upgrade-requests',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminUpgradeRequestsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/upgrade-requests/create',
+            name: 'admin-upgrade-request-create',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminCreateUpgradeRequestScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/upgrade-requests/:id',
+            name: 'admin-upgrade-request-details',
+            pageBuilder: (context, state) {
+              final requestId = state.pathParameters['id']!;
+              return NoTransitionPage(
+                child: AdminUpgradeRequestDetailsScreen(requestId: requestId),
+              );
+            },
+          ),
+          // Marshal Panel Routes
+          GoRoute(
+            path: '/admin/logbook/entries',
+            name: 'admin-logbook-entries',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminLogbookEntriesScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/create',
+            name: 'admin-create-logbook-entry',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminCreateLogbookEntryScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/sign-off',
+            name: 'admin-sign-off-skills',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminSignOffSkillsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/trip-reports',
+            name: 'admin-trip-reports',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminTripReportsScreen(),
+              );
+            },
+          ),
+          // Phase 3B - Content Moderation Routes
+          GoRoute(
+            path: '/admin/trip-media',
+            name: 'admin-trip-media',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminTripMediaScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/comments-moderation',
+            name: 'admin-comments-moderation',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminCommentsModerationScreen(),
+              );
+            },
+          ),
+          // Phase 3B - Advanced Registration Management Routes
+          GoRoute(
+            path: '/admin/registration-analytics',
+            name: 'admin-registration-analytics',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminRegistrationAnalyticsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/bulk-registrations',
+            name: 'admin-bulk-registrations',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminBulkRegistrationsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/waitlist-management',
+            name: 'admin-waitlist-management',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminWaitlistManagementScreen(),
+              );
+            },
+          ),
+        ],
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

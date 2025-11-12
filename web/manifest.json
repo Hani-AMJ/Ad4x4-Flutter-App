@@ -1,11 +1,11 @@
 {
-    "name": "ad4x4_mobile",
-    "short_name": "ad4x4_mobile",
+    "name": "AD4x4 Mobile - Abu Dhabi Off-Road Club",
+    "short_name": "AD4x4",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#1a1a1a",
+    "theme_color": "#FF8C00",
+    "description": "Official mobile app for Abu Dhabi Off-Road Club (AD4x4). Manage trips, connect with members, and explore the desert.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -47,7 +47,11 @@ class UserModel {
       email: json['email'] as String? ?? '',
       firstName: json['first_name'] as String? ?? json['firstName'] as String? ?? '',
       lastName: json['last_name'] as String? ?? json['lastName'] as String? ?? '',
-      level: json['level'] != null ? UserLevel.fromJson(json['level'] as Map<String, dynamic>) : null,
+      level: json['level'] != null 
+          ? (json['level'] is Map<String, dynamic> 
+              ? UserLevel.fromJson(json['level'] as Map<String, dynamic>)
+              : null) // If level is a String, ignore it for now
+          : null,
       permissions: (json['permissions'] as List<dynamic>?)
               ?.map((p) => Permission.fromJson(p as Map<String, dynamic>))
               .toList() ??
