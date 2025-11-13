@@ -6,6 +6,7 @@ import '../../../../data/models/album_model.dart';
 import '../../../../data/sample_data/sample_gallery.dart';
 import '../../../../data/repositories/gallery_api_repository.dart';
 import '../../../../core/providers/gallery_auth_provider.dart';
+import '../../../../core/config/api_config.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 class GalleryScreen extends ConsumerStatefulWidget {
@@ -67,7 +68,9 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
       }
     } catch (e) {
       print('❌ [GalleryScreen] Error loading albums: $e');
-      print('   Response type: ${e.runtimeType}');
+      print('   Error type: ${e.runtimeType}');
+      print('   Gallery API: ${ApiConfig.galleryApiBaseUrl}');
+      print('   Endpoint: /api/galleries?page=1&limit=20');
       
       // Fallback to mock data on error
       final albums = SampleGallery.getAlbums();
@@ -79,8 +82,9 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Could not load galleries from server. Showing sample data.'),
+            content: const Text('📸 Gallery server unavailable\n🎨 Showing sample galleries'),
             backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: 'Retry',
               textColor: Colors.white,
