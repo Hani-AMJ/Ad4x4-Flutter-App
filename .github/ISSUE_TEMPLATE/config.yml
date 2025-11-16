@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Backend Integration Guide
+    url: https://github.com/YOUR_USERNAME/ad4x4-mobile/blob/main/BACKEND_INTEGRATION.md
+    about: Complete guide for backend team integration
+  - name: 📖 Project Documentation
+    url: https://github.com/YOUR_USERNAME/ad4x4-mobile/blob/main/README.md
+    about: Full project documentation and architecture

@@ -1,334 +1,399 @@
 # AD4x4 Mobile App
 
-Abu Dhabi Off-Road Club official mobile application built with Flutter.
+> ⚠️ **WORK IN PROGRESS** - This project is under active development. Not all features are fully tested and some are still being refined.
 
-## 🎯 Project Status
-
-**Current Implementation:** Phases 1-2 Complete, Phases 3-4 Partial
-
-**✅ Production Ready:**
-- Authentication system with JWT
-- User profiles and settings
-- Trip list and detail views
-- Trip chat functionality
-- Permission-based access control ✅ **FIXED Nov 11, 2025** (see CORRECT_PERMISSIONS_REFERENCE.md)
-
-**🔄 In Progress:**
-- Phase 3-4: Additional features (gallery, events, logbook)
-- Admin tool integration (marshal features)
-
-**📚 Important Documentation:**
-- **CORRECT_PERMISSIONS_REFERENCE.md** - Official permission names reference (CRITICAL for development)
-- **PERMISSION_FIX_SUMMARY.md** - History of permission name mismatch fix
-- **ADMIN_MENU_PERMISSIONS_AUDIT.md** - Complete admin panel permission audit
+**Abu Dhabi Off-Road Club** official mobile application built with Flutter.
 
 ---
 
-## 📖 Development Timeline (Chronological)
+## 📊 Project Overview
 
-### Phase 1: Foundation & Core Infrastructure ✅ **95% COMPLETE**
+**Technology Stack:**
+- Flutter 3.35.4 (Dart 3.9.2)
+- State Management: Riverpod 2.5.1
+- Routing: GoRouter 13.2.0
+- API Client: Dio 5.4.0 + Retrofit
+- Local Storage: Hive 2.2.3 + SharedPreferences 2.2.2
 
-**Completed Components:**
-- ✅ Project setup (Flutter 3.35.4, Dart 3.9.2, Java 17.0.2)
-- ✅ Brand identity system (`brand_tokens.json`, dynamic theming with Material Design 3)
-- ✅ Network layer (Dio HTTP client with interceptors for auth/errors)
-- ✅ API client architecture (Main API + Gallery API separation)
-- ✅ Routing system (GoRouter with authentication guards and redirects)
-- ✅ Local storage (Hive + SharedPreferences for tokens and cache)
-- ✅ Shared component library (15 widgets: buttons, cards, inputs, states)
-- ✅ Error handling framework (error states, loading indicators, empty states)
-
-**File Evidence:**
-- `/lib/core/config/brand_tokens.dart` - Brand configuration
-- `/lib/core/network/api_client.dart` (251 lines) - HTTP client
-- `/lib/core/router/app_router.dart` - Routing with auth guards
-- `/lib/core/storage/local_storage.dart` - Hive initialization
-- `/lib/shared/widgets/` - 15 reusable components
-
-**Missing:** Centralized app constants file (minor)
+**Codebase:**
+- **214 Dart files** | **78,110 lines of code**
+- **71 screens** across 15 feature modules
+- **35 data models** with JSON serialization
+- **58 admin panel components**
 
 ---
 
-### Phase 2: Authentication & User Profile ✅ **100% COMPLETE**
+## 🎯 Implementation Status
 
-**Completed Components:**
-- ✅ Login screen with real API integration (`/api/auth/login/`)
-- ✅ Registration screen with validation
-- ✅ Forgot password screen with reset flow
-- ✅ JWT authentication with bearer tokens
-- ✅ Token storage in local storage (SharedPreferences)
-- ✅ Session persistence (auto-login on app restart)
-- ✅ User profile screen displaying real API data
-- ✅ Edit profile screen with API updates
-- ✅ Settings screen with logout functionality
-- ✅ Router authentication guards (protected routes)
+### ✅ **Fully Implemented Features**
 
-**File Evidence:**
-- `/lib/features/auth/presentation/screens/login_screen.dart` (7708 bytes)
-- `/lib/features/auth/presentation/screens/register_screen.dart` (8562 bytes)
-- `/lib/features/auth/presentation/screens/forgot_password_screen.dart` (6433 bytes)
-- `/lib/features/profile/presentation/screens/profile_screen.dart` - Real user data
-- `/lib/core/providers/auth_provider_v2.dart` - Riverpod authentication state
+#### 1. **Authentication & Authorization**
+- Login with JWT bearer tokens
+- User registration with validation
+- Password reset flow
+- Session persistence with auto-login
+- Permission-based access control (string-based, not level IDs)
+- Profile management (view, edit)
 
-**API Integration:**
-- POST `/api/auth/login/` - User authentication
-- GET `/api/auth/profile/` - User profile data
-- POST `/api/auth/change-password/` - Password updates
-- POST `/api/auth/send-reset-password-link/` - Password reset
-
-**Notes:**
-- Splash screen not implemented (router initializes at `/login`)
-- Session automatically restored on app refresh
-- Permission system fully integrated (string-based, not level IDs)
+**Files:** `lib/features/auth/` (3 screens)
 
 ---
 
-### Phase 3: Home Screen & Dashboard ⚠️ **80% COMPLETE**
+#### 2. **Trip Management System**
+- Trip discovery and listing with filters
+- Detailed trip views with rich media
+- Trip registration (join, waitlist, check-in/out)
+- Trip creation wizard with step-by-step flow
+- Trip editing and updates
+- Trip comments/chat functionality
+- Trip export (CSV, Excel, PDF)
+- Trip area filtering and search
 
-**Completed Components:**
-- ✅ Home screen layout with app bar and navigation
-- ✅ Welcome section with club branding
-- ✅ Quick actions grid (5 action cards: Trips, Events, Gallery, Members, Trip Requests)
-- ✅ Recent activity feed (static examples)
-- ✅ Bottom navigation bar (Home, Trips, Gallery, Profile)
+**Files:** `lib/features/trips/` (6 screens, 14 files)
 
-**File Evidence:**
-- `/lib/features/home/presentation/screens/home_screen.dart` (8162 bytes)
-
-**Missing from Master Plan:**
-- ❌ Upcoming trips carousel (dynamic data from API)
-- ❌ Member upgrade progress widget (level progression tracking)
-- ❌ Gallery spotlight widget (featured photos)
-
-**Notes:**
-- Current home screen uses simplified layout
-- Activity feed shows static examples, not real data
-- Quick actions navigate to feature screens
+**API Integration:** ✅ Complete
+- List, create, update, delete trips
+- Registration management
+- Approval workflows
+- Check-in/checkout system
+- Comments/chat
 
 ---
 
-### Phase 4: Trips Discovery & Management ⚠️ **60% COMPLETE**
+#### 3. **Digital Logbook System**
+- Logbook timeline view
+- Skills matrix tracking
+- Trip history with logbook context
+- Logbook entry details
+- Member upgrade request system
+- Create and manage upgrade requests
 
-**Completed Components:**
-- ✅ Trip list screen with real API integration (`/api/trips/`)
-- ✅ Trip filters bar (difficulty levels, dates, status)
-- ✅ Trip detail screen with rich UI (images, description, participants)
-- ✅ Trip chat screen with real-time comments (`/api/trips/{id}/comments`)
-- ✅ Trip registration actions (join, waitlist) - API integrated
-- ✅ Trip requests screen (member trip creation requests)
-- ✅ Manage registrants screen (marshal admin tool)
-- ⚠️ Trip admin ribbon (UI exists, needs full integration)
+**Files:** `lib/features/logbook/` (7 screens)
 
-**File Evidence:**
-- `/lib/features/trips/presentation/screens/trips_list_screen.dart` (17391 bytes)
-- `/lib/features/trips/presentation/screens/trip_details_screen.dart` (43988 bytes)
-- `/lib/features/trips/presentation/screens/trip_chat_screen.dart` (24333 bytes)
-- `/lib/features/trips/presentation/screens/trip_requests_screen.dart` (30510 bytes)
-- `/lib/features/trips/presentation/screens/manage_registrants_screen.dart` (12930 bytes)
-- `/lib/shared/widgets/admin/trip_admin_ribbon.dart` - Admin controls
+**API Integration:** ✅ Complete
+- Logbook entries, skills, references
+- Member skill tracking
+- Trip history and counts
 
-**Not Implemented:**
-- ❌ Trip creation screen (placeholder only - 20 lines)
-- ❌ Trip editing functionality
+---
 
-**API Integration (Working):**
-- GET `/api/trips/` - List trips with filters
+#### 4. **Admin Panel & Marshal Tools**
+Comprehensive administrative dashboard with 29 screens covering:
+
+**Trip Administration:**
+- All trips management
+- Pending trip approvals
+- Trip search and filtering
+- Registrant management
+- Waitlist management
+- Bulk registrations
+- Registration analytics
+
+**Member Management:**
+- Member list and search
+- Member profile editing
+- Member details and history
+
+**Logbook Administration:**
+- Logbook entries management
+- Skills sign-off interface
+- Create logbook entries for members
+- Upgrade request review and approval
+
+**Content Management:**
+- Trip reports moderation
+- Comments moderation
+- Feedback management
+- Meeting points management
+
+**Trip Request System:**
+- Member trip request reviews
+- Trip creation wizard
+- Trip request analytics
+
+**Files:** `lib/features/admin/` (29 screens, 58 files total)
+
+---
+
+#### 5. **Gallery System**
+- Photo gallery discover view
+- Album browsing
+- Photo search
+- Trip-based photo albums
+- Photo upload (admin)
+
+**Files:** `lib/features/gallery/` (5 screens)
+
+**API Integration:** ✅ Gallery API connected
+
+---
+
+#### 6. **Member Directory**
+- Member list and search
+- Member profile views
+- Member statistics
+
+**Files:** `lib/features/members/` (2 screens)
+
+---
+
+#### 7. **Events & Activities**
+- Event calendar
+- Event details and registration
+- Event participation tracking
+
+**Files:** `lib/features/events/` (2 screens)
+
+---
+
+#### 8. **Vehicle Management**
+- Vehicle profiles
+- Vehicle modifications tracking
+- Verification system
+
+**Files:** `lib/features/vehicles/` (3 screens)
+
+---
+
+#### 9. **Meeting Points System**
+- Meeting point locations
+- Map integration (flutter_map)
+- Meeting point details
+- Admin: Create/edit meeting points
+
+**Files:** `lib/features/meeting_points/` (2 screens)
+
+---
+
+#### 10. **Notifications**
+- In-app notification center
+- Notification history
+- Mark as read functionality
+- Notification action handling
+
+**Files:** `lib/features/notifications/` (1 screen)
+
+**Note:** Firebase Cloud Messaging (FCM) integration pending
+
+---
+
+#### 11. **Global Search**
+- Unified search across trips, members, photos
+- Tab-based filtering
+- Search history
+
+**Files:** `lib/features/search/` (1 screen)
+
+---
+
+#### 12. **Settings & Support**
+- App settings management
+- Help & Support
+- Privacy Policy
+- Terms & Conditions
+
+**Files:** `lib/features/settings/` (4 screens)
+
+---
+
+## 🏗️ Architecture
+
+### Project Structure
+```
+lib/
+├── core/                          # Core infrastructure (33 files)
+│   ├── config/                    # API config, brand tokens
+│   ├── network/                   # Dio client, endpoints, interceptors
+│   ├── providers/                 # Riverpod providers (11 providers)
+│   ├── router/                    # GoRouter with auth guards
+│   ├── services/                  # Business services (5 services)
+│   ├── storage/                   # Hive + SharedPreferences
+│   └── utils/                     # Utility functions (6 utilities)
+│
+├── data/                          # Data layer (43 files)
+│   ├── models/                    # 35 data models with JSON serialization
+│   ├── repositories/              # API repositories (Main + Gallery)
+│   └── sample_data/               # Reference data (levels, sample data)
+│
+├── features/                      # 15 feature modules (135 files)
+│   ├── admin/                     # Admin panel (58 files)
+│   ├── auth/                      # Authentication (3 screens)
+│   ├── debug/                     # Debug tools (2 screens)
+│   ├── events/                    # Events (2 screens)
+│   ├── gallery/                   # Photo gallery (6 files)
+│   ├── home/                      # Home dashboard (1 screen)
+│   ├── logbook/                   # Digital logbook (7 screens)
+│   ├── meeting_points/            # Meeting points (2 screens)
+│   ├── members/                   # Member directory (2 screens)
+│   ├── notifications/             # Notifications (1 screen)
+│   ├── profile/                   # User profile (2 screens)
+│   ├── search/                    # Global search (1 screen)
+│   ├── settings/                  # Settings (4 screens)
+│   ├── splash/                    # Splash screen (1 screen)
+│   ├── trips/                     # Trip management (14 files)
+│   └── vehicles/                  # Vehicle management (3 screens)
+│
+└── shared/                        # Shared components (29 files)
+    ├── constants/                 # Level constants
+    ├── theme/                     # Material Design 3 theme
+    └── widgets/                   # 28 reusable widgets
+        ├── admin/                 # Admin-specific widgets
+        ├── badges/                # Badge components
+        ├── buttons/               # Button variants
+        ├── cards/                 # Card components
+        ├── common/                # Common widgets (8 files)
+        ├── dialogs/               # Dialog components
+        ├── error/                 # Error states
+        ├── filters/               # Filter components
+        ├── home/                  # Home widgets
+        ├── inputs/                # Input fields
+        └── loading/               # Loading indicators
+```
+
+---
+
+## 🔗 API Integration
+
+### Production APIs
+- **Main API (Django):** `https://ap.ad4x4.com`
+- **Gallery API (Node.js):** `https://media.ad4x4.com`
+
+### API Endpoints (134 endpoints defined)
+
+**Authentication:**
+- POST `/api/auth/login/`
+- GET `/api/auth/profile/`
+- POST `/api/auth/change-password/`
+- POST `/api/auth/send-reset-password-link/`
+- POST `/api/auth/reset-password/`
+
+**Trips (20 endpoints):**
+- GET `/api/trips/` - List trips
+- POST `/api/trips` - Create trip
 - GET `/api/trips/{id}/` - Trip details
-- POST `/api/trips/{id}/register` - Join trip
+- PUT `/api/trips/{id}` - Update trip
+- POST `/api/trips/{id}/register` - Register for trip
+- POST `/api/trips/{id}/unregister` - Cancel registration
 - POST `/api/trips/{id}/waitlist` - Join waitlist
-- GET `/api/trips/{id}/comments` - Trip chat messages
-- POST `/api/tripcomments/` - Post chat message
-
-**API Defined (Not UI Implemented):**
-- POST `/api/trips/` - Create trip
-- PATCH `/api/trips/{id}/` - Update trip
-- POST `/api/trips/{id}/approve` - Approve pending trip
-- POST `/api/trips/{id}/decline` - Decline pending trip
+- POST `/api/trips/{id}/approve` - Approve trip (admin)
+- POST `/api/trips/{id}/decline` - Decline trip (admin)
+- POST `/api/trips/{id}/forceregister` - Force register (admin)
+- POST `/api/trips/{id}/removemember` - Remove member (admin)
+- POST `/api/trips/{id}/addfromwaitlist` - Add from waitlist (admin)
 - POST `/api/trips/{id}/checkin` - Check-in member
 - POST `/api/trips/{id}/checkout` - Check-out member
+- GET `/api/trips/{id}/exportregistrants` - Export registrants (CSV/Excel/PDF)
+- POST `/api/trips/{id}/bind-gallery` - Bind gallery album
+- GET `/api/trips/{id}/comments` - Trip chat
+- POST `/api/tripcomments/` - Post comment
 
-**Notes:**
-- Trip list and details fully functional with real data
-- Create trip screen is placeholder (says "Under Development")
-- Admin features have UI but need backend workflow integration
+**Trip Requests:**
+- GET `/api/triprequests/` - List trip requests
+- POST `/api/triprequests/` - Create trip request
+- GET/PATCH `/api/triprequests/{id}/` - Update/view request
 
----
+**Logbook (8 endpoints):**
+- GET `/api/logbookentries/`
+- GET `/api/logbookskills/`
+- GET `/api/logbookskillreferences`
+- GET `/api/members/{id}/logbookentries`
+- GET `/api/members/{id}/logbookskills`
+- GET `/api/members/{id}/tripcounts`
+- GET `/api/members/{id}/triphistory`
 
-### Phase 5: Gallery & Photo Management 🔄 **40% COMPLETE** (Mock Data)
+**Members (8 endpoints):**
+- GET `/api/members/`
+- GET `/api/members/{id}/`
+- GET `/api/members/{id}/feedback`
+- GET `/api/members/{id}/triprequests`
+- GET `/api/members/{id}/upgraderequests`
+- GET `/api/members/{id}/payments`
 
-**Completed Components:**
-- ⚠️ Gallery discover screen (UI complete, using sample data)
-- ⚠️ Album screen (UI complete, using sample data)
+**Upgrade Requests (5 endpoints):**
+- GET `/api/upgraderequests/`
+- POST `/api/upgraderequests/`
+- GET `/api/upgraderequests/{id}/`
+- POST `/api/upgraderequests/{id}/vote`
+- POST `/api/upgraderequests/{id}/approve`
+- POST `/api/upgraderequests/{id}/decline`
+- POST `/api/upgraderequestcomments/`
+- DELETE `/api/upgraderequestcomments/{id}/`
 
-**File Evidence:**
-- `/lib/features/gallery/presentation/screens/gallery_screen.dart` (7927 bytes)
-- `/lib/features/gallery/presentation/screens/album_screen.dart` (10868 bytes)
-- `/lib/data/sample_data/sample_gallery.dart` - Mock data source
+**Meeting Points:**
+- GET `/api/meetingpoints/`
+- GET/POST/PUT/DELETE `/api/meetingpoints/{id}/`
 
-**Not Implemented:**
-- ❌ Photo upload screen
-- ❌ Full-screen photo viewer
-- ❌ Gallery API integration
+**Feedback:**
+- GET `/api/feedback/` - List feedback (admin)
+- POST `/api/feedback/` - Submit feedback
+- GET/PATCH `/api/feedback/{id}/` - View/update feedback
 
-**API Status:**
-- ✅ Gallery API repository exists (`gallery_api_repository.dart` - 134 lines)
-- ✅ Gallery API endpoints defined (`https://gallery-api.ad4x4.com`)
-- ❌ Screens still using `SampleGallery.getAlbums()` instead of API
+**Trip Reports:**
+- GET `/api/tripreports/`
+- GET/PATCH `/api/tripreports/{id}/`
 
-**Notes:**
-- Screens show orange banner: "🔄 Using Mock Data - Gallery API Integration Pending"
-- Backend gallery API exists and is documented
-- Integration pending (Phase 3B work)
+**Dynamic Choices (11 endpoints):**
+- `/api/choices/approvalstatus`
+- `/api/choices/carbrand`
+- `/api/choices/countries`
+- `/api/choices/emirates`
+- `/api/choices/gender`
+- `/api/choices/permissionmatrixaction`
+- `/api/choices/timeofday`
+- `/api/choices/triprequestarea`
+- `/api/choices/upgraderequeststatus`
+- `/api/choices/upgraderequestvote`
 
----
+**Other:**
+- GET `/api/levels/` - Member levels
+- GET `/api/clubnews/` - Club news
+- GET `/api/sponsors/` - Sponsors
+- GET `/api/faqs/` - FAQs
+- GET `/api/globalsettings/` - Global settings
+- GET `/api/groups/` - Groups
+- GET `/api/permissionmatrix/` - Permission matrix
+- GET `/api/notifications/` - Notifications
+- POST `/api/device/fcm/` - Register FCM token
+- POST `/api/device/apns/` - Register APNS token
 
-### Phase 6: Digital Logbook ❌ **NOT STARTED**
-
-**Status:**
-- ❌ Logbook timeline screen (not implemented)
-- ❌ Skills matrix screen (not implemented)
-- ❌ Marshal logbook tool (not implemented)
-
-**API Status:**
-- ✅ All logbook endpoints are defined and documented:
-  - GET `/api/logbookentries/` - List logbook entries
-  - GET `/api/logbookskills/` - Available skills
-  - GET `/api/logbookskillreferences` - Skill reference materials
-  - GET `/api/members/{id}/logbookskills` - Member skill timeline
-  - GET `/api/members/{id}/triphistory` - Trip history with logbook context
-  - GET `/api/members/{id}/tripcounts` - Level progression tracking
-  - POST `/api/trips/{id}/logbook-entries` - Marshal sign-off (Admin Tool)
-
-**File Evidence:**
-- `/lib/features/logbook/` - Empty directory (data/, domain/, presentation/ folders exist but no Dart files)
-- `/lib/core/network/main_api_endpoints.dart` - Lines 55-59 (endpoints defined)
-- `/home/user/docs/LOGBOOK_API_SPEC.md` - Complete API documentation
-
-**Notes:**
-- Directory structure created but no implementation
-- API documentation complete (see LOGBOOK_API_SPEC.md)
-- Marshal logbook tool planned for Admin Tool Phase 2
-- Estimated 3-4 weeks implementation (UI + API integration)
-
----
-
-### Phase 7: Notifications & Search 🔄 **50% COMPLETE** (Mock Data)
-
-**Completed Components:**
-- ⚠️ Notifications screen (UI complete, using sample data)
-- ⚠️ Global search screen (UI complete, using sample data)
-
-**File Evidence:**
-- `/lib/features/notifications/presentation/screens/notifications_screen.dart` (10980 bytes)
-- `/lib/features/search/presentation/screens/global_search_screen.dart` (14327 bytes)
-- `/lib/data/sample_data/sample_notifications.dart` - Mock data
-
-**Not Implemented:**
-- ❌ Firebase Cloud Messaging (FCM) integration
-- ❌ Push notifications
-- ❌ Real-time notification updates
-- ❌ Search API integration
-
-**API Status:**
-- ✅ Notification endpoints defined (`/api/notifications/`)
-- ✅ Device registration endpoints defined (`/api/device/fcm/`, `/api/device/apns/`)
-- ❌ Firebase packages commented out in `pubspec.yaml`
-
-**Notes:**
-- Notification screen has mark-as-read functionality (UI only)
-- Search screen has tab-based filtering (All/Trips/Members/Photos/News)
-- FCM integration requires Firebase configuration
+**Gallery API:**
+- GET `/api/galleries` - List albums
+- GET `/api/galleries/{id}` - Album details
+- GET `/api/photos/gallery/{id}` - Photos in album
 
 ---
 
-### Phase 8: Polish, Testing & Optimization ⚠️ **IN PLANNING**
+## 🔐 Permission System
 
-**Status:**
-- Admin tool architecture documented (7 planning documents)
-- Validation test plan created
-- Performance optimization pending
-- Comprehensive testing pending
+The app uses **string-based permissions** (not numeric level IDs) for access control.
 
-**Documentation:**
-- `/home/user/flutter_app/ADMIN_TOOL_START_HERE.md`
-- `/home/user/flutter_app/VALIDATION_TEST_PLAN.md`
-- `/home/user/flutter_app/ADMIN_ARCHITECTURE_DIAGRAM.md`
-
----
-
-### Phase 9: Android APK Build & Deployment 📝 **PLANNED**
-
-**Status:**
-- Android configuration exists (`/android/` directory)
-- Build tooling ready (Gradle, Java 17)
-- APK compilation workflow pending
-- Deployment strategy pending
-
----
-
-## 📊 Implementation Statistics
-
-### Codebase Metrics:
-```
-Total Dart Files: 80
-- Core Infrastructure: 17 files (network, routing, providers)
-- Shared Widgets: 15 files (buttons, cards, inputs, states)
-- Feature Modules: 48 files (13 feature folders)
-
-Feature Implementation:
-- Auth: 3 screens ✅ Real API
-- Trips: 7 screens ⚠️ 6 working, 1 placeholder
-- Gallery: 2 screens 🔄 Mock data
-- Profile: 2 screens ✅ Real API
-- Events: 2 screens 🔄 Mock data
-- Notifications: 1 screen 🔄 Mock data
-- Search: 1 screen 🔄 Mock data
-- Members: 2 screens 🔄 Mock data
-- Vehicles: 2 screens 🔄 Stub/Mock
-- Settings: 1 screen ✅ Working
-- Logbook: 0 files ❌ Not started
-- Debug: 1 screen (Dev tool)
-
-API Integration:
-- Repository Files: 2 (main_api + gallery_api)
-- Network Layer: 6 files (1,134 lines total)
-- Endpoints Defined: ~40 endpoints
-- Endpoints Integrated: ~15 endpoints (auth + trips + chat)
-- Endpoints Pending: ~25 endpoints (gallery, events, members, notifications, logbook)
+### Implementation Example:
+```dart
+// Check user permissions
+if (user.hasPermission('can_approve_trips')) {
+  // Show admin functionality
+}
 ```
 
-### Real API vs Mock Data:
-```
-✅ Real API Integration:
-- Authentication (login, profile, logout, password reset)
-- Trip list and filtering
-- Trip details and registration
-- Trip chat (comments)
-- Trip requests
+### Key Permissions:
+- `can_approve_trips` - Approve/decline trips (Board)
+- `can_manage_registrants` - Manage trip registrations (Marshal)
+- `can_checkin_members` - Check-in/out members (Marshal)
+- `can_view_members` - View member directory (Board)
+- `can_edit_members` - Edit member profiles (Board)
+- `can_manage_logbook` - Create logbook entries (Marshal)
+- `can_manage_news` - Manage club news (Admin)
+- `can_send_notifications` - Send push notifications (Admin)
 
-🔄 Mock Data (Pending Integration):
-- Gallery albums and photos
-- Events list and details
-- Members list and profiles
-- Notifications
-- Global search
-- Vehicles
-
-❌ Not Implemented:
-- Trip creation/editing
-- Digital logbook (timeline, skills)
-- Push notifications (FCM)
-- Photo upload
-- Marshal admin tools (logbook sign-off)
-```
+**Benefit:** Backend can modify level IDs without breaking the app.
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Flutter 3.35.4 (locked version)
-- Dart 3.9.2 (locked version)
+- Flutter 3.35.4
+- Dart 3.9.2
 - Java 17.0.2 (for Android builds)
 
 ### Installation
@@ -340,312 +405,153 @@ cd flutter_app
 # Install dependencies
 flutter pub get
 
-# Run on web (recommended for development)
+# Run on web
 flutter run -d chrome --web-port=5060
+
+# Run on Android
+flutter run
 ```
 
-### Test Credentials
-- Username: `Hani amj`
-- Password: `3213Plugin?`
+### Environment Configuration
 
----
+**API URLs are configurable via environment variables:**
 
-## 🏗️ Architecture
+```bash
+# Development
+flutter run --dart-define=MAIN_API_BASE=https://dev-api.ad4x4.com
 
-### Technology Stack
-- **Framework:** Flutter 3.35.4
-- **State Management:** Riverpod 2.5.1
-- **Routing:** GoRouter 13.2.0 with auth guards
-- **API Client:** Dio 5.4.0 with interceptors
-- **Local Storage:** Hive 2.2.3 + SharedPreferences 2.2.2
-- **Authentication:** JWT Bearer tokens
-- **Image Caching:** CachedNetworkImage 3.3.1
-- **UI Animation:** Flutter Animate 4.5.0
-
-### Project Structure
-```
-lib/
-├── core/                       # Core functionality
-│   ├── config/                 # App configuration, brand tokens
-│   ├── network/                # API clients & endpoints
-│   ├── providers/              # Riverpod providers (auth, repos)
-│   ├── router/                 # GoRouter configuration
-│   ├── services/               # Business services
-│   ├── storage/                # Local storage (Hive)
-│   └── utils/                  # Utility functions
-├── data/                       # Data layer
-│   ├── models/                 # Data models (10 models)
-│   ├── repositories/           # API repositories (2 repos)
-│   └── sample_data/            # Mock data (7 files - Phase 3B will remove)
-├── features/                   # Feature modules (13 features)
-│   ├── auth/                   # Authentication (3 screens) ✅
-│   ├── trips/                  # Trip management (7 screens) ⚠️
-│   ├── events/                 # Events (2 screens) 🔄
-│   ├── gallery/                # Photo gallery (2 screens) 🔄
-│   ├── logbook/                # Digital logbook (0 files) ❌
-│   ├── members/                # Club members (2 screens) 🔄
-│   ├── notifications/          # Notifications (1 screen) 🔄
-│   ├── profile/                # User profile (2 screens) ✅
-│   ├── search/                 # Global search (1 screen) 🔄
-│   ├── settings/               # App settings (1 screen) ✅
-│   └── vehicles/               # Vehicle management (2 screens) 🔄
-└── shared/                     # Shared widgets & theme
-    ├── theme/                  # App theme (Material Design 3)
-    └── widgets/                # Reusable widgets (15 components)
+# Production (default)
+flutter run --dart-define=MAIN_API_BASE=https://ap.ad4x4.com
 ```
 
----
-
-## 🔗 API Endpoints
-
-### Production APIs
-- **Main API (Django):** https://ap.ad4x4.com
-- **Gallery API (Node.js):** https://gallery-api.ad4x4.com
-
-### Endpoint Summary
-```
-Authentication (✅ Integrated):
-  POST   /api/auth/login/
-  GET    /api/auth/profile/
-  POST   /api/auth/change-password/
-  POST   /api/auth/send-reset-password-link/
-
-Trips (✅ Integrated):
-  GET    /api/trips/                    # List with filters
-  GET    /api/trips/{id}/               # Trip details
-  POST   /api/trips/{id}/register       # Register for trip
-  POST   /api/trips/{id}/waitlist       # Join waitlist
-  GET    /api/trips/{id}/comments       # Trip chat
-  POST   /api/tripcomments/             # Post chat message
-
-Trips (📝 Defined, Not Integrated):
-  POST   /api/trips/                    # Create trip
-  PATCH  /api/trips/{id}/               # Update trip
-  POST   /api/trips/{id}/approve        # Approve trip (admin)
-  POST   /api/trips/{id}/decline        # Decline trip (admin)
-  POST   /api/trips/{id}/checkin        # Check-in member (marshal)
-
-Logbook (📝 Defined, Not Implemented):
-  GET    /api/logbookentries/
-  GET    /api/logbookskills/
-  GET    /api/logbookskillreferences
-  GET    /api/members/{id}/logbookskills
-  POST   /api/trips/{id}/logbook-entries  # Marshal sign-off
-
-Members (📝 Defined, Not Integrated):
-  GET    /api/members/                  # List members
-  GET    /api/members/{id}/             # Member details
-  GET    /api/members/{id}/triphistory  # Trip history
-
-Gallery (📝 Defined, Not Integrated):
-  GET    /api/galleries                 # List albums
-  GET    /api/galleries/{id}            # Album details
-  GET    /api/photos/gallery/{id}       # Photos in album
-
-Notifications (📝 Defined, Not Integrated):
-  GET    /api/notifications/
-  POST   /api/device/fcm/               # Register FCM token
-```
-
-**Complete API Documentation:**
-- `/home/user/docs/AD4X4_COMPONENT_API_MAPPING.md` - UI-to-API mapping
-- `/home/user/docs/LOGBOOK_API_SPEC.md` - Logbook endpoints
-- `/home/user/docs/WAITLIST_API_SPEC.md` - Waitlist endpoints
-- `/home/user/docs/TRIP_APPROVAL_WORKFLOW.md` - Trip approval system
-- `ADMIN_TOOL_DETAILED_PLAN.md` - Admin endpoints analysis
+**Default values** (see `lib/core/config/api_config.dart`):
+- Main API: `https://ap.ad4x4.com`
+- Gallery API: `https://media.ad4x4.com`
 
 ---
 
-## 🔐 Permission System
+## 📦 Dependencies
 
-The app uses a **permission-based access control** system that checks action strings, not numeric level IDs.
+### Core
+- **flutter_riverpod** 2.5.1 - State management
+- **go_router** 13.2.0 - Navigation with auth guards
+- **dio** 5.4.0 - HTTP client
+- **retrofit** 4.1.0 - Type-safe REST client
 
-### Implementation:
-```dart
-// Check user permissions
-if (user.hasPermission('can_approve_trips')) {
-  showAdminButton();
-}
-```
+### Storage
+- **shared_preferences** 2.2.2 - Simple key-value storage
+- **hive** 2.2.3 + **hive_flutter** 1.1.0 - NoSQL local database
 
-### Key Permissions:
-```dart
-// Trip Management
-'can_view_all_trips'
-'can_approve_trips'       // Board level
-'can_manage_registrants'  // Marshal level
-'can_checkin_members'     // Marshal level
+### Media
+- **image_picker** 1.0.7 - Photo selection
+- **image_cropper** 8.0.2 - Image editing
+- **cached_network_image** 3.3.1 - Image caching
 
-// Member Management
-'can_view_members'        // Board level
-'can_edit_members'        // Board level
+### UI/Animation
+- **flutter_animate** 4.5.0 - Animations
+- **shimmer** 3.0.0 - Loading shimmer effects
+- **flutter_staggered_grid_view** 0.7.0 - Grid layouts
 
-// Content Management
-'can_manage_news'
-'can_send_notifications'
+### Maps
+- **flutter_map** 7.0.2 - OpenStreetMap integration
+- **latlong2** 0.9.1 - Coordinate handling
 
-// Logbook Management
-'can_manage_logbook'      // Marshal level
-```
+### Export & Utilities
+- **csv** 6.0.0 - CSV generation
+- **syncfusion_flutter_xlsio** 27.2.5 - Excel generation
+- **pdf** 3.11.1 - PDF generation
+- **printing** 5.13.2 - PDF preview/download
+- **url_launcher** 6.2.4 - Launch URLs/email/phone
+- **permission_handler** 11.2.0 - Runtime permissions
+- **share_plus** 10.1.2 - Share functionality
+- **intl** 0.18.1 - Internationalization
+- **timeago** 3.6.0 - Relative timestamps
+- **uuid** 4.5.1 - UUID generation
 
-**Key Benefit:** Backend can change level IDs freely without breaking the app.
-
-**Documentation:** `/home/user/docs/MEMBER_LEVELS_AND_PERMISSIONS.md`
-
----
-
-## 📚 Documentation
-
-### 📖 Start Here
-1. **This README** - Project overview and phase status
-2. **PHASE_3A_COMPLETE.md** - Current implementation details
-3. **DOCUMENTATION_AUDIT.md** - Documentation organization guide
-
-### 🎯 Planning Documents
-- **ADMIN_TOOL_START_HERE.md** - Admin tool planning overview
-- **ADMIN_TOOL_EXECUTIVE_SUMMARY.md** - Admin tool roadmap (4-week plan)
-- **REMAINING_FEATURES_IMPACT_ANALYSIS.md** - Feature integration analysis
-- **VALIDATION_TEST_PLAN.md** - Comprehensive testing checklist
-
-### 🛠️ Implementation Guides
-- **ADMIN_IMPLEMENTATION_CHANGES.md** - Code changes for admin tool
-- **ADMIN_TOOL_DETAILED_PLAN.md** - Complete API endpoint analysis
-- **ADMIN_TOOL_QUICK_REFERENCE.md** - Developer API reference
-
-### 🏗️ Architecture & API Specs
-- **ADMIN_ARCHITECTURE_DIAGRAM.md** - Visual system architecture
-- **AD4X4_COMPONENT_API_MAPPING.md** (in `/docs/`) - UI-to-API traceability
-- **LOGBOOK_API_SPEC.md** (in `/docs/`) - Digital logbook endpoints
-- **WAITLIST_API_SPEC.md** (in `/docs/`) - Trip waitlist system
-- **TRIP_APPROVAL_WORKFLOW.md** (in `/docs/`) - Trip approval flow
-
-### 📋 Master Plan Reference
-- **AD4X4_DEVELOPMENT_MASTER_PLAN.md** (in `/docs/`) - Original 9-phase plan
+**Firebase (Commented - Ready to Enable):**
+- firebase_core
+- firebase_messaging
 
 ---
 
-## 📱 Platforms
+## 🧪 Testing Status
 
-### Current Status
-- ✅ **Web:** Deployed and tested
-- ✅ **Android APK:** Ready for build
-- ⏸️ **iOS:** Pending (future phase)
-
-### Web Preview
-- Development: `flutter run -d chrome --web-port=5060`
-- Production: Deployed to sandbox environment
-
----
-
-## 🧪 Testing
-
-### Manual Testing
-See **VALIDATION_TEST_PLAN.md** for comprehensive test checklist.
-
-### Test Coverage
-- ✅ Authentication flow (login, logout, session persistence)
-- ✅ Protected routes and auth guards
-- ✅ Trip list loading and filtering
-- ✅ Trip details display
-- ✅ Trip chat functionality
-- ✅ Profile data display and editing
-- ⏸️ Gallery API integration (Phase 3B)
-- ⏸️ Events API integration (Phase 3B)
-- ⏸️ Admin actions (Phase 4)
-- ⏸️ Digital logbook (Phase 6)
+### Manual Testing Coverage
+- ✅ Authentication flows
+- ✅ Trip management (list, details, registration)
+- ✅ Trip creation and editing
+- ✅ Logbook system
+- ✅ Admin panel functionality
+- ✅ Permission-based access control
+- ⏸️ Automated test suites (pending)
 
 ---
 
-## 🚧 Current Limitations
+## 📱 Supported Platforms
 
-### Phase 1-2 (Complete):
-- ✅ No limitations - foundation and auth fully functional
-
-### Phase 3-4 (Partial):
-- ⚠️ Trip creation screen is placeholder (just shows "Under Development")
-- ⚠️ Trip editing not implemented
-- ⚠️ Admin ribbon UI exists but needs backend workflow integration
-
-### Phase 5-7 (Mock Data):
-- ⚠️ Gallery shows sample data (screens show orange banner)
-- ⚠️ Events show sample data
-- ⚠️ Members list shows sample data
-- ⚠️ Notifications show sample data
-- ⚠️ Search uses mock data
-- ⚠️ No photo upload functionality
-
-### Phase 6 (Not Started):
-- ❌ Digital logbook completely missing (directory structure only)
-- ❌ Marshal logbook tool not implemented
-
-### Phase 7-9:
-- ❌ FCM push notifications not configured
-- ❌ Polish and optimization pending
-- ❌ APK build workflow pending
+- ✅ **Web** - Primary development platform
+- ✅ **Android** - Production target (APK builds ready)
+- ⏸️ **iOS** - Future phase
 
 ---
 
-## 🤝 Contributing
+## ⚠️ Known Limitations
 
-### Development Workflow
-1. Create feature branch
-2. Implement changes following code standards
-3. Test thoroughly (see VALIDATION_TEST_PLAN.md)
-4. Submit pull request
+1. **Firebase Cloud Messaging** - Not yet integrated (commented in pubspec.yaml)
+2. **Automated Tests** - Test files exist but comprehensive suite pending
+3. **iOS Support** - Android-focused; iOS configuration pending
+4. **Offline Mode** - Limited offline functionality (planned enhancement)
+
+---
+
+## 🔄 Development Workflow
 
 ### Code Standards
 - Follow Flutter/Dart conventions
 - Use Riverpod for state management
-- Implement proper error handling with try-catch
+- Implement proper error handling
 - Add loading states for async operations
-- Use permission checks for admin features (`user.hasPermission('action')`)
-- Add mock data banners for unintegrated features
+- Use permission checks: `user.hasPermission('action')`
+- Add comments for complex business logic
+
+### Git Workflow
+1. Create feature branch from `main`
+2. Implement changes following standards
+3. Test thoroughly
+4. Commit with descriptive messages
+5. Submit pull request
 
 ---
 
-## 📝 Version History
+## 📚 Additional Documentation
 
-### Phase 1-2 (Complete - November 2024) ✅
-- Foundation infrastructure (network, routing, storage, theme)
-- Authentication system (login, register, profile, session)
-- Permission-based access control
-- Router auth guards
-
-### Phase 3-4 (Partial - November 2024) ⚠️
-- Home screen with basic layout
-- Trip list and details (real API)
-- Trip chat (real API)
-- Trip requests and management screens
-- Admin ribbon UI (partial integration)
-
-### Phase 5-7 (UI Only - November 2024) 🔄
-- Gallery screens (mock data)
-- Events screens (mock data)
-- Notifications screen (mock data)
-- Search screen (mock data)
-- Members screens (mock data)
-
-### Phase 6 (Not Started) ❌
-- Digital logbook (API documented, UI not implemented)
-
-### Next: Phase 3B-4 API Integration (Planned)
-- Remove all mock data
-- Integrate gallery, events, members, notifications APIs
-- Implement trip creation
-- Complete admin tool integration
+**Located in `/docs/` directory:**
+- `AD4X4_COMPONENT_API_MAPPING.md` - UI to API mapping
+- `AD4X4_DEVELOPMENT_MASTER_PLAN.md` - Original project plan
+- `LOGBOOK_API_SPEC.md` - Logbook endpoints specification
+- `WAITLIST_API_SPEC.md` - Waitlist system documentation
+- `TRIP_APPROVAL_WORKFLOW.md` - Trip approval process
+- `MEMBER_LEVELS_AND_PERMISSIONS.md` - Permission system
+- `Backend_Integration_Instructions_for_Mikkle.md` - Backend integration guide
 
 ---
 
 ## 📞 Support
 
-For questions or issues:
-1. Check this README for phase status
-2. Review `/home/user/docs/` for API specifications
-3. See project planning documents in `/home/user/flutter_app/`
+For technical questions or integration support:
+- Review this README for project structure
+- Check `/docs/` for API specifications
+- Review code comments for implementation details
 
 ---
 
-**Project maintained by AD4x4 Development Team**  
-**Last updated:** November 2024  
-**Flutter Version:** 3.35.4 (locked)  
-**Dart Version:** 3.9.2 (locked)
+## 📝 License
+
+[License Type To Be Determined]
+
+---
+
+**Project:** Abu Dhabi Off-Road Club Mobile App  
+**Technology:** Flutter 3.35.4 / Dart 3.9.2  
+**Status:** Active Development  
+**Last Updated:** November 2024

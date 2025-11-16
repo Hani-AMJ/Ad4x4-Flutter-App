@@ -1,26 +1,82 @@
-# Flutter/Dart
-# Build outputs (exclude to save space)
+# Flutter/Dart Build Outputs
 /build/
 /.dart_tool/
 .packages
 .pub-cache/
 .pub/
+.flutter-plugins
+.flutter-plugins-dependencies
 
-# IDE
+# IDE Files
 .vscode/
 .idea/
 *.iml
+*.ipr
+*.iws
 
 # OS Files
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+*~
 
 # Logs
 *.log
 
-# Temporary files
+# Temporary Files
 *.tmp
 *.temp
+*.swp
+*.swo
+
+# Firebase & Sensitive Configs (CRITICAL - DO NOT COMMIT)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+.env
+.env.*
+*.env
+
+# Android Signing & Keystores (CRITICAL - DO NOT COMMIT)
+*.keystore
+*.jks
+key.properties
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
+# iOS Signing
+ios/Runner/*.mobileprovision
+ios/Runner/*.p12
+
+# API Keys & Secrets (CRITICAL - DO NOT COMMIT)
+**/api_keys.dart
+**/secrets.dart
+**/credentials.json
+**/secret_*.json
+
+# Build Artifacts (Additional)
+/android/.gradle/
+/android/app/build/
+/android/captures/
+/ios/Pods/
+/ios/.symlinks/
+/web/
+*.snap
+
+# Coverage & Testing
+coverage/
+.test_coverage.dart
+test/.test_coverage.dart
+
+# Generated Files (Can be regenerated)
+*.g.dart
+*.freezed.dart
+*.gr.dart
+
+# Local Development
+*.local
 
 # Keep lib/ directory for source code!
 
