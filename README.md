@@ -418,7 +418,7 @@ flutter run
 
 ```bash
 # Development
-flutter run --dart-define=MAIN_API_BASE=https://dev-api.ad4x4.com
+flutter run --dart-define=MAIN_API_BASE=https://ap.ad4x4.com
 
 # Production (default)
 flutter run --dart-define=MAIN_API_BASE=https://ap.ad4x4.com
@@ -526,13 +526,26 @@ flutter run --dart-define=MAIN_API_BASE=https://ap.ad4x4.com
 ## 📚 Additional Documentation
 
 **Located in `/docs/` directory:**
-- `AD4X4_COMPONENT_API_MAPPING.md` - UI to API mapping
-- `AD4X4_DEVELOPMENT_MASTER_PLAN.md` - Original project plan
-- `LOGBOOK_API_SPEC.md` - Logbook endpoints specification
-- `WAITLIST_API_SPEC.md` - Waitlist system documentation
-- `TRIP_APPROVAL_WORKFLOW.md` - Trip approval process
-- `MEMBER_LEVELS_AND_PERMISSIONS.md` - Permission system
-- `Backend_Integration_Instructions_for_Mikkle.md` - Backend integration guide
+
+- **[MAIN_API_DOCUMENTATION.md](docs/MAIN_API_DOCUMENTATION.md)** - Complete Main API documentation (Django backend at `https://ap.ad4x4.com`)
+  - Authentication & authorization endpoints
+  - User management and profiles
+  - Trip management system
+  - Logbook and vehicle tracking
+  - Admin panel operations
+  - 5,051 lines of comprehensive API specifications
+
+- **[GALLERY_API_DOCUMENTATION.md](docs/GALLERY-API-DOCUMENTATION.md)** - Complete Gallery API documentation (Node.js backend at `https://media.ad4x4.com`)
+  - Photo gallery management
+  - Image upload and processing
+  - Favorites and collections
+  - Search and filtering
+  - Batch operations
+  - Admin statistics and analytics
+  - 2,319 lines of detailed endpoint documentation
+
+**Note:** Both API documentation files have been updated with the latest endpoints and specifications (17 Nov 2025).
+
 
 ---
 
