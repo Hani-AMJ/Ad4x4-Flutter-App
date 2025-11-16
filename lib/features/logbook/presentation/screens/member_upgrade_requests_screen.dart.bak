@@ -1,0 +1,438 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../data/repositories/main_api_repository.dart';
+import '../../../../data/models/upgrade_request_model.dart';
+
+/// Member Upgrade Requests Screen
+/// 
+/// Displays member's own upgrade request history and allows creating new requests
+class MemberUpgradeRequestsScreen extends ConsumerStatefulWidget {
+  const MemberUpgradeRequestsScreen({super.key});
+
+  @override
+  ConsumerState<MemberUpgradeRequestsScreen> createState() => _MemberUpgradeRequestsScreenState();
+}
+
+class _MemberUpgradeRequestsScreenState extends ConsumerState<MemberUpgradeRequestsScreen> {
+  final MainApiRepository _repository = MainApiRepository();
+  List<UpgradeRequestListItem> _requests = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUpgradeRequests();
+  }
+
+  Future<void> _loadUpgradeRequests() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final authState = ref.read(authProviderV2);
+      final userId = authState.user?.id;
+      
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Fetch upgrade requests and filter by current user
+      final response = await _repository.getUpgradeRequests(
+        page: 1,
+        limit: 100,
+      );
+
+      final results = response['results'] as List<dynamic>? ?? [];
+      final allRequests = results
+          .map((json) => UpgradeRequestListItem.fromJson(json as Map<String, dynamic>))
+          .toList();
+      
+      // Filter to only this user's requests
+      final requests = allRequests.where((req) => req.applicant.id == userId).toList();
+
+      // Sort by created date (newest first)
+      requests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      setState(() {
+        _requests = requests;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to load upgrade requests: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final authState = ref.watch(authProviderV2);
+    final user = authState.user;
+    
+    // Check if user can create upgrade requests
+    final canCreateRequest = user?.hasPermission('create_upgrade_req_for_self') ?? false;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Upgrade Requests'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Help',
+            onPressed: () => _showHelpDialog(context),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? _buildErrorState()
+              : _requests.isEmpty
+                  ? _buildEmptyState(colors, canCreateRequest)
+                  : _buildRequestsList(colors),
+      floatingActionButton: canCreateRequest
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push('/logbook/upgrade-requests/create'),
+              icon: const Icon(Icons.arrow_upward),
+              label: const Text('Request Upgrade'),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _loadUpgradeRequests,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(ColorScheme colors, bool canCreateRequest) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.trending_up,
+              size: 80,
+              color: colors.primary.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No Upgrade Requests',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: colors.onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              canCreateRequest
+                  ? 'Ready to level up? Request an upgrade to advance your off-road skills certification.'
+                  : 'You haven\'t submitted any upgrade requests yet.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: colors.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            if (canCreateRequest) ...[
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () => context.push('/logbook/upgrade-requests/create'),
+                icon: const Icon(Icons.arrow_upward),
+                label: const Text('Request Upgrade'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequestsList(ColorScheme colors) {
+    return RefreshIndicator(
+      onRefresh: _loadUpgradeRequests,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _requests.length,
+        itemBuilder: (context, index) {
+          final request = _requests[index];
+          return _buildRequestCard(request, colors);
+        },
+      ),
+    );
+  }
+
+  Widget _buildRequestCard(UpgradeRequestListItem request, ColorScheme colors) {
+    final statusColor = _getStatusColor(request.status);
+    final statusIcon = _getStatusIcon(request.status);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      child: InkWell(
+        onTap: () => _showRequestDetails(request),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header: Level and Status
+              Row(
+                children: [
+                  Icon(Icons.trending_up, color: colors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Level ${request.targetLevel}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: statusColor.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(statusIcon, size: 14, color: statusColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          request.status.displayName,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 12),
+              
+              // Voting Progress
+              if (request.voteSummary != null) ...[
+                Row(
+                  children: [
+                    Icon(
+                      Icons.how_to_vote,
+                      size: 16,
+                      color: colors.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Votes: ${request.voteSummary!.totalVotes}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: LinearProgressIndicator(
+                        value: request.voteSummary!.approvalPercentage / 100,
+                        backgroundColor: Colors.red.shade100,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade400),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${request.voteSummary!.approvalPercentage.toStringAsFixed(0)}%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+              
+              // Date info
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today,
+                    size: 14,
+                    color: colors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Submitted ${DateFormat('MMM dd, yyyy').format(request.createdAt)}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                  if (request.verdictDate != null) ...[
+                    const SizedBox(width: 16),
+                    Icon(
+                      Icons.check_circle,
+                      size: 14,
+                      color: colors.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Decided ${DateFormat('MMM dd, yyyy').format(request.verdictDate!)}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(UpgradeRequestStatus status) {
+    switch (status) {
+      case UpgradeRequestStatus.newRequest:
+        return Colors.blue;
+      case UpgradeRequestStatus.inProgress:
+        return Colors.orange;
+      case UpgradeRequestStatus.approved:
+        return Colors.green;
+      case UpgradeRequestStatus.declined:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(UpgradeRequestStatus status) {
+    switch (status) {
+      case UpgradeRequestStatus.newRequest:
+        return Icons.new_releases;
+      case UpgradeRequestStatus.inProgress:
+        return Icons.pending;
+      case UpgradeRequestStatus.approved:
+        return Icons.check_circle;
+      case UpgradeRequestStatus.declined:
+        return Icons.cancel;
+      default:
+        return Icons.help;
+    }
+  }
+
+  void _showRequestDetails(UpgradeRequestListItem request) {
+    // Navigate to detail screen (will create this next)
+    context.push('/logbook/upgrade-requests/${request.id}');
+  }
+
+  void _showHelpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.help_outline),
+              SizedBox(width: 12),
+              Text('Upgrade Requests'),
+            ],
+          ),
+          content: const SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'About Upgrade Requests',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Submit upgrade requests to advance to higher skill levels. Your request will be reviewed and voted on by nominated marshals and board members.',
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Request Process:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('1. Submit upgrade request with justification'),
+                Text('2. Nominated voters review and vote'),
+                Text('3. Board makes final decision'),
+                Text('4. You receive notification of outcome'),
+                SizedBox(height: 16),
+                Text(
+                  'Status Meanings:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text('• New - Just submitted, pending review'),
+                Text('• In Progress - Voting is underway'),
+                Text('• Approved - Congratulations! Level upgraded'),
+                Text('• Declined - Not approved this time'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Got it'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

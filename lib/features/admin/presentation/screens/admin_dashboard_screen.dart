@@ -274,7 +274,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 onTap: () => context.go('/admin/trips/pending'),
               ),
             
-            // All Trips - visible to anyone with trip permissions (NEW: Wizard interface)
+            // All Trips - List view with quick actions
+            if (_hasTripPermissions(user))
+              _NavItem(
+                icon: Icons.list_alt_outlined,
+                selectedIcon: Icons.list_alt,
+                label: 'All Trips',
+                isSelected: currentPath == '/admin/trips/all',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/trips/all'),
+              ),
+            
+            // Search Trips - Wizard interface
             if (_hasTripPermissions(user))
               _NavItem(
                 icon: Icons.search_outlined,
@@ -285,16 +296,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 onTap: () => context.go('/admin/trips/wizard'),
               ),
             
-            if (user.hasPermission('create_trip'))
-              _NavItem(
-                icon: Icons.add_circle_outline,
-                selectedIcon: Icons.add_circle,
-                label: 'Create Trip',
-                isSelected: currentPath == '/trips/create',
-                isExpanded: expanded,
-                onTap: () => context.go('/trips/create'),
-              ),
-            
+
             // Trip Registrants Management (Phase 3B - moved here for better organization)
             if (user.hasPermission('edit_trip_registrations'))
               _NavItem(
@@ -357,6 +359,44 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/trip-reports'),
               ),
+            
+            const SizedBox(height: 8),
+          ],
+
+          // Trip Requests Section
+          if (_hasTripManagementPermissions(user)) ...[
+            _SectionHeader(
+              label: 'TRIP REQUESTS',
+              isExpanded: expanded,
+            ),
+            
+            _NavItem(
+              icon: Icons.assignment_outlined,
+              selectedIcon: Icons.assignment,
+              label: 'Trip Requests',
+              isSelected: currentPath == '/admin/trip-requests',
+              isExpanded: expanded,
+              onTap: () => context.go('/admin/trip-requests'),
+            ),
+            
+            const SizedBox(height: 8),
+          ],
+
+          // Feedback Section
+          if (_hasTripManagementPermissions(user)) ...[
+            _SectionHeader(
+              label: 'FEEDBACK',
+              isExpanded: expanded,
+            ),
+            
+            _NavItem(
+              icon: Icons.feedback_outlined,
+              selectedIcon: Icons.feedback,
+              label: 'Feedback',
+              isSelected: currentPath == '/admin/feedback',
+              isExpanded: expanded,
+              onTap: () => context.go('/admin/feedback'),
+            ),
             
             const SizedBox(height: 8),
           ],
@@ -450,6 +490,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               isExpanded: expanded,
               onTap: () => context.go('/admin/meeting-points'),
             ),
+            
+            _NavItem(
+              icon: Icons.map_outlined,
+              selectedIcon: Icons.map,
+              label: 'Here Maps Settings',
+              isSelected: currentPath == '/admin/here-maps-settings',
+              isExpanded: expanded,
+              onTap: () => context.go('/admin/here-maps-settings'),
+            ),
           ],
         ],
       ),
@@ -462,48 +511,46 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
   /// Individual actions will be permission-gated inside the tools
   bool _hasAdminPermission(dynamic user) {
     // Check if user has ANY of these common admin/marshal/board permissions
+    // CLEANED UP: Removed 7 non-existent permissions that were never in backend API
     final adminPermissions = [
       // Trip management (admins, board, marshals)
       'create_trip',
-      'create_trip_no_approval_needed',
       'create_trip_with_approval',
       'edit_trips',
       'delete_trips',
       'approve_trip',
       'decline_trip',
-      'force_register_member_to_trip',
-      'remove_member_from_trip',
-      'add_member_from_waitlist',
       'check_in_member',
       'check_out_member',
       'view_trip_registrations',
       'edit_trip_registrations',
       'export_trip_registrants',
-      'bypass_level_requirements_for_trip',
+      
+      // Backend permissions for advanced trip features
+      'override_waitlist',  // Real backend permission (IDs: 12, 25, 33)
+      'bypass_level_req',   // Real backend permission (ID: 61)
       
       // Member management
       'view_members',
       'edit_membership_payments',
       
-      // Meeting points
+      // Meeting points (use plural forms per backend API)
       'create_meeting_points',
       'edit_meeting_points',
       'delete_meeting_points',
       
-      // Trip requests
-      'approve_trip_request',
-      'decline_trip_request',
-      
       // Logbook (marshals)
       'create_logbook_entries',
       'sign_logbook_skills',
+      'create_trip_report',
       
       // Content moderation (Phase 3B)
       'edit_trip_media',
       'delete_trip_comments',
       
-      // Advanced registration management (Phase 3B)
-      'edit_trip_registrations',
+      // Upgrade requests
+      'view_upgrade_req',
+      'approve_upgrade_req',
     ];
     
     // Return true if user has ANY of these permissions
@@ -513,7 +560,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
   /// Check if user has any trip management permissions
   bool _hasTripPermissions(dynamic user) {
     return user.hasPermission('create_trip') ||
-           user.hasPermission('create_trip_no_approval_needed') ||
            user.hasPermission('create_trip_with_approval') ||
            user.hasPermission('edit_trips') ||
            user.hasPermission('delete_trips') ||
@@ -521,6 +567,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
            user.hasPermission('decline_trip') ||
            user.hasPermission('view_trip_registrations') ||
            user.hasPermission('edit_trip_registrations');
+  }
+
+  /// Check if user has trip management permissions (including requests and feedback)
+  bool _hasTripManagementPermissions(dynamic user) {
+    return _hasTripPermissions(user) ||
+           user.hasPermission('view_members') ||
+           user.hasPermission('approve_trip') ||
+           user.hasPermission('decline_trip');
   }
 
   bool _hasMeetingPointPermissions(dynamic user) {

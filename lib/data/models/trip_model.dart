@@ -253,6 +253,7 @@ class Trip {
   final List<String> requirements;
   final bool isRegistered;  // Read-only: User registration status from API
   final bool isWaitlisted;  // Read-only: User waitlist status from API
+  final String? galleryId;  // UUID of associated gallery from Gallery API
 
   Trip({
     required this.id,
@@ -280,6 +281,7 @@ class Trip {
     this.requirements = const [],
     this.isRegistered = false,
     this.isWaitlisted = false,
+    this.galleryId,
   });
 
   // Computed properties for backward compatibility
@@ -367,6 +369,7 @@ class Trip {
           [],
       isRegistered: json['is_registered'] as bool? ?? json['isRegistered'] as bool? ?? false,
       isWaitlisted: json['is_waitlisted'] as bool? ?? json['isWaitlisted'] as bool? ?? false,
+      galleryId: json['gallery_id'] as String? ?? json['galleryId'] as String?,
     );
   }
 
@@ -397,6 +400,7 @@ class Trip {
       'requirements': requirements,
       'is_registered': isRegistered,
       'is_waitlisted': isWaitlisted,
+      if (galleryId != null) 'gallery_id': galleryId,
     };
   }
 
@@ -426,6 +430,7 @@ class Trip {
     List<String>? requirements,
     bool? isRegistered,
     bool? isWaitlisted,
+    String? galleryId,
   }) {
     return Trip(
       id: id ?? this.id,
@@ -453,6 +458,7 @@ class Trip {
       requirements: requirements ?? this.requirements,
       isRegistered: isRegistered ?? this.isRegistered,
       isWaitlisted: isWaitlisted ?? this.isWaitlisted,
+      galleryId: galleryId ?? this.galleryId,
     );
   }
 }
@@ -478,6 +484,7 @@ class TripListItem {
   final DateTime created;
   final bool isRegistered;  // Read-only: User registration status from API
   final bool isWaitlisted;  // Read-only: User waitlist status from API
+  final String? galleryId;  // UUID of associated gallery from Gallery API
 
   TripListItem({
     required this.id,
@@ -499,6 +506,7 @@ class TripListItem {
     required this.created,
     this.isRegistered = false,
     this.isWaitlisted = false,
+    this.galleryId,
   });
 
   // Computed properties
@@ -551,6 +559,7 @@ class TripListItem {
       created: DateTime.parse(createdStr),
       isRegistered: json['is_registered'] as bool? ?? json['isRegistered'] as bool? ?? false,
       isWaitlisted: json['is_waitlisted'] as bool? ?? json['isWaitlisted'] as bool? ?? false,
+      galleryId: json['gallery_id'] as String? ?? json['galleryId'] as String?,
     );
   }
 
@@ -575,6 +584,7 @@ class TripListItem {
       'created': created.toIso8601String(),
       'is_registered': isRegistered,
       'is_waitlisted': isWaitlisted,
+      if (galleryId != null) 'gallery_id': galleryId,
     };
   }
 }

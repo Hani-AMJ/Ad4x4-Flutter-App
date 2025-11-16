@@ -63,37 +63,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Section
-              Text(
-                'Welcome to AD4x4',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+              // Personalized Greeting
+              if (user != null) ...[
+                Text(
+                  'Hello, ${user.displayName.split(' ').first}!',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Abu Dhabi Off-Road Club',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.7),
+                const SizedBox(height: 4),
+                Text(
+                  'Ready for your next adventure?',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 24),
+              ],
 
-              // Quick Actions Grid
+              // Member Progress Widget (moved to top)
+              const MemberProgressWidget(),
+              const SizedBox(height: 24),
+
+              // Quick Actions Grid (compact 3-column layout)
               Text(
                 'Quick Actions',
-                style: theme.textTheme.titleLarge?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.5,
+                crossAxisCount: 3,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 1.0,
                 children: [
                   _QuickActionCard(
                     icon: Icons.explore_outlined,
@@ -121,24 +127,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   _QuickActionCard(
                     icon: Icons.add_circle_outline,
-                    title: 'Trip Requests',
+                    title: 'Requests',
                     color: const Color(0xFFE91E63),
                     onTap: () => context.push('/trip-requests'),
+                  ),
+                  _QuickActionCard(
+                    icon: Icons.trending_up,
+                    title: 'Logbook',
+                    color: const Color(0xFFFF9800),
+                    onTap: () => context.push('/logbook'),
+                  ),
+                  _QuickActionCard(
+                    icon: Icons.location_on,
+                    title: 'Points',
+                    color: const Color(0xFF00BCD4),
+                    onTap: () => context.push('/meeting-points'),
                   ),
                   // Admin Panel card (only visible to admins)
                   if (hasAdminAccess)
                     _QuickActionCard(
                       icon: Icons.admin_panel_settings,
-                      title: 'Admin Panel',
+                      title: 'Admin',
                       color: const Color(0xFF9C27B0),
                       onTap: () => context.push('/admin'),
                     ),
                 ],
               ),
-              const SizedBox(height: 32),
-
-              // Member Progress Widget
-              const MemberProgressWidget(),
               const SizedBox(height: 24),
 
               // Upcoming Trips Section
@@ -167,10 +181,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               context.push('/trips');
               break;
             case 2:
-              context.push('/logbook');
+              context.push('/gallery');
               break;
             case 3:
-              context.push('/gallery');
+              context.push('/logbook');
               break;
             case 4:
               context.push('/profile');
@@ -189,14 +203,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             label: 'Trips',
           ),
           NavigationDestination(
-            icon: Icon(Icons.book_outlined),
-            selectedIcon: Icon(Icons.book),
-            label: 'Logbook',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.photo_library_outlined),
             selectedIcon: Icon(Icons.photo_library),
             label: 'Gallery',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.book_outlined),
+            selectedIcon: Icon(Icons.book),
+            label: 'Logbook',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
@@ -261,16 +275,20 @@ class _QuickActionCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 40, color: color),
-              const SizedBox(height: 8),
+              Icon(icon, size: 28, color: color),
+              const SizedBox(height: 6),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

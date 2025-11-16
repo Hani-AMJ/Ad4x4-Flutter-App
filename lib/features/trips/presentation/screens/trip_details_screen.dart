@@ -1,16 +1,74 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/trips_provider.dart';
 import '../../../../core/utils/text_utils.dart';
-import '../../../../core/utils/image_proxy.dart';
 import '../../../../core/utils/status_helpers.dart';
+import '../../../../core/utils/level_display_helper.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/trip_export_service.dart';
 import '../../../../shared/widgets/admin/trip_admin_ribbon.dart';
+import '../../../../data/repositories/main_api_repository.dart';
+import '../../../../core/providers/repository_providers.dart';
+
+/// Optimistic registration state provider
+/// Tracks local registration changes immediately without waiting for API
+class OptimisticRegistrationState {
+  final Map<int, bool> registeredTrips;  // tripId -> isRegistered
+  final Map<int, bool> waitlistedTrips;  // tripId -> isWaitlisted
+
+  const OptimisticRegistrationState({
+    this.registeredTrips = const {},
+    this.waitlistedTrips = const {},
+  });
+
+  OptimisticRegistrationState copyWith({
+    Map<int, bool>? registeredTrips,
+    Map<int, bool>? waitlistedTrips,
+  }) {
+    return OptimisticRegistrationState(
+      registeredTrips: registeredTrips ?? this.registeredTrips,
+      waitlistedTrips: waitlistedTrips ?? this.waitlistedTrips,
+    );
+  }
+}
+
+class OptimisticRegistrationNotifier extends StateNotifier<OptimisticRegistrationState> {
+  OptimisticRegistrationNotifier() : super(const OptimisticRegistrationState());
+
+  void setRegistered(int tripId, bool isRegistered) {
+    state = state.copyWith(
+      registeredTrips: {...state.registeredTrips, tripId: isRegistered},
+      waitlistedTrips: {...state.waitlistedTrips, tripId: false},  // Clear waitlist
+    );
+  }
+
+  void setWaitlisted(int tripId, bool isWaitlisted) {
+    state = state.copyWith(
+      waitlistedTrips: {...state.waitlistedTrips, tripId: isWaitlisted},
+      registeredTrips: {...state.registeredTrips, tripId: false},  // Clear registration
+    );
+  }
+
+  void clear(int tripId) {
+    final newRegistered = Map<int, bool>.from(state.registeredTrips)..remove(tripId);
+    final newWaitlisted = Map<int, bool>.from(state.waitlistedTrips)..remove(tripId);
+    state = state.copyWith(
+      registeredTrips: newRegistered,
+      waitlistedTrips: newWaitlisted,
+    );
+  }
+}
+
+final optimisticRegistrationProvider = StateNotifierProvider<OptimisticRegistrationNotifier, OptimisticRegistrationState>((ref) {
+  return OptimisticRegistrationNotifier();
+});
 
 /// Trip Details Screen - Complete implementation with beautiful UI
 class TripDetailsScreen extends ConsumerWidget {
@@ -78,7 +136,7 @@ class TripDetailsScreen extends ConsumerWidget {
                       // Background Image
                       trip.imageUrl != null
                           ? CachedNetworkImage(
-                              imageUrl: ImageProxy.getProxiedUrl(trip.imageUrl),
+                              imageUrl: trip.imageUrl!,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
                                 color: colors.primaryContainer,
@@ -165,10 +223,10 @@ class TripDetailsScreen extends ConsumerWidget {
                 SliverToBoxAdapter(
                   child: TripAdminRibbon(
                     tripId: tripId,
-                    approvalStatus: _getTripApprovalStatus(trip.approvalStatus),
+                    approvalStatus: trip.approvalStatus, // Pass status string directly
                     onApprove: () => _handleApproveTrip(context, ref, trip),
                     onDecline: () => _handleDeclineTrip(context, ref, trip),
-                    onEdit: () => _handleEditTrip(context, trip),
+                    onEdit: () => _handleEditTrip(context, ref, trip),
                     onManageRegistrants: () => _handleManageRegistrants(context, trip),
                     onCheckin: () => _handleCheckin(context, ref, trip),
                     onExport: () => _handleExportRegistrants(context, trip),
@@ -188,11 +246,7 @@ class TripDetailsScreen extends ConsumerWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _buildLevelBadge(
-                            trip.level.displayName ?? trip.level.name,
-                            trip.level.numericLevel, // ✅ Pass numeric level for icon/color mapping
-                            colors,
-                          ),
+                          LevelDisplayHelper.buildCompactBadge(trip.level),
                           _buildStatusBadge(_getStatusText(trip), colors),
                         ],
                       ),
@@ -240,6 +294,10 @@ class TripDetailsScreen extends ConsumerWidget {
 
                     // Description Section
                     _buildDescriptionSection(context, trip, colors),
+
+                    // Gallery Section (if trip has associated gallery)
+                    if (trip.galleryId != null)
+                      _buildGallerySection(context, trip, colors),
 
                     // Registered Members
                     if (trip.registered.isNotEmpty)
@@ -389,85 +447,6 @@ class TripDetailsScreen extends ConsumerWidget {
     );
   }
 
-  // ✅ Get icon and color based on level numeric - exact match to trip card and filter
-  ({IconData icon, Color color}) _getLevelIconAndColor(int? levelNumeric, String levelName) {
-    // If levelNumeric provided, use exact mapping
-    if (levelNumeric != null) {
-      if (levelNumeric == 1) {
-        return (icon: Icons.event, color: const Color(0xFF8E44AD)); // Club Event - Purple
-      } else if (levelNumeric == 2) {
-        return (icon: Icons.school, color: const Color(0xFF27AE60)); // ANIT - Dark Green
-      } else if (levelNumeric == 3) {
-        return (icon: Icons.school, color: const Color(0xFF2ECC71)); // Newbie - Light Green
-      } else if (levelNumeric == 4) {
-        return (icon: Icons.trending_up, color: const Color(0xFF3498DB)); // Intermediate - Blue
-      } else if (levelNumeric == 5) {
-        return (icon: Icons.speed, color: const Color(0xFFE67E22)); // Advanced - Orange
-      } else if (levelNumeric == 6) {
-        return (icon: Icons.star, color: const Color(0xFFF39C12)); // Expert - Golden Yellow
-      } else if (levelNumeric == 7) {
-        return (icon: Icons.explore, color: const Color(0xFFE74C3C)); // Explorer - Red
-      } else if (levelNumeric == 8) {
-        return (icon: Icons.shield, color: const Color(0xFFF39C12)); // Marshal - Golden Yellow
-      } else if (levelNumeric == 9) {
-        return (icon: Icons.workspace_premium, color: const Color(0xFF34495E)); // Board Member - Dark Blue
-      }
-    }
-    
-    // Fallback to name-based matching for backward compatibility
-    final name = levelName.toLowerCase();
-    if (name.contains('club event')) {
-      return (icon: Icons.event, color: const Color(0xFF8E44AD));
-    } else if (name.contains('anit')) {
-      return (icon: Icons.school, color: const Color(0xFF27AE60));
-    } else if (name.contains('newbie')) {
-      return (icon: Icons.school, color: const Color(0xFF2ECC71));
-    } else if (name.contains('intermediate')) {
-      return (icon: Icons.trending_up, color: const Color(0xFF3498DB));
-    } else if (name.contains('advanc')) {  // Matches both "advance" and "advanced"
-      return (icon: Icons.speed, color: const Color(0xFFE67E22));
-    } else if (name.contains('expert')) {
-      return (icon: Icons.star, color: const Color(0xFFF39C12));
-    } else if (name.contains('explorer')) {
-      return (icon: Icons.explore, color: const Color(0xFFE74C3C));
-    } else if (name.contains('marshal')) {
-      return (icon: Icons.shield, color: const Color(0xFFF39C12));
-    } else if (name.contains('board')) {
-      return (icon: Icons.workspace_premium, color: const Color(0xFF34495E));
-    }
-    
-    // Default fallback
-    return (icon: Icons.terrain, color: const Color(0xFF64B5F6));
-  }
-
-  Widget _buildLevelBadge(String level, int? levelNumeric, ColorScheme colors) {
-    final levelData = _getLevelIconAndColor(levelNumeric, level);
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: levelData.color.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: levelData.color),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(levelData.icon, size: 16, color: levelData.color),
-          const SizedBox(width: 4),
-          Text(
-            level,
-            style: TextStyle(
-              color: levelData.color,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStatusBadge(String status, ColorScheme colors) {
     final Color badgeColor;
     final IconData icon;
@@ -487,23 +466,23 @@ class TripDetailsScreen extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: badgeColor),
+        color: badgeColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: badgeColor, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: badgeColor),
+          Icon(icon, size: 14, color: badgeColor),
           const SizedBox(width: 4),
           Text(
             status,
             style: TextStyle(
               color: badgeColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
             ),
           ),
         ],
@@ -893,6 +872,57 @@ class TripDetailsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildGallerySection(BuildContext context, dynamic trip, ColorScheme colors) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.photo_library, color: colors.primary),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Trip Gallery',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'View and share photos from this trip',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colors.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    context.push('/gallery/album/${trip.galleryId}');
+                  },
+                  icon: const Icon(Icons.photo_library),
+                  label: const Text('View Trip Gallery'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRegisteredMembersSection(BuildContext context, dynamic trip, ColorScheme colors) {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -1020,10 +1050,21 @@ class TripDetailsScreen extends ConsumerWidget {
     final authState = ref.watch(authProviderV2);
     final currentUserId = authState.user?.id ?? 0;
 
-    // ✅ Use API-provided fields (server-side calculation)
-    // This eliminates the need to iterate through registered/waitlist arrays
-    final isRegistered = trip.isRegistered ?? false;
-    final isOnWaitlist = trip.isWaitlisted ?? false;
+    // ✅ Use optimistic state for immediate UI updates
+    final optimisticState = ref.watch(optimisticRegistrationProvider);
+    
+    // Check if we have local optimistic updates for this trip
+    final hasOptimisticRegistered = optimisticState.registeredTrips.containsKey(trip.id);
+    final hasOptimisticWaitlisted = optimisticState.waitlistedTrips.containsKey(trip.id);
+    
+    // Use optimistic state if available, otherwise fall back to API state
+    final isRegistered = hasOptimisticRegistered 
+        ? (optimisticState.registeredTrips[trip.id] ?? false)
+        : (trip.isRegistered ?? false);
+    final isOnWaitlist = hasOptimisticWaitlisted
+        ? (optimisticState.waitlistedTrips[trip.id] ?? false)
+        : (trip.isWaitlisted ?? false);
+    
     final isFull = trip.registeredCount >= trip.capacity;
     final hasWaitlist = trip.allowWaitlist;
 
@@ -1085,10 +1126,7 @@ class TripDetailsScreen extends ConsumerWidget {
             const SizedBox(width: 8),
             IconButton.outlined(
               onPressed: () {
-                // TODO: Implement share functionality
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Share feature coming soon!')),
-                );
+                _handleShareTrip(context, trip);
               },
               icon: const Icon(Icons.share),
               tooltip: 'Share Trip',
@@ -1107,8 +1145,8 @@ class TripDetailsScreen extends ConsumerWidget {
   }
 
   String _getRegistrationLabel(bool isRegistered, bool isOnWaitlist, bool isFull, bool hasWaitlist) {
-    if (isRegistered) return 'Registered';  // Show status, clicking will unregister
-    if (isOnWaitlist) return 'Waitlisted';  // Show status, clicking will leave waitlist
+    if (isRegistered) return 'Cancel Registration';  // Show action to unregister
+    if (isOnWaitlist) return 'Leave Waitlist';  // Show action to leave waitlist
     if (isFull && hasWaitlist) return 'Join Waitlist';
     if (isFull) return 'Trip Full';
     return 'Register';
@@ -1142,20 +1180,25 @@ class TripDetailsScreen extends ConsumerWidget {
         // Unregister from trip
         final confirmed = await _showConfirmDialog(
           context,
-          'Unregister from Trip',
-          'Are you sure you want to unregister from this trip?',
+          'Cancel Registration',
+          'Are you sure you want to cancel your registration for this trip?',
         );
         if (!confirmed) return;
 
+        // ✅ Optimistically update UI immediately
+        ref.read(optimisticRegistrationProvider.notifier).setRegistered(trip.id, false);
+
         await ref.read(tripActionsProvider.notifier).unregister(trip.id);
         
-        // Refresh trip details to update UI
+        // Refresh trip details to update UI state
         ref.invalidate(tripDetailProvider(trip.id));
+        // Also refresh trips list to update counts
+        await ref.read(tripsProvider.notifier).refresh();
         
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Successfully unregistered from trip'),
+              content: Text('✅ Registration cancelled successfully'),
               backgroundColor: Colors.green,
             ),
           );
@@ -1169,30 +1212,40 @@ class TripDetailsScreen extends ConsumerWidget {
         );
         if (!confirmed) return;
 
+        // ✅ Optimistically update UI immediately
+        ref.read(optimisticRegistrationProvider.notifier).setWaitlisted(trip.id, false);
+
         await ref.read(tripActionsProvider.notifier).unregister(trip.id);
         
-        // Refresh trip details to update UI
+        // Refresh trip details to update UI state
         ref.invalidate(tripDetailProvider(trip.id));
+        // Also refresh trips list to update counts
+        await ref.read(tripsProvider.notifier).refresh();
         
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Successfully left waitlist'),
+              content: Text('✅ Left waitlist successfully'),
               backgroundColor: Colors.green,
             ),
           );
         }
       } else if (isFull && hasWaitlist) {
         // Join waitlist
+        // ✅ Optimistically update UI immediately
+        ref.read(optimisticRegistrationProvider.notifier).setWaitlisted(trip.id, true);
+
         await ref.read(tripActionsProvider.notifier).joinWaitlist(trip.id);
         
-        // Refresh trip details to update UI
+        // Refresh trip details to update UI state
         ref.invalidate(tripDetailProvider(trip.id));
+        // Also refresh trips list to update counts
+        await ref.read(tripsProvider.notifier).refresh();
         
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Successfully joined waitlist!'),
+              content: Text('✅ Joined waitlist successfully!'),
               backgroundColor: Colors.green,
             ),
           );
@@ -1200,15 +1253,21 @@ class TripDetailsScreen extends ConsumerWidget {
       } else if (!isFull) {
         // Register for trip
         // TODO: Add vehicle capacity dialog if needed
+        
+        // ✅ Optimistically update UI immediately
+        ref.read(optimisticRegistrationProvider.notifier).setRegistered(trip.id, true);
+
         await ref.read(tripActionsProvider.notifier).register(trip.id);
         
-        // Refresh trip details to update UI
+        // Refresh trip details to update UI state
         ref.invalidate(tripDetailProvider(trip.id));
+        // Also refresh trips list to update counts
+        await ref.read(tripsProvider.notifier).refresh();
         
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Successfully registered for trip!'),
+              content: Text('✅ Successfully registered for trip!'),
               backgroundColor: Colors.green,
             ),
           );
@@ -1313,18 +1372,9 @@ class TripDetailsScreen extends ConsumerWidget {
   /// Convert string approval status to enum
   /// Convert backend approval status code to enum
   /// ✅ FIXED: Backend returns "A", "P", "D" (single letters), not full words
-  TripApprovalStatus _getTripApprovalStatus(String status) {
-    // Use status helper to correctly parse backend codes
-    final parsed = parseApprovalStatus(status);
-    switch (parsed) {
-      case ApprovalStatus.approved:
-        return TripApprovalStatus.approved;
-      case ApprovalStatus.declined:
-        return TripApprovalStatus.declined;
-      case ApprovalStatus.pending:
-        return TripApprovalStatus.pending;
-    }
-  }
+  /// ✅ REMOVED: _getTripApprovalStatus() method
+  /// TripAdminRibbon now accepts String status codes directly (A, P, D)
+  /// No enum conversion needed - passes trip.approvalStatus directly
 
   /// Handle approve trip action
   Future<void> _handleApproveTrip(BuildContext context, WidgetRef ref, dynamic trip) async {
@@ -1394,11 +1444,14 @@ class TripDetailsScreen extends ConsumerWidget {
   }
 
   /// Handle edit trip action
-  void _handleEditTrip(BuildContext context, dynamic trip) {
-    // TODO: Navigate to edit screen when implemented
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Trip edit screen coming soon!')),
-    );
+  Future<void> _handleEditTrip(BuildContext context, WidgetRef ref, dynamic trip) async {
+    // Navigate to admin trip edit screen and await result
+    final result = await context.push<bool>('/trips/${trip.id}/edit');
+    
+    // If edit was successful, invalidate the cache to reload fresh data
+    if (result == true) {
+      ref.invalidate(tripDetailProvider(trip.id));
+    }
   }
 
   /// Handle manage registrants action
@@ -1462,25 +1515,131 @@ class TripDetailsScreen extends ConsumerWidget {
 
   /// Handle check-in action
   void _handleCheckin(BuildContext context, WidgetRef ref, dynamic trip) {
-    // TODO: Navigate to check-in screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Check-in screen coming soon!')),
+    // Show check-in dialog with registrants list
+    showDialog(
+      context: context,
+      builder: (context) => _CheckinDialog(trip: trip, ref: ref),
     );
   }
 
   /// Handle export registrants action
-  void _handleExportRegistrants(BuildContext context, dynamic trip) {
-    // TODO: Implement CSV export
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Export feature coming soon!')),
+  void _handleExportRegistrants(BuildContext context, dynamic trip) async {
+    // Show export format selection dialog
+    final format = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Export Registrants'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.table_chart),
+              title: const Text('CSV (Excel Compatible)'),
+              subtitle: const Text('Comma-separated values'),
+              onTap: () => Navigator.pop(context, 'csv'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.grid_on),
+              title: const Text('Excel (XLSX)'),
+              subtitle: const Text('Microsoft Excel format'),
+              onTap: () => Navigator.pop(context, 'xlsx'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf),
+              title: const Text('PDF'),
+              subtitle: const Text('Portable Document Format'),
+              onTap: () => Navigator.pop(context, 'pdf'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
     );
+    
+    if (format == null || !context.mounted) return;
+    
+    try {
+      switch (format) {
+        case 'csv':
+          final csvData = TripExportService.exportToCSV(trip);
+          final csvBytes = utf8.encode(csvData);
+          await TripExportService.downloadFile(
+            csvBytes, 
+            'trip_${trip.id}_registrants.csv',
+            'text/csv',
+          );
+          break;
+        case 'xlsx':
+          final xlsxBytes = await TripExportService.exportToExcel(trip);
+          await TripExportService.downloadFile(
+            xlsxBytes, 
+            'trip_${trip.id}_registrants.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          );
+          break;
+        case 'pdf':
+          await TripExportService.exportToPDF(trip);
+          break;
+      }
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Exported ${trip.registered.length} registrants as $format'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Export failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  /// Handle bind gallery action
+  /// Handle bind gallery action (navigate to gallery if exists)
   void _handleBindGallery(BuildContext context, dynamic trip) {
-    // TODO: Implement gallery binding
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gallery binding coming soon!')),
+    if (trip.galleryId != null) {
+      // Navigate to existing gallery
+      context.push('/gallery/album/${trip.galleryId}');
+    } else {
+      // Show message that gallery will be auto-created when trip is published
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gallery will be automatically created when trip is published'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  /// Handle share trip
+  void _handleShareTrip(BuildContext context, dynamic trip) {
+    final shareText = '''
+🚙 ${trip.title}
+
+📅 ${DateFormat('MMM d, y').format(DateTime.parse(trip.date))}
+📍 ${trip.location ?? 'Location TBD'}
+👥 ${trip.registered?.length ?? 0} members registered
+
+Join us for this exciting off-road adventure with AD4x4 Club!
+
+View details: https://ap.ad4x4.com/trips/${trip.id}
+''';
+
+    Share.share(
+      shareText,
+      subject: 'AD4x4 Trip: ${trip.title}',
     );
   }
 
@@ -1513,4 +1672,150 @@ class TripDetailsScreen extends ConsumerWidget {
       ),
     );
   }
+}  // End of TripDetailsScreen class
+
+/// Stateful dialog for check-in management
+class _CheckinDialog extends StatefulWidget {
+  final dynamic trip;
+  final WidgetRef ref;
+
+  const _CheckinDialog({required this.trip, required this.ref});
+
+  @override
+  State<_CheckinDialog> createState() => _CheckinDialogState();
 }
+
+class _CheckinDialogState extends State<_CheckinDialog> {
+  // Track check-in status changes locally
+  final Map<int, String> _statusChanges = {};
+  bool _isSaving = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Check-In: ${widget.trip.title}'),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 400,
+        child: _isSaving
+            ? const Center(child: CircularProgressIndicator())
+            : ListView.builder(
+                itemCount: widget.trip.registered.length,
+                itemBuilder: (context, index) {
+                  final registration = widget.trip.registered[index];
+                  final currentStatus = _statusChanges[registration.member.id] ?? registration.status;
+                  final isCheckedIn = currentStatus == 'checked_in' || currentStatus == 'checked_out';
+                  
+                  return CheckboxListTile(
+                    title: Text(registration.member.displayName),
+                    subtitle: Text(registration.member.username),
+                    value: isCheckedIn,
+                    onChanged: (value) {
+                      setState(() {
+                        if (value == true) {
+                          _statusChanges[registration.member.id] = 'checked_in';
+                        } else {
+                          _statusChanges[registration.member.id] = 'registered';
+                        }
+                      });
+                    },
+                  );
+                },
+              ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSaving ? null : () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+        ElevatedButton(
+          onPressed: _isSaving ? null : _saveCheckInChanges,
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+
+  /// Save all check-in status changes
+  Future<void> _saveCheckInChanges() async {
+    if (_statusChanges.isEmpty) {
+      Navigator.pop(context);
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final repository = widget.ref.read(mainApiRepositoryProvider);
+      int successCount = 0;
+      int errorCount = 0;
+
+      // Process each status change
+      for (final entry in _statusChanges.entries) {
+        final memberId = entry.key;
+        final newStatus = entry.value;
+        
+        // Find original status
+        final registration = widget.trip.registered.firstWhere(
+          (r) => r.member.id == memberId,
+          orElse: () => null,
+        );
+        
+        if (registration == null) continue;
+        final oldStatus = registration.status;
+
+        try {
+          // Only call API if status actually changed
+          if (oldStatus != newStatus) {
+            if (newStatus == 'checked_in' || newStatus == 'checked_out') {
+              // Check in member
+              await repository.checkinMember(widget.trip.id, memberId);
+              successCount++;
+            } else if (newStatus == 'registered') {
+              // Check out member (back to registered)
+              await repository.checkoutMember(widget.trip.id, memberId);
+              successCount++;
+            }
+          }
+        } catch (e) {
+          print('Error updating check-in status for member $memberId: $e');
+          errorCount++;
+        }
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        
+        // Show result feedback
+        if (errorCount == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Successfully updated check-in status for $successCount member(s)'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Updated $successCount member(s), $errorCount failed'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+
+        // Refresh trip details to show updated status
+        widget.ref.read(tripsProvider.notifier).refresh();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save check-in changes: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+}  // End of _CheckinDialogState class

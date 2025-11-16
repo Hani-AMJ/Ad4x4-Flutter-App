@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/providers/car_brand_provider.dart';
 
 /// Admin Member Edit Screen
 /// 
@@ -377,13 +378,47 @@ class _AdminMemberEditScreenState extends ConsumerState<AdminMemberEditScreen> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _carBrandController,
-              decoration: const InputDecoration(
-                labelText: 'Car Brand',
-                border: OutlineInputBorder(),
-                hintText: 'e.g., Toyota',
-              ),
+            // Car Brand - Dynamic from backend
+            Consumer(
+              builder: (context, ref, _) {
+                final brandsAsync = ref.watch(carBrandChoicesProvider);
+                return brandsAsync.when(
+                  data: (brands) => DropdownButtonFormField<String>(
+                    value: _carBrandController.text.isNotEmpty ? _carBrandController.text : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Car Brand',
+                      border: OutlineInputBorder(),
+                      hintText: 'Select vehicle brand',
+                    ),
+                    items: brands.map((brand) => DropdownMenuItem(
+                      value: brand.value,
+                      child: Text(brand.label),
+                    )).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _carBrandController.text = value ?? '';
+                      });
+                    },
+                  ),
+                  loading: () => TextFormField(
+                    controller: _carBrandController,
+                    decoration: const InputDecoration(
+                      labelText: 'Car Brand',
+                      border: OutlineInputBorder(),
+                      hintText: 'Loading brands...',
+                    ),
+                    enabled: false,
+                  ),
+                  error: (e, s) => TextFormField(
+                    controller: _carBrandController,
+                    decoration: const InputDecoration(
+                      labelText: 'Car Brand',
+                      border: OutlineInputBorder(),
+                      hintText: 'e.g., Toyota',
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             TextFormField(

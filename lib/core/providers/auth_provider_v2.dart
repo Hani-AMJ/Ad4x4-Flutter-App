@@ -177,6 +177,85 @@ class AuthNotifierV2 extends StateNotifier<AuthStateV2> {
     }
   }
 
+  /// Register new user account
+  Future<bool> register({
+    required String username,
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String phone,
+    // Optional fields
+    String? dob,
+    String? gender,
+    String? city,
+    String? nationality,
+    String? carBrand,
+    String? carModel,
+    String? carColor,
+    int? carYear,
+    String? iceName,
+    String? icePhone,
+    String? avatar,
+  }) async {
+    print('📝 [AuthV2] Registration attempt: $email');
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final response = await _repository.register(
+        username: username,
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        // Pass optional fields
+        dob: dob,
+        gender: gender,
+        city: city,
+        nationality: nationality,
+        carBrand: carBrand,
+        carModel: carModel,
+        carColor: carColor,
+        carYear: carYear,
+        iceName: iceName,
+        icePhone: icePhone,
+        avatar: avatar,
+      );
+
+      print('✅ [AuthV2] Registration successful');
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      print('❌ [AuthV2] Registration error: $e');
+      state = AuthStateV2(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+  /// Request password reset email
+  Future<bool> forgotPassword({required String email}) async {
+    print('🔑 [AuthV2] Password reset request: $email');
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      await _repository.forgotPassword(email: email);
+      print('✅ [AuthV2] Password reset email sent');
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      print('❌ [AuthV2] Password reset error: $e');
+      state = AuthStateV2(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
   /// Refresh user profile
   Future<void> refreshProfile() async {
     if (!state.isAuthenticated) return;

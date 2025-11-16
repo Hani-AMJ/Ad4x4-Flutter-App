@@ -7,6 +7,7 @@ import '../providers/auth_provider_v2.dart'; // NEW - Clean Riverpod auth
 
 // Models
 import '../../data/models/event_model.dart';
+import '../../data/models/album_model.dart';
 
 // Screens (to be created)
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -33,7 +34,12 @@ import '../../features/logbook/presentation/screens/logbook_home_screen.dart';
 import '../../features/logbook/presentation/screens/logbook_timeline_screen.dart';
 import '../../features/logbook/presentation/screens/skills_matrix_screen.dart';
 import '../../features/logbook/presentation/screens/trip_history_with_logbook_screen.dart';
+import '../../features/logbook/presentation/screens/member_upgrade_requests_screen.dart';
+import '../../features/logbook/presentation/screens/create_upgrade_request_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/help_support_screen.dart';
+import '../../features/settings/presentation/screens/terms_conditions_screen.dart';
+import '../../features/settings/presentation/screens/privacy_policy_screen.dart';
 import '../../features/members/presentation/screens/members_list_screen.dart';
 import '../../features/members/presentation/screens/member_details_screen.dart';
 import '../../features/vehicles/presentation/screens/vehicles_list_screen.dart';
@@ -46,7 +52,7 @@ import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_home_screen.dart';
 import '../../features/admin/presentation/screens/admin_trips_pending_screen.dart';
 import '../../features/admin/presentation/screens/admin_trips_all_screen.dart';
-import '../../features/admin/presentation/screens/admin_trips_wizard_screen.dart';
+import '../../features/admin/presentation/screens/admin_trips_search_screen.dart';
 import '../../features/admin/presentation/screens/admin_trip_edit_screen.dart';
 import '../../features/admin/presentation/screens/admin_trip_registrants_screen.dart';
 import '../../features/admin/presentation/screens/admin_members_list_screen.dart';
@@ -54,9 +60,12 @@ import '../../features/admin/presentation/screens/admin_member_details_screen.da
 import '../../features/admin/presentation/screens/admin_member_edit_screen.dart';
 import '../../features/admin/presentation/screens/admin_meeting_points_screen.dart';
 import '../../features/admin/presentation/screens/admin_meeting_point_form_screen.dart';
+import '../../features/admin/presentation/screens/admin_here_maps_settings_screen.dart';
 import '../../features/admin/presentation/screens/admin_upgrade_requests_screen.dart';
 import '../../features/admin/presentation/screens/admin_upgrade_request_details_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_upgrade_request_screen.dart';
+import '../../features/admin/presentation/screens/admin_trip_requests_screen.dart';
+import '../../features/admin/presentation/screens/admin_feedback_screen.dart';
 import '../../features/admin/presentation/screens/admin_logbook_entries_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_logbook_entry_screen.dart';
 import '../../features/admin/presentation/screens/admin_sign_off_skills_screen.dart';
@@ -68,6 +77,10 @@ import '../../features/admin/presentation/screens/admin_registration_analytics_s
 import '../../features/admin/presentation/screens/admin_bulk_registrations_screen.dart';
 import '../../features/admin/presentation/screens/admin_waitlist_management_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+// Phase B - Meeting Points Member View
+import '../../features/meeting_points/presentation/screens/meeting_points_screen.dart';
+import '../../features/meeting_points/presentation/screens/meeting_point_detail_screen.dart';
+import '../../data/models/meeting_point_model.dart';
 
 /// 🔄 V2: Clean Riverpod-based Router with Simplified Auth Guards
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -94,6 +107,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // Debug pages are always accessible (no auth required)
       final isDebugPage = currentLocation.startsWith('/debug');
       
+      // Public pages accessible without authentication
+      final isPublicPage = currentLocation == '/settings/terms' ||
+                          currentLocation == '/settings/privacy';
+      
       print('🔀 [Router] $currentLocation | Auth: $isAuthenticated | Loading: $isLoading');
       
       // Wait for auth to finish loading
@@ -111,6 +128,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // Allow access to debug pages without authentication
       if (isDebugPage) {
         print('🔧 [Router] Debug page - allowing access');
+        return null;
+      }
+      
+      // Allow access to public pages without authentication
+      if (isPublicPage) {
+        print('📄 [Router] Public page - allowing access');
         return null;
       }
       
@@ -210,6 +233,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const TripRequestsScreen(),
       ),
 
+      // Meeting Points Routes (Phase B - Member View)
+      GoRoute(
+        path: '/meeting-points',
+        name: 'meeting-points',
+        builder: (context, state) => const MeetingPointsScreen(),
+      ),
+      GoRoute(
+        path: '/meeting-points/:id',
+        name: 'meeting-point-detail',
+        builder: (context, state) {
+          final meetingPoint = state.extra as MeetingPoint?;
+          // If meetingPoint is passed via extra, use it directly
+          // Otherwise, we'd need to fetch from API (not implemented yet)
+          return MeetingPointDetailScreen(meetingPoint: meetingPoint!);
+        },
+      ),
+
       // Event Routes
       GoRoute(
         path: '/events',
@@ -237,14 +277,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'album',
         builder: (context, state) {
           final albumId = state.pathParameters['albumId']!;
-          return AlbumScreen(albumId: albumId);
+          final album = state.extra as Album?;  // Get pre-loaded album data if available
+          return AlbumScreen(albumId: albumId, album: album);
         },
       ),
       GoRoute(
         path: '/gallery/upload/:galleryId',
         name: 'upload-photos',
         builder: (context, state) {
-          final galleryId = int.parse(state.pathParameters['galleryId']!);
+          final galleryId = state.pathParameters['galleryId']!;  // UUID string
           final galleryTitle = state.uri.queryParameters['galleryTitle'] ?? 'Gallery';
           return PhotoUploadScreen(
             galleryId: galleryId,
@@ -314,6 +355,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return TripHistoryWithLogbookScreen(memberId: memberId);
         },
       ),
+      GoRoute(
+        path: '/logbook/upgrade-requests',
+        name: 'member-upgrade-requests',
+        builder: (context, state) => const MemberUpgradeRequestsScreen(),
+      ),
+      GoRoute(
+        path: '/logbook/upgrade-requests/create',
+        name: 'create-upgrade-request',
+        builder: (context, state) => const CreateUpgradeRequestScreen(),
+      ),
+      // ❌ REMOVED: Members now view request details in popup dialog
+      // No separate detail screen needed for member view
 
       // Vehicle Routes
       GoRoute(
@@ -332,6 +385,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/help-support',
+        name: 'help-support',
+        builder: (context, state) => const HelpSupportScreen(),
+      ),
+      GoRoute(
+        path: '/settings/terms',
+        name: 'terms-conditions',
+        builder: (context, state) => const TermsConditionsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/privacy',
+        name: 'privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
       ),
       
       // Debug Routes (for development)
@@ -407,7 +475,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             name: 'admin-trips-wizard',
             pageBuilder: (context, state) {
               return NoTransitionPage(
-                child: const AdminTripsWizardScreen(),
+                child: const AdminTripsSearchScreen(),
               );
             },
           ),
@@ -479,6 +547,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             },
           ),
           GoRoute(
+            path: '/admin/here-maps-settings',
+            name: 'admin-here-maps-settings',
+            pageBuilder: (context, state) {
+              return const NoTransitionPage(
+                child: AdminHereMapsSettingsScreen(),
+              );
+            },
+          ),
+          GoRoute(
             path: '/admin/upgrade-requests',
             name: 'admin-upgrade-requests',
             pageBuilder: (context, state) {
@@ -503,6 +580,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               final requestId = state.pathParameters['id']!;
               return NoTransitionPage(
                 child: AdminUpgradeRequestDetailsScreen(requestId: requestId),
+              );
+            },
+          ),
+          // Trip Requests Routes
+          GoRoute(
+            path: '/admin/trip-requests',
+            name: 'admin-trip-requests',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminTripRequestsScreen(),
+              );
+            },
+          ),
+          // Feedback Routes
+          GoRoute(
+            path: '/admin/feedback',
+            name: 'admin-feedback',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminFeedbackScreen(),
               );
             },
           ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/utils/image_proxy.dart';
+import '../../../core/utils/level_display_helper.dart';
 
 /// Card for displaying trip information
 class TripCard extends StatelessWidget {
@@ -30,72 +30,18 @@ class TripCard extends StatelessWidget {
     this.isWaitlisted = false,
   });
 
-  // ✅ NEW: Get icon and color based on level numeric - exact match to filter and map
+  // Get icon and color using LevelDisplayHelper
   ({IconData icon, Color color}) _getLevelIconAndColor() {
-    // If levelNumeric provided, use exact mapping
+    // Use levelNumeric if provided (preferred)
     if (levelNumeric != null) {
-      if (levelNumeric == 1) {
-        return (icon: Icons.event, color: const Color(0xFF8E44AD)); // Club Event - Purple
-      } else if (levelNumeric == 2) {
-        return (icon: Icons.school, color: const Color(0xFF27AE60)); // ANIT - Dark Green
-      } else if (levelNumeric == 3) {
-        return (icon: Icons.school, color: const Color(0xFF2ECC71)); // Newbie - Light Green
-      } else if (levelNumeric == 4) {
-        return (icon: Icons.trending_up, color: const Color(0xFF3498DB)); // Intermediate - Blue
-      } else if (levelNumeric == 5) {
-        return (icon: Icons.speed, color: const Color(0xFFE67E22)); // Advanced - Orange
-      } else if (levelNumeric == 6) {
-        return (icon: Icons.star, color: const Color(0xFFF39C12)); // Expert - Golden Yellow
-      } else if (levelNumeric == 7) {
-        return (icon: Icons.explore, color: const Color(0xFFE74C3C)); // Explorer - Red
-      } else if (levelNumeric == 8) {
-        return (icon: Icons.shield, color: const Color(0xFFF39C12)); // Marshal - Golden Yellow
-      } else if (levelNumeric == 9) {
-        return (icon: Icons.workspace_premium, color: const Color(0xFF34495E)); // Board Member - Dark Blue
-      }
+      return (
+        icon: LevelDisplayHelper.getLevelIcon(levelNumeric!),
+        color: LevelDisplayHelper.getLevelColor(levelNumeric!)
+      );
     }
     
-    // Fallback to name-based matching for backward compatibility
-    final levelName = difficulty.toLowerCase();
-    if (levelName.contains('club event')) {
-      return (icon: Icons.event, color: const Color(0xFF8E44AD));
-    } else if (levelName.contains('anit')) {
-      return (icon: Icons.school, color: const Color(0xFF27AE60));
-    } else if (levelName.contains('newbie')) {
-      return (icon: Icons.school, color: const Color(0xFF2ECC71));
-    } else if (levelName.contains('intermediate')) {
-      return (icon: Icons.trending_up, color: const Color(0xFF3498DB));
-    } else if (levelName.contains('advanc')) {  // Matches both "advance" and "advanced"
-      return (icon: Icons.speed, color: const Color(0xFFE67E22));
-    } else if (levelName.contains('expert')) {
-      return (icon: Icons.star, color: const Color(0xFFF39C12));
-    } else if (levelName.contains('explorer')) {
-      return (icon: Icons.explore, color: const Color(0xFFE74C3C));
-    } else if (levelName.contains('marshal')) {
-      return (icon: Icons.shield, color: const Color(0xFFF39C12));
-    } else if (levelName.contains('board')) {
-      return (icon: Icons.workspace_premium, color: const Color(0xFF34495E));
-    }
-    
-    // Default fallback
+    // Fallback: use default values if numericLevel not available
     return (icon: Icons.terrain, color: const Color(0xFF64B5F6));
-  }
-
-  String _getLevelText() {
-    switch (difficulty.toLowerCase()) {
-      case 'anit':
-        return 'ANIT';
-      case 'easy':
-        return 'Newbie';
-      case 'medium':
-        return 'Intermediate';
-      case 'hard':
-        return 'Advanced';
-      case 'expert':
-        return 'Expert';
-      default:
-        return difficulty.toUpperCase();
-    }
   }
 
   @override
@@ -117,7 +63,7 @@ class TripCard extends StatelessWidget {
             // Image or placeholder
             if (imageUrl != null)
               Image.network(
-                ImageProxy.getProxiedUrl(imageUrl),
+                imageUrl!,
                 height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,

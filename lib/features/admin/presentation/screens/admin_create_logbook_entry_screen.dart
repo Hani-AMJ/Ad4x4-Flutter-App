@@ -70,7 +70,7 @@ class _AdminCreateLogbookEntryScreenState
           .toList() ?? [];
       
       // Load skills
-      final skillsResponse = await repository.getLogbookSkills(limit: 100);
+      final skillsResponse = await repository.getLogbookSkills(pageSize: 100);
       final skillsData = LogbookSkillsResponse.fromJson(skillsResponse);
       
       setState(() {

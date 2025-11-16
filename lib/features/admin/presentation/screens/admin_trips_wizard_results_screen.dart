@@ -9,6 +9,8 @@ import '../../../../core/utils/status_helpers.dart';
 import '../../../../shared/constants/level_constants.dart';
 import '../providers/admin_wizard_provider.dart';
 import '../widgets/wizard_filter_drawer.dart';
+import '../../../../data/models/approval_status_choice_model.dart';
+import '../providers/approval_status_provider.dart';
 
 /// Admin Trips Wizard Results Screen
 /// 
@@ -533,29 +535,49 @@ class _TripResultCard extends ConsumerWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
+class _StatusBadge extends ConsumerWidget {
   final String status;
 
   const _StatusBadge({required this.status});
 
   @override
-  Widget build(BuildContext context) {
-    final bool isPending = status.toLowerCase().contains('p');
-    final bool isApproved = status.toLowerCase().contains('a');
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statusesAsync = ref.watch(approvalStatusChoicesProvider);
 
-    Color color;
-    String label;
+    return statusesAsync.when(
+      data: (statuses) => _buildDynamicBadge(context, statuses),
+      loading: () => _buildFallbackBadge(context),
+      error: (e, s) => _buildFallbackBadge(context),
+    );
+  }
 
-    if (isPending) {
-      color = Colors.orange;
-      label = 'Pending';
-    } else if (isApproved) {
-      color = Colors.green;
-      label = 'Approved';
-    } else {
-      color = Colors.red;
-      label = 'Declined';
+  /// Build dynamic badge with backend-driven labels and colors
+  Widget _buildDynamicBadge(BuildContext context, List<ApprovalStatusChoice> statuses) {
+    // Find matching status from backend choices
+    ApprovalStatusChoice? matchedStatus;
+    
+    for (final choice in statuses) {
+      final choiceValue = choice.value.toLowerCase();
+      final statusLower = status.toLowerCase();
+      
+      // Match by value or backward compatibility (P=pending, A=approved, D=declined)
+      if (choiceValue == statusLower ||
+          (choiceValue == 'p' && statusLower == 'pending') ||
+          (choiceValue == 'a' && statusLower == 'approved') ||
+          (choiceValue == 'd' && statusLower == 'declined')) {
+        matchedStatus = choice;
+        break;
+      }
     }
+
+    // Use matched status or fallback
+    final label = matchedStatus?.label ?? _getFallbackLabel(status);
+    
+    // Get color from matched status's static method or fallback
+    final colorHex = matchedStatus != null 
+        ? ApprovalStatusChoice.getColorHex(matchedStatus.value)
+        : null;
+    final color = _parseColor(colorHex, context) ?? _getFallbackColor(status);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -573,6 +595,57 @@ class _StatusBadge extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Build fallback badge with hardcoded labels (offline resilience)
+  Widget _buildFallbackBadge(BuildContext context) {
+    final label = _getFallbackLabel(status);
+    final color = _getFallbackColor(status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  /// Get fallback label based on status helpers
+  String _getFallbackLabel(String status) {
+    if (isPending(status)) return 'Pending';
+    if (isApproved(status)) return 'Approved';
+    if (isDeclined(status)) return 'Declined';
+    return status;
+  }
+
+  /// Get fallback color based on status helpers
+  Color _getFallbackColor(String status) {
+    if (isPending(status)) return Colors.orange;
+    if (isApproved(status)) return Colors.green;
+    if (isDeclined(status)) return Colors.red;
+    return Colors.grey;
+  }
+
+  /// Parse hex color string to Color object
+  Color? _parseColor(String? hexColor, BuildContext context) {
+    if (hexColor == null || !hexColor.startsWith('#')) return null;
+    
+    try {
+      final hex = hexColor.substring(1);
+      return Color(int.parse('FF$hex', radix: 16));
+    } catch (e) {
+      return null;
+    }
   }
 }
 

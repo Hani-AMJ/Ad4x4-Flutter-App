@@ -27,11 +27,12 @@ class _UpcomingTripsCarouselState extends State<UpcomingTripsCarousel> {
 
   Future<void> _loadUpcomingTrips() async {
     try {
-      // Get all upcoming trips (filtering by date)
+      // Get upcoming approved trips only (filtering by date and approval status)
       final now = DateTime.now();
       final startTimeAfter = now.toIso8601String();
       
       final response = await _repository.getTrips(
+        approvalStatus: 'A', // ✅ CRITICAL: Only show APPROVED trips (excludes Deleted 'D', Pending 'P', Rejected 'R')
         startTimeAfter: startTimeAfter,
         page: 1,
         pageSize: 5,

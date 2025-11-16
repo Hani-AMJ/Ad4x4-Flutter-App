@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/repository_providers.dart';
+import '../../../../data/repositories/main_api_repository.dart';
+import '../providers/trips_provider.dart';
 
-class ManageRegistrantsScreen extends StatefulWidget {
+class ManageRegistrantsScreen extends ConsumerStatefulWidget {
   final String tripId;
   final String tripTitle;
   
@@ -12,34 +16,25 @@ class ManageRegistrantsScreen extends StatefulWidget {
   });
 
   @override
-  State<ManageRegistrantsScreen> createState() => _ManageRegistrantsScreenState();
+  ConsumerState<ManageRegistrantsScreen> createState() => _ManageRegistrantsScreenState();
 }
 
-class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with SingleTickerProviderStateMixin {
+class _ManageRegistrantsScreenState extends ConsumerState<ManageRegistrantsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isLoading = false;
+  bool _isLoading = true;
+  String? _error;
   
-  // Sample data - TODO: Replace with actual API calls
-  final List<Registrant> _registered = [
-    Registrant(id: '1', name: 'Mohammed Al-Zaabi', memberNumber: 'M2001', vehicle: 'Toyota Land Cruiser', status: RegistrationStatus.approved),
-    Registrant(id: '2', name: 'Ahmad Al-Mansoori', memberNumber: 'M2015', vehicle: 'Nissan Patrol', status: RegistrationStatus.approved),
-    Registrant(id: '3', name: 'Khalid Al-Dhaheri', memberNumber: 'M2032', vehicle: 'Jeep Wrangler', status: RegistrationStatus.approved),
-    Registrant(id: '4', name: 'Saif Al-Ketbi', memberNumber: 'M2048', vehicle: 'Toyota FJ Cruiser', status: RegistrationStatus.approved),
-  ];
-  
-  final List<Registrant> _waitlist = [
-    Registrant(id: '5', name: 'Abdullah Al-Mazrouei', memberNumber: 'M2065', vehicle: 'Ford Raptor', status: RegistrationStatus.waitlisted),
-    Registrant(id: '6', name: 'Rashid Al-Blooshi', memberNumber: 'M2078', vehicle: 'GMC Sierra', status: RegistrationStatus.waitlisted),
-  ];
-  
-  final List<Registrant> _pending = [
-    Registrant(id: '7', name: 'Salem Al-Kaabi', memberNumber: 'M2091', vehicle: 'Chevrolet Tahoe', status: RegistrationStatus.pending),
-  ];
+  // Real trip data
+  dynamic _trip;
+  List<dynamic> _registered = [];
+  List<dynamic> _waitlist = [];
+  List<dynamic> _pending = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadTripData();
   }
 
   @override
@@ -48,60 +43,133 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
     super.dispose();
   }
 
-  Future<void> _approveRegistrant(Registrant registrant) async {
-    setState(() => _isLoading = true);
-    
-    // TODO: API call to approve registrant
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (mounted) {
-      setState(() {
-        _pending.remove(registrant);
-        _registered.add(registrant.copyWith(status: RegistrationStatus.approved));
-        _isLoading = false;
-      });
+  /// Load trip data from API
+  Future<void> _loadTripData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final tripId = int.parse(widget.tripId);
+      final response = await repository.getTripDetail(tripId);
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${registrant.name} approved'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          _trip = response;
+          
+          // Categorize registrations by status
+          final allRegistrations = response['registered'] ?? [];
+          _registered = allRegistrations.where((r) => 
+            r['status'] == 'registered' || 
+            r['status'] == 'checked_in' ||
+            r['status'] == 'checked_out'
+          ).toList();
+          
+          _waitlist = allRegistrations.where((r) => 
+            r['status'] == 'waitlisted'
+          ).toList();
+          
+          _pending = allRegistrations.where((r) => 
+            r['status'] == 'pending'
+          ).toList();
+          
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading trip data: $e');
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _moveToWaitlist(Registrant registrant) async {
-    setState(() => _isLoading = true);
-    
-    // TODO: API call to move to waitlist
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (mounted) {
-      setState(() {
-        if (_registered.contains(registrant)) {
-          _registered.remove(registrant);
-        } else if (_pending.contains(registrant)) {
-          _pending.remove(registrant);
-        }
-        _waitlist.add(registrant.copyWith(status: RegistrationStatus.waitlisted));
-        _isLoading = false;
-      });
+  /// Force register member (approve pending or add new member)
+  Future<void> _approveRegistrant(dynamic registration) async {
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final tripId = int.parse(widget.tripId);
+      final memberId = registration['member']['id'];
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${registrant.name} moved to waitlist'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      await repository.forceRegisterMember(tripId, memberId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${registration['member']['displayName']} approved'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Reload data
+        await _loadTripData();
+        
+        // Refresh trips list
+        ref.read(tripsProvider.notifier).refresh();
+      }
+    } catch (e) {
+      print('Error approving registrant: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to approve: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _removeRegistrant(Registrant registrant) async {
+  /// Move member to waitlist
+  Future<void> _moveToWaitlist(dynamic registration) async {
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final tripId = int.parse(widget.tripId);
+      final memberId = registration['member']['id'];
+      
+      // API uses the waitlist endpoint which adds to waitlist
+      // First remove if registered, then add to waitlist
+      await repository.removeMember(tripId, memberId, reason: 'Moved to waitlist');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${registration['member']['displayName']} moved to waitlist'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        
+        // Reload data
+        await _loadTripData();
+        
+        // Refresh trips list
+        ref.read(tripsProvider.notifier).refresh();
+      }
+    } catch (e) {
+      print('Error moving to waitlist: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to move to waitlist: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Remove member from trip
+  Future<void> _removeRegistrant(dynamic registration) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Registrant'),
-        content: Text('Are you sure you want to remove ${registrant.name} from this trip?'),
+        content: Text('Are you sure you want to remove ${registration['member']['displayName']} from this trip?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -118,54 +186,85 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
     
     if (confirm != true) return;
     
-    setState(() => _isLoading = true);
-    
-    // TODO: API call to remove registrant
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (mounted) {
-      setState(() {
-        _registered.remove(registrant);
-        _waitlist.remove(registrant);
-        _pending.remove(registrant);
-        _isLoading = false;
-      });
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final tripId = int.parse(widget.tripId);
+      final memberId = registration['member']['id'];
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${registrant.name} removed'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      await repository.removeMember(tripId, memberId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${registration['member']['displayName']} removed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        
+        // Reload data
+        await _loadTripData();
+        
+        // Refresh trips list
+        ref.read(tripsProvider.notifier).refresh();
+      }
+    } catch (e) {
+      print('Error removing registrant: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to remove: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _promoteFromWaitlist(Registrant registrant) async {
-    setState(() => _isLoading = true);
-    
-    // TODO: API call to promote from waitlist
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (mounted) {
-      setState(() {
-        _waitlist.remove(registrant);
-        _registered.add(registrant.copyWith(status: RegistrationStatus.approved));
-        _isLoading = false;
-      });
+  /// Promote member from waitlist to registered
+  Future<void> _promoteFromWaitlist(dynamic registration) async {
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final tripId = int.parse(widget.tripId);
+      final memberId = registration['member']['id'];
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${registrant.name} promoted to registered'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      await repository.addFromWaitlist(tripId, memberId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${registration['member']['displayName']} promoted to registered'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Reload data
+        await _loadTripData();
+        
+        // Refresh trips list
+        ref.read(tripsProvider.notifier).refresh();
+      }
+    } catch (e) {
+      print('Error promoting from waitlist: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to promote: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
+  /// Add member manually (force register)
   Future<void> _addManualRegistrant() async {
     // TODO: Show dialog to search and add member manually
+    // This would require a member search API endpoint
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Manual registration coming soon')),
+      const SnackBar(
+        content: Text('Manual registration requires member search feature'),
+        backgroundColor: Colors.orange,
+      ),
     );
   }
 
@@ -173,6 +272,52 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: colors.surface,
+        appBar: AppBar(
+          backgroundColor: colors.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: colors.onSurface),
+            onPressed: () => context.pop(),
+          ),
+          title: const Text('Manage Registrants'),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        backgroundColor: colors.surface,
+        appBar: AppBar(
+          backgroundColor: colors.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: colors.onSurface),
+            onPressed: () => context.pop(),
+          ),
+          title: const Text('Manage Registrants'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error: $_error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadTripData,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -238,6 +383,11 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
             onPressed: _addManualRegistrant,
             tooltip: 'Add member manually',
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadTripData,
+            tooltip: 'Refresh',
+          ),
         ],
       ),
       body: TabBarView(
@@ -251,8 +401,8 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
     );
   }
 
-  Widget _buildRegistrantsList(List<Registrant> registrants, RegistrantListType type) {
-    if (registrants.isEmpty) {
+  Widget _buildRegistrantsList(List<dynamic> registrations, RegistrantListType type) {
+    if (registrations.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -285,17 +435,21 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: registrants.length,
+      itemCount: registrations.length,
       itemBuilder: (context, index) {
-        final registrant = registrants[index];
-        return _buildRegistrantCard(registrant, type);
+        final registration = registrations[index];
+        return _buildRegistrantCard(registration, type);
       },
     );
   }
 
-  Widget _buildRegistrantCard(Registrant registrant, RegistrantListType type) {
+  Widget _buildRegistrantCard(dynamic registration, RegistrantListType type) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final member = registration['member'];
+    final displayName = member['displayName'] ?? member['username'] ?? 'Unknown';
+    final username = member['username'] ?? '';
+    final memberNumber = member['memberNumber']?.toString() ?? 'N/A';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -304,7 +458,7 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
         leading: CircleAvatar(
           backgroundColor: colors.primary.withValues(alpha: 0.1),
           child: Text(
-            registrant.name.split(' ').map((n) => n[0]).take(2).join(),
+            displayName.split(' ').map((n) => n.isNotEmpty ? n[0] : '').take(2).join(),
             style: TextStyle(
               color: colors.primary,
               fontWeight: FontWeight.bold,
@@ -312,7 +466,7 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
           ),
         ),
         title: Text(
-          registrant.name,
+          displayName,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
@@ -321,9 +475,9 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text('Member #${registrant.memberNumber}'),
+            Text('@$username'),
             Text(
-              registrant.vehicle,
+              'Member #$memberNumber',
               style: TextStyle(
                 color: colors.onSurface.withValues(alpha: 0.6),
                 fontSize: 12,
@@ -336,16 +490,16 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
           onSelected: (value) {
             switch (value) {
               case 'approve':
-                _approveRegistrant(registrant);
+                _approveRegistrant(registration);
                 break;
               case 'waitlist':
-                _moveToWaitlist(registrant);
+                _moveToWaitlist(registration);
                 break;
               case 'promote':
-                _promoteFromWaitlist(registrant);
+                _promoteFromWaitlist(registration);
                 break;
               case 'remove':
-                _removeRegistrant(registrant);
+                _removeRegistrant(registration);
                 break;
             }
           },
@@ -372,46 +526,6 @@ class _ManageRegistrantsScreenState extends State<ManageRegistrantsScreen> with 
       ),
     );
   }
-}
-
-// Models
-class Registrant {
-  final String id;
-  final String name;
-  final String memberNumber;
-  final String vehicle;
-  final RegistrationStatus status;
-
-  Registrant({
-    required this.id,
-    required this.name,
-    required this.memberNumber,
-    required this.vehicle,
-    required this.status,
-  });
-
-  Registrant copyWith({
-    String? id,
-    String? name,
-    String? memberNumber,
-    String? vehicle,
-    RegistrationStatus? status,
-  }) {
-    return Registrant(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      memberNumber: memberNumber ?? this.memberNumber,
-      vehicle: vehicle ?? this.vehicle,
-      status: status ?? this.status,
-    );
-  }
-}
-
-enum RegistrationStatus {
-  approved,
-  pending,
-  waitlisted,
-  declined,
 }
 
 enum RegistrantListType {

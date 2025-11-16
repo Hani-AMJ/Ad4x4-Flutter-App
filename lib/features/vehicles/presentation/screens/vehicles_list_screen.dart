@@ -32,7 +32,32 @@ class VehiclesListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('My Vehicles'),
       ),
-      body: vehicles.isEmpty
+      body: Column(
+        children: [
+          // Backend API Pending Notice
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            color: Colors.orange.withValues(alpha: 0.1),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Vehicle management is pending backend API implementation',
+                    style: TextStyle(
+                      color: Colors.orange.shade800,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: vehicles.isEmpty
           ? EmptyState(
               icon: Icons.garage,
               title: 'No Vehicles',
@@ -66,6 +91,9 @@ class VehiclesListScreen extends StatelessWidget {
                 );
               },
             ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/vehicles/add'),
         backgroundColor: colors.primary,

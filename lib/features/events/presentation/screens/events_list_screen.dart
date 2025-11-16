@@ -109,13 +109,38 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
           ],
         ),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: colors.primary,
-              ),
-            )
-          : TabBarView(
+      body: Column(
+        children: [
+          // Backend API Pending Notice
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            color: Colors.orange.withValues(alpha: 0.1),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Events feature is pending backend API implementation',
+                    style: TextStyle(
+                      color: Colors.orange.shade800,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: colors.primary,
+                    ),
+                  )
+                : TabBarView(
               controller: _tabController,
               children: [
                 _buildEventsList(_allEvents),
@@ -123,6 +148,9 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                 _buildEventsList(_myEvents),
               ],
             ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // TODO: Navigate to create event screen

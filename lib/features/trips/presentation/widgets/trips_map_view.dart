@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/trip_model.dart';
+import '../../../../core/utils/level_display_helper.dart';
 
 /// Trips Map View Widget
 /// 
@@ -318,39 +319,12 @@ class _TripMarker extends StatelessWidget {
     required this.levelNumeric,
   });
 
-  // Get icon and color based on level numeric value - exact match to screenshot
+  // Get icon and color using LevelDisplayHelper
   ({IconData icon, Color color}) _getLevelIconAndColor() {
-    if (levelNumeric == 1) {
-      // Club Event → Calendar icon (purple #8E44AD)
-      return (icon: Icons.event, color: const Color(0xFF8E44AD));
-    } else if (levelNumeric == 2) {
-      // ANIT → Mortarboard icon (dark green #27AE60)
-      return (icon: Icons.school, color: const Color(0xFF27AE60));
-    } else if (levelNumeric == 3) {
-      // Newbie → Mortarboard icon (light green #2ECC71)
-      return (icon: Icons.school, color: const Color(0xFF2ECC71));
-    } else if (levelNumeric == 4) {
-      // Intermediate → Trending up icon (blue #3498DB)
-      return (icon: Icons.trending_up, color: const Color(0xFF3498DB));
-    } else if (levelNumeric == 5) {
-      // Advanced → Speedometer icon (orange #E67E22)
-      return (icon: Icons.speed, color: const Color(0xFFE67E22));
-    } else if (levelNumeric == 6) {
-      // Expert → Star icon (golden yellow #F39C12)
-      return (icon: Icons.star, color: const Color(0xFFF39C12));
-    } else if (levelNumeric == 7) {
-      // Explorer → Compass icon (red #E74C3C)
-      return (icon: Icons.explore, color: const Color(0xFFE74C3C));
-    } else if (levelNumeric == 8) {
-      // Marshal → Shield icon (golden yellow #F39C12)
-      return (icon: Icons.shield, color: const Color(0xFFF39C12));
-    } else if (levelNumeric == 9) {
-      // Board Member → Star/Premium icon (dark blue #34495E)
-      return (icon: Icons.workspace_premium, color: const Color(0xFF34495E));
-    } else {
-      // Default fallback
-      return (icon: Icons.terrain, color: Colors.grey);
-    }
+    return (
+      icon: LevelDisplayHelper.getLevelIcon(levelNumeric),
+      color: LevelDisplayHelper.getLevelColor(levelNumeric)
+    );
   }
 
   @override

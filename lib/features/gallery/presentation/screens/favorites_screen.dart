@@ -32,7 +32,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
   
   // Selection mode for batch operations
   bool _isSelectionMode = false;
-  Set<int> _selectedPhotoIds = {};
+  Set<String> _selectedPhotoIds = {};  // Changed to String for UUID IDs
 
   @override
   void initState() {
@@ -101,7 +101,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
     }
   }
 
-  Future<void> _removeFromFavorites(int photoId) async {
+  Future<void> _removeFromFavorites(String photoId) async {
     try {
       await _galleryRepository.removeFromFavorites(photoId);
       
@@ -131,7 +131,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
   }
 
   Future<void> _removeSelectedFromFavorites() async {
-    final selectedIds = List<int>.from(_selectedPhotoIds);
+    final selectedIds = List<String>.from(_selectedPhotoIds);  // Changed to String
     
     setState(() {
       _favorites.removeWhere((photo) => selectedIds.contains(photo.id));
@@ -167,7 +167,7 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
     });
   }
 
-  void _togglePhotoSelection(int photoId) {
+  void _togglePhotoSelection(String photoId) {
     setState(() {
       if (_selectedPhotoIds.contains(photoId)) {
         _selectedPhotoIds.remove(photoId);
@@ -359,7 +359,7 @@ class _FavoritePhotoTile extends StatelessWidget {
         children: [
           // Photo
           Image.network(
-            photo.thumbnailImage,
+            photo.gridThumbnail,  // Grid thumbnail (400x400, fast loading)
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
               return Container(

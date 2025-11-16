@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/providers/repository_providers.dart';
+import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../shared/widgets/widgets.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController(text: 'Hani Al-Mansouri');
   final _emailController = TextEditingController(text: 'hani@ad4x4.com');
@@ -33,18 +37,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO: Implement actual profile update
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final nameParts = _nameController.text.trim().split(' ');
+      
+      await repository.updateProfile({
+        'first_name': nameParts.first,
+        'last_name': nameParts.skip(1).join(' '),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        // Note: bio field depends on backend schema
+      });
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully!'),
-          backgroundColor: Color(0xFF42B883),
-        ),
-      );
-      context.pop();
+      // Refresh user profile in auth provider
+      await ref.read(authProviderV2.notifier).refreshProfile();
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Color(0xFF42B883),
+          ),
+        );
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -275,16 +302,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (formKey.currentState!.validate()) {
-                // TODO: Implement password change
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Password changed successfully!'),
-                    backgroundColor: Color(0xFF42B883),
-                  ),
-                );
+                try {
+                  final repository = ref.read(mainApiRepositoryProvider);
+                  await repository.changePassword(
+                    oldPassword: currentPasswordController.text,
+                    password: newPasswordController.text,
+                    passwordConfirm: confirmPasswordController.text,
+                  );
+                  
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Password changed successfully!'),
+                        backgroundColor: Color(0xFF42B883),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to change password: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
               }
             },
             child: const Text('Change'),

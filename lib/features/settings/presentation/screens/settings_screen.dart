@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import 'package:flutter/foundation.dart'; // V2 - Clean implementation
 import '../../../../shared/widgets/widgets.dart';
+import '../../../../data/repositories/main_api_repository.dart'; // ✅ NEW
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -13,13 +14,94 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _notificationsEnabled = true;
-  bool _tripReminders = true;
-  bool _eventUpdates = true;
-  bool _newMessages = true;
+  // ✅ NEW: Repository for backend API calls
+  final _repository = MainApiRepository();
+  
+  // ✅ UPDATED: Backend-synced notification settings
+  bool _clubNewsEmail = true;
+  bool _clubNewsPush = true;
+  bool _newTripAlertsEmail = true;
+  bool _newTripAlertsPush = true;
+  bool _upgradeRequestReminderEmail = true;
+  List<int> _newTripAlertsLevelFilter = [];
+  
+  // Local settings (not synced to backend yet)
   bool _locationSharing = false;
   String _language = 'English';
   String _theme = 'Dark';
+  
+  bool _isLoadingSettings = true;
+  bool _isSavingSettings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSettings();
+  }
+
+  /// ✅ NEW: Load notification settings from backend
+  Future<void> _loadNotificationSettings() async {
+    setState(() => _isLoadingSettings = true);
+    
+    try {
+      final response = await _repository.getNotificationSettings();
+      final data = response['data'] ?? response['results'] ?? response;
+      
+      if (data is List && data.isNotEmpty) {
+        final settings = data[0] as Map<String, dynamic>;
+        setState(() {
+          _clubNewsEmail = settings['clubNewsEnabledEmail'] ?? true;
+          _clubNewsPush = settings['clubNewsEnabledAppPush'] ?? true;
+          _newTripAlertsEmail = settings['newTripAlertsEnabledEmail'] ?? true;
+          _newTripAlertsPush = settings['newTripAlertsEnabledAppPush'] ?? true;
+          _upgradeRequestReminderEmail = settings['upgradeRequestReminderEmail'] ?? true;
+          _newTripAlertsLevelFilter = (settings['newTripAlertsLevelFilter'] as List?)?.cast<int>() ?? [];
+          _isLoadingSettings = false;
+        });
+      } else {
+        setState(() => _isLoadingSettings = false);
+      }
+    } catch (e) {
+      if (kDebugMode) print('⚠️ Failed to load notification settings: $e');
+      setState(() => _isLoadingSettings = false);
+    }
+  }
+
+  /// ✅ NEW: Save notification settings to backend
+  Future<void> _saveNotificationSettings() async {
+    setState(() => _isSavingSettings = true);
+    
+    try {
+      await _repository.updateNotificationSettings(
+        clubNewsEnabledEmail: _clubNewsEmail,
+        clubNewsEnabledAppPush: _clubNewsPush,
+        newTripAlertsEnabledEmail: _newTripAlertsEmail,
+        newTripAlertsEnabledAppPush: _newTripAlertsPush,
+        upgradeRequestReminderEmail: _upgradeRequestReminderEmail,
+        newTripAlertsLevelFilter: _newTripAlertsLevelFilter.isNotEmpty ? _newTripAlertsLevelFilter : null,
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Notification settings saved'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Failed to save settings: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isSavingSettings = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,60 +142,97 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             // Notifications Section
             _SectionHeader(title: 'Notifications'),
-            SwitchListTile(
-              secondary: const Icon(Icons.notifications_outlined),
-              title: const Text('Push Notifications'),
-              subtitle: const Text('Enable or disable all notifications'),
-              value: _notificationsEnabled,
-              activeColor: colors.primary,
-              onChanged: (value) {
-                setState(() {
-                  _notificationsEnabled = value;
-                });
-              },
-            ),
-            SwitchListTile(
-              secondary: const Icon(Icons.event_outlined),
-              title: const Text('Trip Reminders'),
-              subtitle: const Text('Get reminders about upcoming trips'),
-              value: _tripReminders,
-              activeColor: colors.primary,
-              onChanged: _notificationsEnabled
-                  ? (value) {
-                      setState(() {
-                        _tripReminders = value;
-                      });
-                    }
-                  : null,
-            ),
-            SwitchListTile(
-              secondary: const Icon(Icons.event_available),
-              title: const Text('Event Updates'),
-              subtitle: const Text('Notifications about club events'),
-              value: _eventUpdates,
-              activeColor: colors.primary,
-              onChanged: _notificationsEnabled
-                  ? (value) {
-                      setState(() {
-                        _eventUpdates = value;
-                      });
-                    }
-                  : null,
-            ),
-            SwitchListTile(
-              secondary: const Icon(Icons.message_outlined),
-              title: const Text('New Messages'),
-              subtitle: const Text('Notifications for new messages'),
-              value: _newMessages,
-              activeColor: colors.primary,
-              onChanged: _notificationsEnabled
-                  ? (value) {
-                      setState(() {
-                        _newMessages = value;
-                      });
-                    }
-                  : null,
-            ),
+            
+            // ✅ UPDATED: Backend-synced notification settings
+            if (_isLoadingSettings)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else ...[
+              // Club News Notifications
+              SwitchListTile(
+                secondary: const Icon(Icons.newspaper),
+                title: const Text('Club News (Email)'),
+                subtitle: const Text('Receive club news via email'),
+                value: _clubNewsEmail,
+                activeColor: colors.primary,
+                onChanged: (value) {
+                  setState(() => _clubNewsEmail = value);
+                  _saveNotificationSettings();
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.notifications_active),
+                title: const Text('Club News (Push)'),
+                subtitle: const Text('Receive club news via push notifications'),
+                value: _clubNewsPush,
+                activeColor: colors.primary,
+                onChanged: (value) {
+                  setState(() => _clubNewsPush = value);
+                  _saveNotificationSettings();
+                },
+              ),
+              
+              const Divider(height: 1, indent: 72),
+              
+              // New Trip Alerts
+              SwitchListTile(
+                secondary: const Icon(Icons.directions_car),
+                title: const Text('New Trip Alerts (Email)'),
+                subtitle: const Text('Email alerts for new trips'),
+                value: _newTripAlertsEmail,
+                activeColor: colors.primary,
+                onChanged: (value) {
+                  setState(() => _newTripAlertsEmail = value);
+                  _saveNotificationSettings();
+                },
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.explore),
+                title: const Text('New Trip Alerts (Push)'),
+                subtitle: const Text('Push notifications for new trips'),
+                value: _newTripAlertsPush,
+                activeColor: colors.primary,
+                onChanged: (value) {
+                  setState(() => _newTripAlertsPush = value);
+                  _saveNotificationSettings();
+                },
+              ),
+              
+              const Divider(height: 1, indent: 72),
+              
+              // Upgrade Request Reminders
+              SwitchListTile(
+                secondary: const Icon(Icons.star_outline),
+                title: const Text('Upgrade Request Reminders'),
+                subtitle: const Text('Email reminders for upgrade requests'),
+                value: _upgradeRequestReminderEmail,
+                activeColor: colors.primary,
+                onChanged: (value) {
+                  setState(() => _upgradeRequestReminderEmail = value);
+                  _saveNotificationSettings();
+                },
+              ),
+              
+              // ✅ Saving indicator
+              if (_isSavingSettings)
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(width: 12),
+                      Text('Saving settings...'),
+                    ],
+                  ),
+                ),
+            ],
 
             const Divider(height: 32),
 
@@ -170,7 +289,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: 'Help & Support',
               subtitle: 'Get help or contact us',
               onTap: () {
-                // TODO: Navigate to help
+                context.push('/settings/help-support');
               },
             ),
             _SettingsTile(
@@ -178,7 +297,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: 'Terms & Conditions',
               subtitle: 'Read our terms',
               onTap: () {
-                // TODO: Show terms
+                context.push('/settings/terms');
               },
             ),
             _SettingsTile(
@@ -186,7 +305,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: 'Privacy Policy',
               subtitle: 'Read our privacy policy',
               onTap: () {
-                // TODO: Show privacy policy
+                context.push('/settings/privacy');
               },
             ),
 

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
 
@@ -8,7 +9,7 @@ class ApiClient {
 
   // API Base URLs
   static const String mainApiUrl = 'https://ap.ad4x4.com'; // Django API
-  static const String galleryApiUrl = 'https://gallery-api.ad4x4.com'; // Node.js Gallery API
+  static const String galleryApiUrl = 'https://media.ad4x4.com'; // Node.js Gallery API (CORRECTED)
 
   ApiClient({
     String? baseUrl,
@@ -53,10 +54,34 @@ class ApiClient {
             '✅ RESPONSE: ${response.statusCode} ${response.requestOptions.path}',
             name: 'ApiClient',
           );
+          
+          // 🔍 DEBUG: Log response data structure
+          if (kDebugMode) {
+            print('📦 [ApiClient] Response received:');
+            print('   Status: ${response.statusCode}');
+            print('   Path: ${response.requestOptions.path}');
+            print('   Data type: ${response.data.runtimeType}');
+            if (response.data is Map) {
+              print('   Data keys: ${(response.data as Map).keys.toList()}');
+            }
+            print('   Data: ${response.data}');
+          }
+          
           return handler.next(response);
         },
         onError: (error, handler) async {
           print('❌ [ApiClient] ERROR: ${error.response?.statusCode} ${error.requestOptions.path}');
+          
+          // 🔍 DEBUG: Enhanced error logging
+          if (kDebugMode) {
+            print('❌ [ApiClient] Detailed Error:');
+            print('   Type: ${error.type}');
+            print('   Status Code: ${error.response?.statusCode}');
+            print('   Path: ${error.requestOptions.path}');
+            print('   Message: ${error.message}');
+            print('   Response data: ${error.response?.data}');
+            print('   Response data type: ${error.response?.data.runtimeType}');
+          }
           
           developer.log(
             '❌ ERROR: ${error.response?.statusCode} ${error.requestOptions.path}',

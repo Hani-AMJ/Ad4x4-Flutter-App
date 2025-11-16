@@ -2,7 +2,7 @@
 class ApiEndpoints {
   // Base URLs
   static const String mainApi = 'https://ap.ad4x4.com';
-  static const String galleryApi = 'https://gallery-api.ad4x4.com';
+  static const String galleryApi = 'https://media.ad4x4.com';
 
   // Auth Endpoints
   static const String login = '/api/auth/login';

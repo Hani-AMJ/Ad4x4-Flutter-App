@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../data/models/upgrade_request_model.dart';
@@ -161,6 +162,19 @@ final upgradeRequestDetailProvider = FutureProvider.family<UpgradeRequestDetail,
   return UpgradeRequestDetail.fromJson(response);
 });
 
+/// Upgrade Request Comments Provider
+/// Fetches comments for a specific upgrade request using filter parameter
+/// Returns list of UpgradeRequestComment objects
+final upgradeRequestCommentsProvider = FutureProvider.family<List<UpgradeRequestComment>, int>((ref, requestId) async {
+  final repository = ref.read(mainApiRepositoryProvider);
+  final commentsData = await repository.getUpgradeRequestComments(requestId: requestId);
+  
+  // Convert raw comment data to UpgradeRequestComment objects
+  return commentsData.map((commentJson) {
+    return UpgradeRequestComment.fromJson(commentJson);
+  }).toList();
+});
+
 /// Upgrade Request Actions State
 class UpgradeRequestActionsState {
   final bool isVoting;
@@ -201,26 +215,51 @@ class UpgradeRequestActionsNotifier extends StateNotifier<UpgradeRequestActionsS
   UpgradeRequestActionsNotifier(this._ref) : super(const UpgradeRequestActionsState());
 
   /// Vote on an upgrade request
+  /// [vote] - Vote value: "Y" (yes), "N" (no), or "D" (defer)
   Future<void> vote({
     required int requestId,
-    required bool approve,
-    String? comment,
+    required String vote,  // ✅ FIXED: "Y", "N", or "D"
   }) async {
+    if (kDebugMode) {
+      print('🗳️ [Provider] vote() called - Request: $requestId, Vote: $vote');
+    }
+    
     state = state.copyWith(isVoting: true, errorMessage: null);
 
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
+      
+      if (kDebugMode) {
+        print('🗳️ [Provider] Calling repository.voteUpgradeRequest...');
+      }
+      
       await repository.voteUpgradeRequest(
         requestId: requestId,
-        approve: approve,
-        comment: comment,
+        vote: vote,  // ✅ FIXED: Pass String vote ("Y", "N", or "D")
       );
+
+      if (kDebugMode) {
+        print('✅ [Provider] Vote API call successful');
+      }
 
       state = state.copyWith(isVoting: false);
       
-      // Invalidate detail provider to refresh data
+      if (kDebugMode) {
+        print('🔄 [Provider] Invalidating providers...');
+      }
+      
+      // ✅ FIXED: Invalidate both detail AND list providers to refresh UI
       _ref.invalidate(upgradeRequestDetailProvider(requestId));
-    } catch (e) {
+      _ref.invalidate(upgradeRequestsProvider);  // Refresh the list
+      
+      if (kDebugMode) {
+        print('✅ [Provider] Providers invalidated, UI should refresh');
+      }
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('❌ [Provider] Vote ERROR: $e');
+        print('❌ [Provider] Stack trace: $stackTrace');
+      }
       state = state.copyWith(
         isVoting: false,
         errorMessage: 'Failed to submit vote: $e',
@@ -265,8 +304,9 @@ class UpgradeRequestActionsNotifier extends StateNotifier<UpgradeRequestActionsS
       final repository = _ref.read(mainApiRepositoryProvider);
       await repository.deleteUpgradeRequestComment(commentId);
 
-      // Invalidate detail provider to refresh data
+      // ✅ FIXED: Invalidate both detail AND comments providers
       _ref.invalidate(upgradeRequestDetailProvider(requestId));
+      _ref.invalidate(upgradeRequestCommentsProvider(requestId));
     } catch (e) {
       state = state.copyWith(errorMessage: 'Failed to delete comment: $e');
       rethrow;
@@ -306,7 +346,7 @@ class UpgradeRequestActionsNotifier extends StateNotifier<UpgradeRequestActionsS
       final repository = _ref.read(mainApiRepositoryProvider);
       await repository.declineUpgradeRequest(
         requestId: requestId,
-        reason: reason,
+        verdictReason: reason,
       );
 
       state = state.copyWith(isDeclining: false);
@@ -327,4 +367,30 @@ class UpgradeRequestActionsNotifier extends StateNotifier<UpgradeRequestActionsS
 /// Upgrade Request Actions Provider
 final upgradeRequestActionsProvider = StateNotifierProvider<UpgradeRequestActionsNotifier, UpgradeRequestActionsState>((ref) {
   return UpgradeRequestActionsNotifier(ref);
+});
+
+/// Member Details Provider (with caching)
+/// Fetches full member details from /api/members/{id}/
+/// Used to enrich comment author information
+final memberDetailsProvider = FutureProvider.family<MemberBasicInfo, int>((ref, memberId) async {
+  final repository = ref.read(mainApiRepositoryProvider);
+  
+  try {
+    final response = await repository.getMemberDetail(memberId);
+    
+    // Parse the response into MemberBasicInfo
+    return MemberBasicInfo.fromJson(response);
+  } catch (e) {
+    if (kDebugMode) {
+      print('⚠️ Failed to fetch member details for ID $memberId: $e');
+    }
+    
+    // Return fallback member info if fetch fails
+    return MemberBasicInfo(
+      id: memberId,
+      username: 'Member #$memberId',
+      firstName: '',
+      lastName: '',
+    );
+  }
 });

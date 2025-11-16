@@ -417,6 +417,7 @@ class _AnimatedLogoState extends State<AnimatedLogo>
             width: widget.size * 1.4,
             height: widget.size * 1.4,
             decoration: BoxDecoration(
+              shape: BoxShape.circle,  // ✅ FIX: Make it circular to hide rotating square
               gradient: SweepGradient(
                 colors: [
                   Colors.transparent,
@@ -448,9 +449,14 @@ class _AnimatedLogoState extends State<AnimatedLogo>
               ? progress * 2
               : (1.0 - progress) * 2;
           
+          // ✅ FIX: Adjust positioning to keep sparkles closer to logo
+          // Center the sparkle positions properly within the container
+          final containerSize = widget.size * 2.0;
+          final sparkleRadius = widget.size * 0.65;  // Keep sparkles closer
+          
           return Positioned(
-            left: widget.size + position.dx * widget.size * 0.8,
-            top: widget.size + position.dy * widget.size * 0.8,
+            left: (containerSize / 2) + position.dx * sparkleRadius - 4,  // Center and offset by dot size
+            top: (containerSize / 2) + position.dy * sparkleRadius - 4,
             child: Opacity(
               opacity: opacity.clamp(0.0, 1.0),
               child: Container(

@@ -156,18 +156,24 @@ class GalleryAuthNotifier extends StateNotifier<GalleryAuthState> {
   /// This is a convenience method in case Gallery API can validate main API tokens
   Future<bool> useMainApiToken(String mainToken) async {
     print('📸 [GalleryAuth] Attempting to use main API token...');
+    print('📸 [GalleryAuth] Token (first 20 chars): ${mainToken.substring(0, mainToken.length > 20 ? 20 : mainToken.length)}...');
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       // Try using main API token with Gallery API
       _apiClient.setBaseUrl(ApiClient.galleryApiUrl);
       
+      print('📸 [GalleryAuth] Testing token with Gallery API...');
+      print('📸 [GalleryAuth] URL: ${ApiClient.galleryApiUrl}/api/galleries');
+      
       // Test token validity
-      await _apiClient.get('/api/galleries',
+      final response = await _apiClient.get('/api/galleries',
         queryParameters: {'page': 1, 'limit': 1},
         options: Options(headers: {'Authorization': 'Bearer $mainToken'}),
       );
 
+      print('✅ [GalleryAuth] Gallery API response: ${response.statusCode}');
+      
       // Token works! Save it
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_kGalleryToken, mainToken);
@@ -181,10 +187,19 @@ class GalleryAuthNotifier extends StateNotifier<GalleryAuthState> {
       );
       return true;
     } catch (e) {
-      print('❌ [GalleryAuth] Main API token not accepted: $e');
+      print('ℹ️ [GalleryAuth] Token validation failed (expected for anonymous read access)');
+      print('ℹ️ [GalleryAuth] Error: ${e.runtimeType}');
+      
+      // Only show detailed error for actual HTTP errors (not network issues)
+      if (e is DioException && e.response != null) {
+        print('ℹ️ [GalleryAuth] HTTP ${e.response!.statusCode}: ${e.response!.data}');
+      }
+      
+      // Don't set error state since this is expected behavior
+      // Gallery API allows anonymous read access
       state = state.copyWith(
         isLoading: false,
-        error: 'Main API token not valid for Gallery API',
+        clearError: true,  // Clear any previous errors
       );
       return false;
     }

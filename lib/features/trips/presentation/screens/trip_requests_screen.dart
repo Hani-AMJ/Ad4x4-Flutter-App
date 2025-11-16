@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/models/trip_request_model.dart';
+import '../../../../data/models/level_model.dart';
+import '../../../../data/repositories/main_api_repository.dart';
+import '../../../../core/providers/auth_provider_v2.dart';
 
-class TripRequestsScreen extends StatefulWidget {
+class TripRequestsScreen extends ConsumerStatefulWidget {
   const TripRequestsScreen({super.key});
 
   @override
-  State<TripRequestsScreen> createState() => _TripRequestsScreenState();
+  ConsumerState<TripRequestsScreen> createState() => _TripRequestsScreenState();
 }
 
-class _TripRequestsScreenState extends State<TripRequestsScreen> {
+class _TripRequestsScreenState extends ConsumerState<TripRequestsScreen> {
+  final MainApiRepository _repository = MainApiRepository();
   bool _isLoading = false;
   bool _hasError = false;
   List<TripRequest> _requests = [];
@@ -26,66 +31,86 @@ class _TripRequestsScreenState extends State<TripRequestsScreen> {
     });
 
     try {
-      // TODO: Replace with actual API call
-      // final repo = ref.read(mainApiRepositoryProvider);
-      // final response = await repo.getMemberTripRequests(memberId: currentUserId);
-      
-      // Simulate network delay
-      await Future.delayed(const Duration(milliseconds: 800));
+      // Get current user ID
+      final user = ref.read(authProviderV2).user;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
 
-      // Sample data
+      // 🔍 DEBUG: Log API call details
+      print('📡 [TripRequest] Loading requests for member ID: ${user.id}');
+      print('   API Endpoint: /api/members/${user.id}/triprequests');
+
+      Map<String, dynamic> response;
+      
+      try {
+        // Try member-specific endpoint first
+        response = await _repository.getMemberTripRequests(
+          memberId: user.id,
+          pageSize: 100,
+        );
+      } catch (memberEndpointError) {
+        // 🔧 WORKAROUND: If member endpoint fails (500 error), 
+        // fetch all requests and filter by user
+        print('⚠️ [TripRequest] Member endpoint failed, using fallback: $memberEndpointError');
+        print('🔄 [TripRequest] Fetching all requests and filtering...');
+        
+        final allResponse = await _repository.getAllTripRequests(pageSize: 100);
+        final allResults = allResponse['results'] as List<dynamic>? ?? [];
+        
+        // Filter to only this user's requests
+        final userResults = allResults.where((json) {
+          final memberData = json['member'];
+          if (memberData is Map<String, dynamic>) {
+            final memberId = memberData['id'];
+            return memberId.toString() == user.id.toString();
+          }
+          return false;
+        }).toList();
+        
+        response = {
+          'count': userResults.length,
+          'results': userResults,
+          'next': null,
+          'previous': null,
+        };
+        
+        print('✅ [TripRequest] Fallback successful: Found ${userResults.length} requests for this user');
+      }
+
+      // 🔍 DEBUG: Log API response
+      print('📥 [TripRequest] API Response received:');
+      print('   Response keys: ${response.keys.toList()}');
+      print('   Count: ${response['count']}');
+      print('   Results length: ${(response['results'] as List?)?.length ?? 0}');
+
+      final results = response['results'] as List<dynamic>? ?? [];
+      final requests = results
+          .map((json) => TripRequest.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      // Sort by created date (newest first)
+      requests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      // 🔍 DEBUG: Log parsed requests
+      print('✅ [TripRequest] Parsed ${requests.length} requests');
+
       setState(() {
-        _requests = [
-          TripRequest(
-            id: 1,
-            title: 'Al Wathba Fossil Dunes Adventure',
-            description: 'Would love to explore the fossil dunes at Al Wathba. Great spot for beginners to intermediate level drivers with interesting geological formations.',
-            suggestedLocation: 'Al Wathba Fossil Dunes',
-            suggestedDate: DateTime.now().add(const Duration(days: 20)),
-            requestedBy: '1',
-            requestedByName: 'Hani Al-Mansouri',
-            status: TripRequestStatus.pending,
-            createdAt: DateTime.now().subtract(const Duration(days: 3)),
-          ),
-          TripRequest(
-            id: 2,
-            title: 'Liwa Sunset Photography Trip',
-            description: 'Photography-focused trip to Liwa Oasis during golden hour. Perfect for capturing the stunning dune landscapes.',
-            suggestedLocation: 'Liwa Oasis',
-            suggestedDate: DateTime.now().add(const Duration(days: 35)),
-            requestedBy: '1',
-            requestedByName: 'Hani Al-Mansouri',
-            status: TripRequestStatus.approved,
-            createdAt: DateTime.now().subtract(const Duration(days: 12)),
-            adminNotes: 'Approved! Marshal Ahmed will lead this trip. Check your notifications for details.',
-          ),
-          TripRequest(
-            id: 3,
-            title: 'Night Navigation Challenge - Mleiha',
-            description: 'Advanced night driving with GPS navigation challenges. Members can practice their night desert skills in a safe, controlled environment.',
-            suggestedLocation: 'Mleiha Desert',
-            suggestedDate: DateTime.now().add(const Duration(days: 10)),
-            requestedBy: '1',
-            requestedByName: 'Hani Al-Mansouri',
-            status: TripRequestStatus.declined,
-            createdAt: DateTime.now().subtract(const Duration(days: 18)),
-            adminNotes: 'Unfortunately we need more marshals for night trips. Please suggest daytime alternatives.',
-          ),
-          TripRequest(
-            id: 4,
-            title: 'Family-Friendly Camping Weekend',
-            description: 'Two-day camping trip with family activities, BBQ, and easy desert driving routes suitable for all family members.',
-            suggestedLocation: 'Sweihan Desert',
-            requestedBy: '1',
-            requestedByName: 'Hani Al-Mansouri',
-            status: TripRequestStatus.converted,
-            createdAt: DateTime.now().subtract(const Duration(days: 45)),
-            adminNotes: 'Converted to official trip #187! Check Trips page.',
-          ),
-        ];
+        _requests = requests;
         _isLoading = false;
       });
     } catch (e) {
+      // 🔍 DEBUG: Log error details
+      print('❌ [TripRequest] Failed to load requests: $e');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load requests: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       setState(() {
         _hasError = true;
         _isLoading = false;
@@ -99,22 +124,53 @@ class _TripRequestsScreenState extends State<TripRequestsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _RequestTripForm(
-        onSubmitted: (title, description, location, date) async {
-          // TODO: Submit to API
-          // await repo.createTripRequest(...);
-          
-          // Simulate submission
-          await Future.delayed(const Duration(milliseconds: 500));
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Trip request submitted successfully!'),
-                backgroundColor: Colors.green,
-              ),
+        onSubmitted: (date, levelId, timeOfDay, area) async {
+          try {
+            // 🔍 DEBUG: Log submission data
+            print('🚀 [TripRequest] Submitting trip request...');
+            print('   Date: $date');
+            print('   Level ID: $levelId');
+            print('   Time of Day: $timeOfDay');
+            print('   Area: $area');
+            
+            // Submit to API
+            final response = await _repository.createTripRequest(
+              date: date,
+              levelId: levelId,
+              timeOfDay: timeOfDay,
+              area: area,
             );
-            Navigator.of(context).pop();
-            _loadRequests();
+            
+            // 🔍 DEBUG: Log API response
+            print('✅ [TripRequest] API Response:');
+            print('   Response: $response');
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Trip request submitted successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              Navigator.of(context).pop();
+              
+              // 🔍 DEBUG: Log reload attempt
+              print('🔄 [TripRequest] Reloading requests list...');
+              await _loadRequests();
+              print('✅ [TripRequest] Reload complete. Total requests: ${_requests.length}');
+            }
+          } catch (e) {
+            // 🔍 DEBUG: Log error details
+            print('❌ [TripRequest] Submission failed: $e');
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to submit request: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           }
         },
       ),
@@ -138,7 +194,7 @@ class _TripRequestsScreenState extends State<TripRequestsScreen> {
                 builder: (context) => AlertDialog(
                   title: const Text('About Trip Requests'),
                   content: const Text(
-                    'Submit your ideas for new trips! Our marshals review all requests and will approve trips that fit the club\'s schedule and safety requirements.\n\nApproved requests will be converted to official trips.',
+                    'Request trips by selecting your preferred level, area, time, and date. Our marshals review all requests and will approve trips that fit the club\'s schedule and safety requirements.\n\nApproved requests will be converted to official trips.',
                   ),
                   actions: [
                     TextButton(
@@ -214,7 +270,7 @@ class _TripRequestsScreenState extends State<TripRequestsScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Have an idea for a new trip?\nSubmit a request and our marshals will review it!',
+              'Want to go on a trip?\nRequest one and our marshals will review it!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
@@ -347,47 +403,43 @@ class _TripRequestCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Title
+              // Title (synthesized from level and area)
               Text(
-                request.title,
+                '${request.level.displayName} in ${request.areaDisplayName}',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: colors.onSurface,
                 ),
               ),
-              const SizedBox(height: 8),
-
-              // Description
-              Text(
-                request.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colors.onSurface.withValues(alpha: 0.7),
-                  height: 1.4,
-                ),
-              ),
               const SizedBox(height: 12),
 
-              // Location and Date chips
+              // Details chips
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (request.suggestedLocation != null)
+                  _InfoChip(
+                    icon: Icons.location_on,
+                    label: request.areaDisplayName,
+                    colors: colors,
+                  ),
+                  _InfoChip(
+                    icon: Icons.terrain,
+                    label: request.level.shortName,
+                    colors: colors,
+                  ),
+                  if (request.timeOfDay != null)
                     _InfoChip(
-                      icon: Icons.location_on,
-                      label: request.suggestedLocation!,
+                      icon: Icons.access_time,
+                      label: request.timeOfDayDisplayName!,
                       colors: colors,
                     ),
-                  if (request.suggestedDate != null)
-                    _InfoChip(
-                      icon: Icons.calendar_today,
-                      label: _formatDate(request.suggestedDate!),
-                      colors: colors,
-                    ),
+                  _InfoChip(
+                    icon: Icons.calendar_today,
+                    label: _formatDate(request.date),
+                    colors: colors,
+                  ),
                 ],
               ),
 
@@ -528,58 +580,53 @@ class _RequestDetailsSheet extends StatelessWidget {
 
               // Title
               Text(
-                request.title,
+                '${request.level.displayName} in ${request.areaDisplayName}',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Description
-              Text(
-                'Description',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                request.description,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.8),
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 20),
-
               // Details
-              if (request.suggestedLocation != null) ...[
-                _DetailRow(
-                  icon: Icons.location_on,
-                  label: 'Suggested Location',
-                  value: request.suggestedLocation!,
-                  colors: colors,
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (request.suggestedDate != null) ...[
-                _DetailRow(
-                  icon: Icons.calendar_today,
-                  label: 'Suggested Date',
-                  value: _formatFullDate(request.suggestedDate!),
-                  colors: colors,
-                ),
-                const SizedBox(height: 12),
-              ],
               _DetailRow(
-                icon: Icons.person,
-                label: 'Requested By',
-                value: request.requestedByName,
+                icon: Icons.terrain,
+                label: 'Trip Level',
+                value: request.level.displayName,
                 colors: colors,
               ),
               const SizedBox(height: 12),
               _DetailRow(
-                icon: Icons.access_time,
+                icon: Icons.location_on,
+                label: 'Area',
+                value: request.areaDisplayName,
+                colors: colors,
+              ),
+              const SizedBox(height: 12),
+              if (request.timeOfDay != null) ...[
+                _DetailRow(
+                  icon: Icons.access_time,
+                  label: 'Preferred Time',
+                  value: request.timeOfDayDisplayName!,
+                  colors: colors,
+                ),
+                const SizedBox(height: 12),
+              ],
+              _DetailRow(
+                icon: Icons.calendar_today,
+                label: 'Requested Date',
+                value: _formatFullDate(request.date),
+                colors: colors,
+              ),
+              const SizedBox(height: 12),
+              _DetailRow(
+                icon: Icons.person,
+                label: 'Requested By',
+                value: request.memberName,
+                colors: colors,
+              ),
+              const SizedBox(height: 12),
+              _DetailRow(
+                icon: Icons.schedule,
                 label: 'Submitted',
                 value: _formatFullDate(request.createdAt),
                 colors: colors,
@@ -646,18 +693,8 @@ class _RequestDetailsSheet extends StatelessWidget {
 
   String _formatFullDate(DateTime date) {
     final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -713,10 +750,10 @@ class _DetailRow extends StatelessWidget {
 
 class _RequestTripForm extends StatefulWidget {
   final Future<void> Function(
-    String title,
-    String description,
-    String? location,
-    DateTime? date,
+    DateTime date,
+    int? levelId,
+    String? timeOfDay,
+    String? area,
   ) onSubmitted;
 
   const _RequestTripForm({required this.onSubmitted});
@@ -727,18 +764,38 @@ class _RequestTripForm extends StatefulWidget {
 
 class _RequestTripFormState extends State<_RequestTripForm> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _locationController = TextEditingController();
+  final MainApiRepository _repository = MainApiRepository();
+  
+  List<Level> _levels = [];
+  bool _loadingLevels = true;
+  
+  int? _selectedLevelId;
+  String? _selectedTimeOfDay;
+  String? _selectedArea;
   DateTime? _selectedDate;
   bool _isSubmitting = false;
 
   @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _locationController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _fetchLevels();
+  }
+
+  Future<void> _fetchLevels() async {
+    try {
+      final results = await _repository.getLevels();
+      setState(() {
+        _levels = results
+            .map((json) => Level.fromJson(json as Map<String, dynamic>))
+            .toList();
+        _loadingLevels = false;
+      });
+    } catch (e) {
+      print('Failed to fetch levels: $e');
+      setState(() {
+        _loadingLevels = false;
+      });
+    }
   }
 
   Future<void> _selectDate() async {
@@ -756,15 +813,25 @@ class _RequestTripFormState extends State<_RequestTripForm> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a trip date'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
     try {
       await widget.onSubmitted(
-        _titleController.text,
-        _descriptionController.text,
-        _locationController.text.isEmpty ? null : _locationController.text,
-        _selectedDate,
+        _selectedDate!,
+        _selectedLevelId,
+        _selectedTimeOfDay,
+        _selectedArea,
       );
     } catch (e) {
       if (mounted) {
@@ -828,76 +895,25 @@ class _RequestTripFormState extends State<_RequestTripForm> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Share your trip idea with our marshals',
+                  'Select your preferences and our marshals will review',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // Trip title field
-                TextFormField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Trip Title',
-                    hintText: 'e.g., Desert Sunset Photography',
-                    prefixIcon: Icon(Icons.title),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a trip title';
-                    }
-                    return null;
-                  },
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 16),
-
-                // Description field
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    hintText:
-                        'Describe your trip idea, what makes it special...',
-                    prefixIcon: Icon(Icons.description),
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: 4,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    if (value.trim().length < 20) {
-                      return 'Description must be at least 20 characters';
-                    }
-                    return null;
-                  },
-                  textCapitalization: TextCapitalization.sentences,
-                ),
-                const SizedBox(height: 16),
-
-                // Location field (optional)
-                TextFormField(
-                  controller: _locationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Suggested Location (Optional)',
-                    hintText: 'e.g., Liwa Desert, Al Wathba',
-                    prefixIcon: Icon(Icons.location_on),
-                  ),
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 16),
-
-                // Date picker (optional)
+                // Date picker (REQUIRED)
                 InkWell(
                   onTap: _selectDate,
                   borderRadius: BorderRadius.circular(12),
                   child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Suggested Date (Optional)',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      suffixIcon: Icon(Icons.arrow_drop_down),
+                    decoration: InputDecoration(
+                      labelText: 'Trip Date *',
+                      prefixIcon: const Icon(Icons.calendar_today),
+                      suffixIcon: const Icon(Icons.arrow_drop_down),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: Text(
                       _selectedDate == null
@@ -909,6 +925,98 @@ class _RequestTripFormState extends State<_RequestTripForm> {
                             : colors.onSurface,
                       ),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Level dropdown (Optional)
+                if (_loadingLevels)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  DropdownButtonFormField<int>(
+                    value: _selectedLevelId,
+                    decoration: InputDecoration(
+                      labelText: 'Trip Level (Optional)',
+                      prefixIcon: const Icon(Icons.terrain),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      helperText: 'Select difficulty level if you have a preference',
+                    ),
+                    items: _levels.map((level) {
+                      return DropdownMenuItem(
+                        value: level.id,
+                        child: Text(level.displayName),
+                      );
+                    }).toList(),
+                    onChanged: (value) => setState(() => _selectedLevelId = value),
+                  ),
+                const SizedBox(height: 16),
+
+                // Time of Day dropdown (Optional)
+                DropdownButtonFormField<String>(
+                  value: _selectedTimeOfDay,
+                  decoration: InputDecoration(
+                    labelText: 'Time of Day (Optional)',
+                    prefixIcon: const Icon(Icons.access_time),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    helperText: 'When would you prefer the trip?',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'MOR', child: Text('Morning')),
+                    DropdownMenuItem(value: 'MID', child: Text('Mid-day')),
+                    DropdownMenuItem(value: 'AFT', child: Text('Afternoon')),
+                    DropdownMenuItem(value: 'EVE', child: Text('Evening')),
+                    DropdownMenuItem(value: 'ANY', child: Text('Any Time')),
+                  ],
+                  onChanged: (value) => setState(() => _selectedTimeOfDay = value),
+                ),
+                const SizedBox(height: 16),
+
+                // Area dropdown (Optional)
+                DropdownButtonFormField<String>(
+                  value: _selectedArea,
+                  decoration: InputDecoration(
+                    labelText: 'Area (Optional)',
+                    prefixIcon: const Icon(Icons.location_on),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    helperText: 'Preferred trip area',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'DXB', child: Text('Dubai')),
+                    DropdownMenuItem(value: 'NOR', child: Text('Northern Emirates')),
+                    DropdownMenuItem(value: 'AUH', child: Text('Abu Dhabi')),
+                    DropdownMenuItem(value: 'AAN', child: Text('Al Ain')),
+                    DropdownMenuItem(value: 'LIW', child: Text('Liwa')),
+                  ],
+                  onChanged: (value) => setState(() => _selectedArea = value),
+                ),
+                const SizedBox(height: 24),
+
+                // Info text
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colors.primaryContainer.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 20, color: colors.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Only the date is required. Optional fields help marshals plan better trips.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),

@@ -5,6 +5,7 @@ import '../../../../data/models/user_model.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../../core/utils/level_display_helper.dart';
 
 class MemberDetailsScreen extends ConsumerStatefulWidget {
   final String memberId;
@@ -134,7 +135,6 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
 
     final member = _member!;
     final memberName = '${member.firstName} ${member.lastName}'.trim();
-    final levelColor = _getLevelColor(member.level?.displayName);
 
     return Scaffold(
       body: CustomScrollView(
@@ -177,19 +177,24 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      if (member.level?.displayName?.isNotEmpty ?? false)
+                      if (member.level != null)
+                        LevelDisplayHelper.buildCompactBadgeFromString(
+                          levelName: member.level!.displayName ?? member.level!.name,
+                          numericLevel: member.level!.numericLevel,
+                        ),
+                      if (member.level == null)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: levelColor,
+                            color: Colors.grey,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text(
-                            member.level?.displayName ?? 'Member',
-                            style: const TextStyle(
+                          child: const Text(
+                            'Member',
+                            style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
@@ -381,25 +386,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
     );
   }
 
-  /// Get level color
-  Color _getLevelColor(String? level) {
-    if (level == null) return Colors.grey;
-    
-    final levelLower = level.toLowerCase();
-    if (levelLower.contains('marshal') || levelLower.contains('admin')) {
-      return const Color(0xFFD32F2F);
-    } else if (levelLower.contains('explorer')) {
-      return const Color(0xFF1976D2);
-    } else if (levelLower.contains('advanced')) {
-      return const Color(0xFF388E3C);
-    } else if (levelLower.contains('intermediate')) {
-      return const Color(0xFFFFA000);
-    } else if (levelLower.contains('newbie') || levelLower.contains('beginner')) {
-      return const Color(0xFF7B1FA2);
-    }
-    
-    return Colors.grey;
-  }
+
 }
 
 /// Stat Card Widget

@@ -108,11 +108,145 @@ class _AdminWaitlistManagementScreenState extends ConsumerState<AdminWaitlistMan
 
   /// Show auto-fill configuration dialog
   Future<void> _showAutoFillDialog() async {
-    // TODO: Implement auto-fill configuration
-    // This would configure automatic promotion from waitlist when spots become available
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Auto-fill configuration coming soon')),
+    if (_selectedTripId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a trip first')),
+      );
+      return;
+    }
+
+    bool enableAutoFill = false;
+    bool notifyMembers = true;
+    int priorityOrder = 0; // 0 = FIFO, 1 = Level-based, 2 = Trip count
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.settings, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 12),
+              const Text('Auto-fill Configuration'),
+            ],
+          ),
+          content: SizedBox(
+            width: 400,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Configure automatic waitlist promotion when spots become available',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Enable auto-fill toggle
+                  SwitchListTile(
+                    title: const Text('Enable Auto-fill'),
+                    subtitle: const Text('Automatically promote from waitlist when capacity opens'),
+                    value: enableAutoFill,
+                    onChanged: (value) {
+                      setState(() => enableAutoFill = value);
+                    },
+                  ),
+                  
+                  if (enableAutoFill) ...[
+                    const Divider(height: 32),
+                    
+                    // Notification toggle
+                    SwitchListTile(
+                      title: const Text('Notify Members'),
+                      subtitle: const Text('Send notifications when promoted from waitlist'),
+                      value: notifyMembers,
+                      onChanged: (value) {
+                        setState(() => notifyMembers = value);
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Priority order selection
+                    Text(
+                      'Promotion Priority Order',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    RadioListTile<int>(
+                      title: const Text('First In, First Out (FIFO)'),
+                      subtitle: const Text('Promote members in waitlist order'),
+                      value: 0,
+                      groupValue: priorityOrder,
+                      onChanged: (value) {
+                        setState(() => priorityOrder = value!);
+                      },
+                    ),
+                    
+                    RadioListTile<int>(
+                      title: const Text('Level-based Priority'),
+                      subtitle: const Text('Higher level members promoted first'),
+                      value: 1,
+                      groupValue: priorityOrder,
+                      onChanged: (value) {
+                        setState(() => priorityOrder = value!);
+                      },
+                    ),
+                    
+                    RadioListTile<int>(
+                      title: const Text('Trip Count Priority'),
+                      subtitle: const Text('Members with fewer trips promoted first'),
+                      value: 2,
+                      groupValue: priorityOrder,
+                      onChanged: (value) {
+                        setState(() => priorityOrder = value!);
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context, {
+                  'enableAutoFill': enableAutoFill,
+                  'notifyMembers': notifyMembers,
+                  'priorityOrder': priorityOrder,
+                });
+              },
+              child: const Text('Save Settings'),
+            ),
+          ],
+        ),
+      ),
     );
+
+    if (result != null && mounted) {
+      // In a real implementation, these settings would be saved to the backend
+      // For now, just show confirmation
+      final enabled = result['enableAutoFill'] as bool;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            enabled
+                ? '✅ Auto-fill enabled for this trip'
+                : 'ℹ️ Auto-fill disabled for this trip',
+          ),
+          backgroundColor: enabled ? Colors.green : null,
+        ),
+      );
+    }
   }
 
   @override

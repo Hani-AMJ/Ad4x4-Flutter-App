@@ -16,7 +16,7 @@ import '../../../../shared/widgets/widgets.dart';
 /// - Error handling and retry
 /// - Caption editing
 class PhotoUploadScreen extends ConsumerStatefulWidget {
-  final int galleryId;
+  final String galleryId;  // Changed to String (UUID)
   final String galleryTitle;
 
   const PhotoUploadScreen({
@@ -29,6 +29,19 @@ class PhotoUploadScreen extends ConsumerStatefulWidget {
   ConsumerState<PhotoUploadScreen> createState() => _PhotoUploadScreenState();
 }
 
+/// Upload resolution options
+enum UploadResolution {
+  standard(1920, 'Standard (1920px)', 'Fast upload, good quality'),
+  medium(2560, 'Medium (2560px)', 'Balanced quality and size'),
+  high(3840, 'High (3840px)', 'Best quality, larger files');
+
+  final int pixels;
+  final String label;
+  final String description;
+  
+  const UploadResolution(this.pixels, this.label, this.description);
+}
+
 class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
   final _galleryRepository = GalleryApiRepository();
   final _imagePicker = ImagePicker();
@@ -37,6 +50,7 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
   String? _sessionId;
   bool _isCreatingSession = false;
   bool _isUploading = false;
+  UploadResolution _selectedResolution = UploadResolution.medium;
 
   @override
   void initState() {
@@ -50,6 +64,7 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
     try {
       final response = await _galleryRepository.createUploadSession(
         galleryId: widget.galleryId,
+        maxResolution: _selectedResolution.pixels,
       );
       _sessionId = response['session_id'] as String;
       setState(() => _isCreatingSession = false);
@@ -305,6 +320,9 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
                 // Upload Stats
                 if (_uploadItems.isNotEmpty) _buildStatsBar(colors),
 
+                // Resolution Selector
+                _buildResolutionSelector(colors),
+
                 // Upload Queue
                 Expanded(
                   child: _uploadItems.isEmpty
@@ -416,6 +434,92 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
             value: '$_pendingCount',
             color: Colors.orange,
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResolutionSelector(ColorScheme colors) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+        border: Border(
+          bottom: BorderSide(
+            color: colors.outline.withValues(alpha: 0.2),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.photo_size_select_large,
+            size: 20,
+            color: colors.primary,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Upload Quality:',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: colors.onSurface,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: DropdownButton<UploadResolution>(
+              value: _selectedResolution,
+              isExpanded: true,
+              isDense: true,
+              underline: Container(),
+              items: UploadResolution.values.map((resolution) {
+                return DropdownMenuItem(
+                  value: resolution,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        resolution.label,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        resolution.description,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colors.onSurface.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: _uploadItems.isEmpty && !_isUploading
+                  ? (UploadResolution? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedResolution = newValue;
+                        });
+                        // Recreate session with new resolution
+                        _createUploadSession();
+                      }
+                    }
+                  : null,  // Disable during upload or when items exist
+            ),
+          ),
+          if (_uploadItems.isNotEmpty || _isUploading) ...[
+            const SizedBox(width: 8),
+            Icon(
+              Icons.lock_outline,
+              size: 16,
+              color: colors.onSurface.withValues(alpha: 0.5),
+            ),
+          ],
         ],
       ),
     );

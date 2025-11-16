@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../shared/widgets/widgets.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
@@ -26,14 +28,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO: Implement actual password reset
-    await Future.delayed(const Duration(seconds: 2));
+    // Call forgot password API through auth provider
+    final authProvider = ref.read(authProviderV2.notifier);
+    final success = await authProvider.forgotPassword(
+      email: _emailController.text.trim(),
+    );
 
     if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _emailSent = true;
-      });
+      setState(() => _isLoading = false);
+      
+      if (success) {
+        setState(() => _emailSent = true);
+      } else {
+        final error = ref.read(authProviderV2).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Failed to send reset email. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

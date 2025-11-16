@@ -1,6 +1,32 @@
+import '../../shared/constants/level_constants.dart';
+
 /// Upgrade Request Models
 /// 
 /// Models for member upgrade request system
+
+/// Helper function to convert level ID/numeric to display name
+String _getLevelNameFromId(dynamic levelValue) {
+  if (levelValue == null) return 'Unknown';
+  
+  // Try to parse as integer ID
+  int? levelId;
+  if (levelValue is int) {
+    levelId = levelValue;
+  } else if (levelValue is String) {
+    levelId = int.tryParse(levelValue);
+  }
+  
+  // Look up level by ID
+  if (levelId != null) {
+    final levelData = LevelConstants.getById(levelId);
+    if (levelData != null) {
+      return levelData.name;
+    }
+  }
+  
+  // Fallback to string representation
+  return levelValue.toString();
+}
 
 /// Basic member info for display in lists
 class MemberBasicInfo {
@@ -48,17 +74,21 @@ class MemberBasicInfo {
 class VoteSummary {
   final int approveCount;
   final int declineCount;
+  final int deferCount;  // ✅ Added defer count support
   final bool currentUserVoted;
-  final bool? currentUserVote; // true = approve, false = decline, null = not voted
+  final bool? currentUserVote; // true = approve, false = decline, null = not voted or deferred
+  final String? currentUserVoteType; // 'Y' = yes/approve, 'N' = no/decline, 'D' = defer
 
   VoteSummary({
     required this.approveCount,
     required this.declineCount,
+    this.deferCount = 0,  // Default to 0 for backwards compatibility
     required this.currentUserVoted,
     this.currentUserVote,
+    this.currentUserVoteType,
   });
 
-  int get totalVotes => approveCount + declineCount;
+  int get totalVotes => approveCount + declineCount + deferCount;
   
   /// Approval percentage (0-100)
   double get approvalPercentage {
@@ -70,8 +100,10 @@ class VoteSummary {
     return VoteSummary(
       approveCount: json['approve_count'] as int? ?? json['approveCount'] as int? ?? 0,
       declineCount: json['decline_count'] as int? ?? json['declineCount'] as int? ?? 0,
+      deferCount: json['defer_count'] as int? ?? json['deferCount'] as int? ?? 0,
       currentUserVoted: json['current_user_voted'] as bool? ?? json['currentUserVoted'] as bool? ?? false,
       currentUserVote: json['current_user_vote'] as bool? ?? json['currentUserVote'] as bool?,
+      currentUserVoteType: json['current_user_vote_type'] as String? ?? json['currentUserVoteType'] as String?,
     );
   }
 
@@ -79,8 +111,10 @@ class VoteSummary {
     return {
       'approve_count': approveCount,
       'decline_count': declineCount,
+      'defer_count': deferCount,
       'current_user_voted': currentUserVoted,
       'current_user_vote': currentUserVote,
+      'current_user_vote_type': currentUserVoteType,
     };
   }
 }
@@ -91,7 +125,12 @@ class UpgradeRequestListItem {
   final MemberBasicInfo member;
   final String currentLevel;
   final String requestedLevel;
-  final String status; // 'pending', 'approved', 'declined'
+  /// Status of upgrade request ('pending', 'approved', 'declined')
+  /// 
+  /// ⚠️ MIGRATION NOTE: For dynamic status management, see:
+  /// - UpgradeStatusChoice model (lib/data/models/upgrade_status_choice_model.dart)
+  /// - upgradeStatusChoicesProvider (lib/features/admin/presentation/providers/upgrade_status_provider.dart)
+  final String status;
   final DateTime submittedAt;
   final int commentCount;
   final VoteSummary voteSummary;
@@ -107,8 +146,12 @@ class UpgradeRequestListItem {
     required this.voteSummary,
   });
 
-  /// Check if request is pending
-  bool get isPending => status.toLowerCase() == 'pending';
+  /// Check if request is pending (awaiting votes/decision)
+  /// ✅ FIXED: Backend uses "New" and "In Progress" (not "Pending")
+  bool get isPending {
+    final normalized = status.toLowerCase();
+    return normalized == 'new' || normalized == 'in progress' || normalized == 'pending';
+  }
   
   /// Check if request is approved
   bool get isApproved => status.toLowerCase() == 'approved';
@@ -117,16 +160,142 @@ class UpgradeRequestListItem {
   bool get isDeclined => status.toLowerCase() == 'declined';
 
   factory UpgradeRequestListItem.fromJson(Map<String, dynamic> json) {
-    return UpgradeRequestListItem(
-      id: json['id'] as int,
-      member: MemberBasicInfo.fromJson(json['member'] as Map<String, dynamic>),
-      currentLevel: json['current_level'] as String? ?? json['currentLevel'] as String? ?? 'Unknown',
-      requestedLevel: json['requested_level'] as String? ?? json['requestedLevel'] as String? ?? 'Unknown',
-      status: json['status'] as String? ?? 'pending',
-      submittedAt: DateTime.parse(json['submitted_at'] as String? ?? json['submittedAt'] as String? ?? DateTime.now().toIso8601String()),
-      commentCount: json['comment_count'] as int? ?? json['commentCount'] as int? ?? 0,
-      voteSummary: VoteSummary.fromJson(json['vote_summary'] as Map<String, dynamic>? ?? json['voteSummary'] as Map<String, dynamic>? ?? {}),
-    );
+    // Debug logging to identify problematic fields
+    try {
+      final id = json['id'] as int;
+      
+      // ✅ FIXED: Backend uses 'applicant' field, not 'member'
+      // The member upgrade history endpoint returns 'applicant' instead of 'member'
+      final memberData = json['applicant'] ?? json['member'];
+      if (memberData == null) {
+        throw Exception('applicant/member field is null');
+      }
+      if (memberData is! Map<String, dynamic>) {
+        throw Exception('applicant/member field is not Map<String, dynamic>, it is: ${memberData.runtimeType}');
+      }
+      
+      final member = MemberBasicInfo.fromJson(memberData);
+      
+      // ✅ FIXED: Get current level from member's level field
+      // Try multiple sources and convert ID to level name using constants
+      String currentLevel = 'Unknown';
+      
+      if (memberData['level'] != null) {
+        if (memberData['level'] is Map) {
+          // Try name field first
+          if (memberData['level']['name'] != null) {
+            currentLevel = memberData['level']['name'] as String;
+          } else if (memberData['level']['id'] != null) {
+            // Convert ID to name using constants
+            currentLevel = _getLevelNameFromId(memberData['level']['id']);
+          }
+        } else {
+          // Level is a direct value (int or string)
+          currentLevel = _getLevelNameFromId(memberData['level']);
+        }
+      } else if (json['currentLevel'] != null) {
+        if (json['currentLevel'] is Map) {
+          currentLevel = json['currentLevel']['name'] as String? ?? _getLevelNameFromId(json['currentLevel']['id']);
+        } else {
+          currentLevel = _getLevelNameFromId(json['currentLevel']);
+        }
+      } else if (json['current_level'] != null) {
+        if (json['current_level'] is Map) {
+          currentLevel = json['current_level']['name'] as String? ?? _getLevelNameFromId(json['current_level']['id']);
+        } else {
+          currentLevel = _getLevelNameFromId(json['current_level']);
+        }
+      }
+      
+      // If still unknown, try to infer from targetLevel (user is upgrading from one level below)
+      if (currentLevel == 'Unknown' && json['targetLevel'] != null) {
+        int? targetLevelId;
+        if (json['targetLevel'] is int) {
+          targetLevelId = json['targetLevel'] as int;
+        } else if (json['targetLevel'] is Map) {
+          targetLevelId = json['targetLevel']['id'] as int?;
+        }
+        
+        // Get current level (one below target)
+        if (targetLevelId != null && targetLevelId > 1) {
+          currentLevel = _getLevelNameFromId(targetLevelId - 1);
+        }
+      }
+      
+      // ✅ FIXED: Get requested level and convert ID to name
+      String requestedLevel = 'Unknown';
+      
+      if (json['targetLevel'] != null) {
+        if (json['targetLevel'] is Map) {
+          final targetLevelMap = json['targetLevel'] as Map<String, dynamic>;
+          // Try name field first
+          if (targetLevelMap['name'] != null) {
+            requestedLevel = targetLevelMap['name'] as String;
+          } else if (targetLevelMap['id'] != null) {
+            // Convert ID to name using constants
+            requestedLevel = _getLevelNameFromId(targetLevelMap['id']);
+          }
+        } else {
+          // targetLevel is int or string - convert to name
+          requestedLevel = _getLevelNameFromId(json['targetLevel']);
+        }
+      } else if (json['target_level'] != null) {
+        if (json['target_level'] is Map) {
+          requestedLevel = json['target_level']['name'] as String? ?? _getLevelNameFromId(json['target_level']['id']);
+        } else {
+          requestedLevel = _getLevelNameFromId(json['target_level']);
+        }
+      } else if (json['requested_level'] != null) {
+        requestedLevel = json['requested_level'] as String;
+      } else if (json['requestedLevel'] != null) {
+        requestedLevel = json['requestedLevel'] as String;
+      }
+      
+      final status = json['status'] as String? ?? 'pending';
+      
+      // ✅ FIXED: Handle 'created' field from member endpoint
+      final submittedAtStr = json['created'] as String? ?? json['submitted_at'] as String? ?? json['submittedAt'] as String? ?? DateTime.now().toIso8601String();
+      final submittedAt = DateTime.parse(submittedAtStr);
+      
+      final commentCount = json['comment_count'] as int? ?? json['commentCount'] as int? ?? 0;
+      
+      // ✅ FIXED: Handle actual API response format (yesVoters, noVoters, deferVoters)
+      VoteSummary voteSummary;
+      
+      // Try nested vote_summary object first
+      final voteSummaryData = json['vote_summary'] ?? json['voteSummary'];
+      
+      if (voteSummaryData != null && voteSummaryData is Map<String, dynamic>) {
+        voteSummary = VoteSummary.fromJson(voteSummaryData);
+      } else {
+        // Parse from API's direct fields: yesVoters, noVoters, deferVoters
+        final yesVoters = json['yesVoters'] as int? ?? 0;
+        final noVoters = json['noVoters'] as int? ?? 0;
+        final deferVoters = json['deferVoters'] as int? ?? 0;
+        
+        voteSummary = VoteSummary(
+          approveCount: yesVoters,
+          declineCount: noVoters,
+          deferCount: deferVoters,  // ✅ Include defer count
+          currentUserVoted: false,
+          currentUserVote: null,
+        );
+      }
+      
+      return UpgradeRequestListItem(
+        id: id,
+        member: member,
+        currentLevel: currentLevel,
+        requestedLevel: requestedLevel,
+        status: status,
+        submittedAt: submittedAt,
+        commentCount: commentCount,
+        voteSummary: voteSummary,
+      );
+    } catch (e) {
+      // Re-throw with more context
+      throw Exception('Failed to parse UpgradeRequestListItem: $e\nJSON: $json');
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -197,11 +366,35 @@ class UpgradeRequestComment {
   });
 
   factory UpgradeRequestComment.fromJson(Map<String, dynamic> json, {bool canDelete = false}) {
+    // Handle author field - can be either nested object or just an ID
+    MemberBasicInfo author;
+    if (json['author'] is Map<String, dynamic>) {
+      // Author is nested object
+      author = MemberBasicInfo.fromJson(json['author'] as Map<String, dynamic>);
+    } else if (json['author'] is int) {
+      // ✅ FIXED: Author is just an ID - display as "Member #ID"
+      final authorId = json['author'] as int;
+      author = MemberBasicInfo(
+        id: authorId,
+        username: 'Member #$authorId',  // More user-friendly than "user_10613"
+        firstName: '',
+        lastName: '',
+      );
+    } else {
+      // Fallback - create placeholder author
+      author = MemberBasicInfo(
+        id: 0,
+        username: 'Unknown User',
+        firstName: '',
+        lastName: '',
+      );
+    }
+    
     return UpgradeRequestComment(
       id: json['id'] as int,
-      author: MemberBasicInfo.fromJson(json['author'] as Map<String, dynamic>),
+      author: author,
       text: json['text'] as String? ?? '',
-      createdAt: DateTime.parse(json['created_at'] as String? ?? json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(json['created'] as String? ?? json['created_at'] as String? ?? json['createdAt'] as String? ?? DateTime.now().toIso8601String()),
       canDelete: json['can_delete'] as bool? ?? json['canDelete'] as bool? ?? canDelete,
     );
   }
@@ -313,6 +506,7 @@ class UpgradeRequestDetail {
   final List<UpgradeRequestComment> comments;
   final ApprovalInfo? approvalInfo;
   final VoteSummary voteSummary;
+  final String? supportingDocument;  // ✅ Added attachment support
 
   UpgradeRequestDetail({
     required this.id,
@@ -326,27 +520,142 @@ class UpgradeRequestDetail {
     required this.comments,
     this.approvalInfo,
     required this.voteSummary,
+    this.supportingDocument,  // ✅ Added attachment support
   });
 
-  bool get isPending => status.toLowerCase() == 'pending';
+  /// Check if request is pending (awaiting votes/decision)
+  /// ✅ FIXED: Backend uses "New" and "In Progress" (not "Pending")
+  bool get isPending {
+    final normalized = status.toLowerCase();
+    return normalized == 'new' || normalized == 'in progress' || normalized == 'pending';
+  }
+  
   bool get isApproved => status.toLowerCase() == 'approved';
   bool get isDeclined => status.toLowerCase() == 'declined';
 
   factory UpgradeRequestDetail.fromJson(Map<String, dynamic> json) {
+    // ✅ FIXED: Handle both 'applicant' (member endpoint) and 'member' (admin endpoint)
+    final memberData = json['applicant'] ?? json['member'];
+    if (memberData == null || memberData is! Map<String, dynamic>) {
+      throw Exception('applicant/member field is missing or invalid');
+    }
+    
+    // ✅ FIXED: Get current level from member's level field
+    // Try multiple sources and convert ID to level name using constants
+    String currentLevel = 'Unknown';
+    
+    if (memberData['level'] != null) {
+      if (memberData['level'] is Map) {
+        // Try name field first
+        if (memberData['level']['name'] != null) {
+          currentLevel = memberData['level']['name'] as String;
+        } else if (memberData['level']['id'] != null) {
+          // Convert ID to name using constants
+          currentLevel = _getLevelNameFromId(memberData['level']['id']);
+        }
+      } else {
+        // Level is a direct value (int or string)
+        currentLevel = _getLevelNameFromId(memberData['level']);
+      }
+    } else if (json['currentLevel'] != null) {
+      if (json['currentLevel'] is Map) {
+        currentLevel = json['currentLevel']['name'] as String? ?? _getLevelNameFromId(json['currentLevel']['id']);
+      } else {
+        currentLevel = _getLevelNameFromId(json['currentLevel']);
+      }
+    } else if (json['current_level'] != null) {
+      if (json['current_level'] is Map) {
+        currentLevel = json['current_level']['name'] as String? ?? _getLevelNameFromId(json['current_level']['id']);
+      } else {
+        currentLevel = _getLevelNameFromId(json['current_level']);
+      }
+    }
+    
+    // If still unknown, try to infer from targetLevel (user is upgrading from one level below)
+    if (currentLevel == 'Unknown' && json['targetLevel'] != null) {
+      int? targetLevelId;
+      if (json['targetLevel'] is int) {
+        targetLevelId = json['targetLevel'] as int;
+      } else if (json['targetLevel'] is Map) {
+        targetLevelId = json['targetLevel']['id'] as int?;
+      }
+      
+      // Get current level (one below target)
+      if (targetLevelId != null && targetLevelId > 1) {
+        currentLevel = _getLevelNameFromId(targetLevelId - 1);
+      }
+    }
+    
+    // ✅ FIXED: Get requested level and convert ID to name
+    String requestedLevel = 'Unknown';
+    
+    if (json['targetLevel'] != null) {
+      if (json['targetLevel'] is Map) {
+        final targetLevelMap = json['targetLevel'] as Map<String, dynamic>;
+        // Try name field first
+        if (targetLevelMap['name'] != null) {
+          requestedLevel = targetLevelMap['name'] as String;
+        } else if (targetLevelMap['id'] != null) {
+          // Convert ID to name using constants
+          requestedLevel = _getLevelNameFromId(targetLevelMap['id']);
+        }
+      } else {
+        // targetLevel is int or string - convert to name
+        requestedLevel = _getLevelNameFromId(json['targetLevel']);
+      }
+    } else if (json['target_level'] != null) {
+      if (json['target_level'] is Map) {
+        requestedLevel = json['target_level']['name'] as String? ?? _getLevelNameFromId(json['target_level']['id']);
+      } else {
+        requestedLevel = _getLevelNameFromId(json['target_level']);
+      }
+    } else if (json['requested_level'] != null) {
+      requestedLevel = json['requested_level'] as String;
+    } else if (json['requestedLevel'] != null) {
+      requestedLevel = json['requestedLevel'] as String;
+    }
+    
+    // ✅ FIXED: Handle 'applicantReason' field name
+    final reason = json['applicantReason'] as String? ?? json['reason'] as String? ?? '';
+    
+    // ✅ FIXED: Handle 'created' field from member endpoint
+    final submittedAtStr = json['created'] as String? ?? json['submitted_at'] as String? ?? json['submittedAt'] as String? ?? DateTime.now().toIso8601String();
+    
+    // ✅ FIXED: vote_summary might not exist, create default
+    final voteSummaryData = json['vote_summary'] ?? json['voteSummary'];
+    VoteSummary voteSummary;
+    if (voteSummaryData != null && voteSummaryData is Map<String, dynamic>) {
+      voteSummary = VoteSummary.fromJson(voteSummaryData);
+    } else {
+      // Parse from API's direct fields if vote_summary object doesn't exist
+      final yesVoters = json['yesVoters'] as int? ?? 0;
+      final noVoters = json['noVoters'] as int? ?? 0;
+      final deferVoters = json['deferVoters'] as int? ?? 0;
+      
+      voteSummary = VoteSummary(
+        approveCount: yesVoters,
+        declineCount: noVoters,
+        deferCount: deferVoters,  // ✅ Include defer count
+        currentUserVoted: false,
+        currentUserVote: null,
+      );
+    }
+    
     return UpgradeRequestDetail(
       id: json['id'] as int,
-      member: MemberDetailInfo.fromJson(json['member'] as Map<String, dynamic>),
-      currentLevel: json['current_level'] as String? ?? json['currentLevel'] as String? ?? 'Unknown',
-      requestedLevel: json['requested_level'] as String? ?? json['requestedLevel'] as String? ?? 'Unknown',
-      reason: json['reason'] as String? ?? '',
+      member: MemberDetailInfo.fromJson(memberData),
+      currentLevel: currentLevel,
+      requestedLevel: requestedLevel,
+      reason: reason,
       status: json['status'] as String? ?? 'pending',
-      submittedAt: DateTime.parse(json['submitted_at'] as String? ?? json['submittedAt'] as String? ?? DateTime.now().toIso8601String()),
+      submittedAt: DateTime.parse(submittedAtStr),
       votes: (json['votes'] as List<dynamic>?)?.map((v) => Vote.fromJson(v as Map<String, dynamic>)).toList() ?? [],
       comments: (json['comments'] as List<dynamic>?)?.map((c) => UpgradeRequestComment.fromJson(c as Map<String, dynamic>)).toList() ?? [],
       approvalInfo: json['approval_info'] != null 
           ? ApprovalInfo.fromJson(json['approval_info'] as Map<String, dynamic>)
           : (json['approvalInfo'] != null ? ApprovalInfo.fromJson(json['approvalInfo'] as Map<String, dynamic>) : null),
-      voteSummary: VoteSummary.fromJson(json['vote_summary'] as Map<String, dynamic>? ?? json['voteSummary'] as Map<String, dynamic>? ?? {}),
+      voteSummary: voteSummary,
+      supportingDocument: json['supporting_document'] as String? ?? json['supportingDocument'] as String?,  // ✅ Added attachment support
     );
   }
 
@@ -363,6 +672,7 @@ class UpgradeRequestDetail {
       'comments': comments.map((c) => c.toJson()).toList(),
       'approval_info': approvalInfo?.toJson(),
       'vote_summary': voteSummary.toJson(),
+      'supporting_document': supportingDocument,  // ✅ Added attachment support
     };
   }
 }

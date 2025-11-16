@@ -160,15 +160,37 @@ class TripsNotifier extends StateNotifier<TripsState> {
       // ✅ For upcoming/my trips, fetch from now onwards with larger pageSize
       // to ensure all user's registered trips are included
       final now = DateTime.now();
-      final startTimeFilter = updatedFilters.startDate?.toIso8601String() ?? 
-                             now.toIso8601String(); // Default to now for upcoming trips
+      
+      // ✅ Use proper UTC format with 'Z' suffix (no milliseconds)
+      // Backend expects: "2025-11-14T02:03:11Z" not "2025-11-14T02:03:11.162"
+      final startTimeFilter = (updatedFilters.startDate ?? now)
+          .toUtc()
+          .toIso8601String()
+          .replaceFirst(RegExp(r'\.\d+Z'), 'Z');
+      
+      final endTimeFilter = updatedFilters.endDate
+          ?.toUtc()
+          .toIso8601String()
+          .replaceFirst(RegExp(r'\.\d+Z'), 'Z');
       
       final response = await repository.getTrips(
+        approvalStatus: 'A', // ✅ CRITICAL: Only show APPROVED trips (excludes Deleted 'D', Pending 'P', Rejected 'R')
         startTimeAfter: startTimeFilter,
-        startTimeBefore: updatedFilters.endDate?.toIso8601String(),
+        startTimeBefore: endTimeFilter,
         ordering: updatedFilters.ordering,
         levelId: updatedFilters.levelId,
         meetingPointArea: updatedFilters.area,
+        // ✅ NEW: Advanced filters (Phase A Task #4)
+        meetingPoint: updatedFilters.meetingPointId,
+        lead: updatedFilters.leadId,
+        endTimeAfter: updatedFilters.endTimeAfter
+            ?.toUtc()
+            .toIso8601String()
+            .replaceFirst(RegExp(r'\.\d+Z'), 'Z'),
+        endTimeBefore: updatedFilters.endTimeBefore
+            ?.toUtc()
+            .toIso8601String()
+            .replaceFirst(RegExp(r'\.\d+Z'), 'Z'),
         page: 1,
         pageSize: 200, // ✅ Increased from 50 to 200 to capture more user trips
       );
@@ -248,12 +270,39 @@ class TripsNotifier extends StateNotifier<TripsState> {
       
       print('🔄 [TripsProvider] Loading page $nextPage...');
       
+      // ✅ Apply proper UTC date formatting for all date filters
+      final startTimeFilter = state.filters.startDate
+          ?.toUtc()
+          .toIso8601String()
+          .replaceFirst(RegExp(r'\.\d+Z'), 'Z');
+      
+      final endTimeFilter = state.filters.endDate
+          ?.toUtc()
+          .toIso8601String()
+          .replaceFirst(RegExp(r'\.\d+Z'), 'Z');
+      
+      final endTimeAfterFilter = state.filters.endTimeAfter
+          ?.toUtc()
+          .toIso8601String()
+          .replaceFirst(RegExp(r'\.\d+Z'), 'Z');
+      
+      final endTimeBeforeFilter = state.filters.endTimeBefore
+          ?.toUtc()
+          .toIso8601String()
+          .replaceFirst(RegExp(r'\.\d+Z'), 'Z');
+      
       final response = await repository.getTrips(
-        startTimeAfter: state.filters.startDate?.toIso8601String(),
-        startTimeBefore: state.filters.endDate?.toIso8601String(),
+        approvalStatus: 'A', // ✅ CRITICAL: Only show APPROVED trips (excludes Deleted 'D', Pending 'P', Rejected 'R')
+        startTimeAfter: startTimeFilter,
+        startTimeBefore: endTimeFilter,
         ordering: state.filters.ordering,
         levelId: state.filters.levelId,
         meetingPointArea: state.filters.area,
+        // ✅ NEW: Advanced filters (Phase A Task #4)
+        meetingPoint: state.filters.meetingPointId,
+        lead: state.filters.leadId,
+        endTimeAfter: endTimeAfterFilter,
+        endTimeBefore: endTimeBeforeFilter,
         page: nextPage,
         pageSize: 50, // Load 50 more trips per page
       );

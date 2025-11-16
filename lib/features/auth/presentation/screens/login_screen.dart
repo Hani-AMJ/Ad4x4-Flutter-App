@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/auth_provider_v2.dart'; // V2 - Clean implementation
 import '../../../../shared/widgets/widgets.dart';
 import '../../../../shared/widgets/animated_logo.dart';
+import '../../../../core/network/api_client.dart'; // For ApiException
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -73,9 +74,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        
+        // Check if this is a 503 Service Unavailable error
+        String errorMessage;
+        if (e is ApiException && e.statusCode == 503) {
+          errorMessage = 'The server is under maintenance.';
+        } else {
+          errorMessage = 'An error occurred: $e';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('An error occurred: $e'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );

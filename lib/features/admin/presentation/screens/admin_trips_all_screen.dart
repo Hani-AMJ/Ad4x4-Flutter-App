@@ -5,6 +5,7 @@ import '../../../../data/models/trip_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/utils/status_helpers.dart';
+import '../../../../core/utils/level_display_helper.dart';
 import '../widgets/admin_trip_filters_bar.dart';
 import 'package:go_router/go_router.dart';
 
@@ -53,15 +54,16 @@ class _AdminTripsAllScreenState extends ConsumerState<AdminTripsAllScreen> {
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       
-      // Always sort by creation date (newest first)
-      print('🔍 [AdminTripsAll] Fetching trips with ordering: -created');
+      // Sort by start_time descending (newest trips first)
+      // Backend uses snake_case for field names
+      print('🔍 [AdminTripsAll] Fetching trips with ordering: -start_time');
       final response = await repository.getTrips(
         startTimeAfter: _startDate?.toIso8601String(),
         startTimeBefore: _endDate?.toIso8601String(),
         levelId: _levelFilter,
-        ordering: '-created', // Always newest first (by creation date)
+        ordering: '-start_time', // Newest first by start time (matches API docs example)
         page: 1,
-        pageSize: 100,
+        pageSize: 50, // Show recent 50 trips
       );
 
       final tripsData = response['results'] as List<dynamic>? ?? [];
@@ -71,18 +73,26 @@ class _AdminTripsAllScreenState extends ConsumerState<AdminTripsAllScreen> {
           .toList();
 
       // Apply client-side filters
-      // ✅ FIXED: Use status helpers to check backend codes (A, P, D)
+      // ✅ FIXED: Use status helpers to check backend codes (A, P, R, D) or dynamic values
       if (_statusFilter != 'all') {
-        if (_statusFilter == 'pending') {
+        // Handle legacy filter values (pending, approved, rejected, deleted) and new backend codes (P, A, R, D)
+        if (_statusFilter == 'pending' || _statusFilter == 'P') {
           trips = trips.where((t) => isPending(t.approvalStatus)).toList();
-        } else if (_statusFilter == 'approved') {
+        } else if (_statusFilter == 'approved' || _statusFilter == 'A') {
           trips = trips.where((t) => isApproved(t.approvalStatus)).toList();
+        } else if (_statusFilter == 'rejected' || _statusFilter == 'R') {
+          trips = trips.where((t) => isRejected(t.approvalStatus)).toList();
+        } else if (_statusFilter == 'declined' || _statusFilter == 'deleted' || _statusFilter == 'D') {
+          trips = trips.where((t) => isDeclined(t.approvalStatus)).toList(); // Backend 'D' = Deleted
         } else if (_statusFilter == 'upcoming') {
           final now = DateTime.now();
           trips = trips.where((t) => t.startTime.isAfter(now) && isApproved(t.approvalStatus)).toList();
         } else if (_statusFilter == 'completed') {
           final now = DateTime.now();
           trips = trips.where((t) => t.endTime.isBefore(now)).toList();
+        } else {
+          // Handle any other dynamic status value by direct comparison
+          trips = trips.where((t) => t.approvalStatus == _statusFilter).toList();
         }
       }
 
@@ -103,9 +113,9 @@ class _AdminTripsAllScreenState extends ConsumerState<AdminTripsAllScreen> {
 
       // Debug: Print first and last trip dates to verify sorting
       if (trips.isNotEmpty) {
-        print('✅ [AdminTripsAll] Loaded ${trips.length} trips (ordered by: -created)');
-        print('   First trip: ${trips.first.title} - Created: ${trips.first.created}');
-        print('   Last trip: ${trips.last.title} - Created: ${trips.last.created}');
+        print('✅ [AdminTripsAll] Loaded ${trips.length} trips (ordered by: -start_time)');
+        print('   First trip: ID=${trips.first.id}, Title="${trips.first.title}", Start: ${trips.first.startTime}');
+        print('   Last trip: ID=${trips.last.id}, Title="${trips.last.title}", Start: ${trips.last.startTime}');
       }
       return trips;
     } catch (e, stackTrace) {
@@ -159,13 +169,7 @@ class _AdminTripsAllScreenState extends ConsumerState<AdminTripsAllScreen> {
             onPressed: _handleRefresh,
             tooltip: 'Refresh',
           ),
-          // Add Trip button (if user has create permission)
-          if (user?.hasPermission('create_trip') ?? false)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => context.push('/trips/create'),
-              tooltip: 'Create Trip',
-            ),
+
         ],
       ),
       body: Column(
@@ -370,16 +374,15 @@ class _TripAdminCard extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
 
-              // Info chips
+              // Info badges: Level, Status, and other info
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _InfoChip(
-                    icon: Icons.trending_up,
-                    label: trip.level.name,
-                    color: _getLevelColor(trip.level.numericLevel),
-                  ),
+                  // Level badge (using consistent helper)
+                  LevelDisplayHelper.buildCompactBadge(trip.level),
+                  // Trip status badge (Upcoming/Ongoing/Completed)
+                  _buildTripStatusBadge(trip, theme.colorScheme),
                   _InfoChip(
                     icon: Icons.people,
                     label: '${trip.registeredCount}/${trip.capacity}',
@@ -428,6 +431,52 @@ class _TripAdminCard extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Build trip status badge (Upcoming/Ongoing/Completed)
+  Widget _buildTripStatusBadge(TripListItem trip, ColorScheme colors) {
+    final now = DateTime.now();
+    String status;
+    Color badgeColor;
+    IconData icon;
+
+    if (now.isBefore(trip.startTime)) {
+      status = 'Upcoming';
+      badgeColor = Colors.green;
+      icon = Icons.schedule;
+    } else if (now.isAfter(trip.endTime)) {
+      status = 'Completed';
+      badgeColor = Colors.grey;
+      icon = Icons.check_circle;
+    } else {
+      status = 'Ongoing';
+      badgeColor = Colors.orange;
+      icon = Icons.play_circle;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: badgeColor, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: badgeColor),
+          const SizedBox(width: 4),
+          Text(
+            status,
+            style: TextStyle(
+              color: badgeColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

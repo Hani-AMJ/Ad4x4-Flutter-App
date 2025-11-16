@@ -33,7 +33,13 @@ class AdminTripsWizardScreen extends ConsumerWidget {
                         ref.read(adminWizardProvider.notifier).resetWizard();
                       },
                     )
-                  : null,
+                  : IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        // Go back to admin dashboard/previous screen
+                        Navigator.of(context).pop();
+                      },
+                    ),
             )
           : AppBar(
               title: Text(_getStepTitle(wizardState.currentStep)),

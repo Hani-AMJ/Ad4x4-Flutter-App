@@ -78,7 +78,7 @@ class LogbookEntriesNotifier extends StateNotifier<LogbookEntriesState> {
         memberId: memberId,
         tripId: tripId,
         page: page,
-        limit: 20,
+        pageSize: 20,
       );
 
       final entriesResponse = LogbookEntriesResponse.fromJson(response);
@@ -210,8 +210,8 @@ class LogbookSkillsNotifier extends StateNotifier<LogbookSkillsState> {
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
       final response = await repository.getLogbookSkills(
-        levelId: levelId,
-        limit: 100, // Get all skills
+        levelEq: levelId,
+        pageSize: 100, // Get all skills
       );
 
       final skillsResponse = LogbookSkillsResponse.fromJson(response);
@@ -259,7 +259,7 @@ final logbookSkillsProvider =
 final memberSkillsStatusProvider =
     FutureProvider.family<List<MemberSkillStatus>, int>((ref, memberId) async {
   final repository = ref.read(mainApiRepositoryProvider);
-  final response = await repository.getMemberLogbookSkills(memberId);
+  final response = await repository.getMemberLogbookSkills(memberId: memberId);
 
   // API returns {'results': [...]} format
   final results = response['results'] as List<dynamic>?;
@@ -318,8 +318,7 @@ class LogbookActionsNotifier extends StateNotifier<bool> {
       await repository.signOffSkill(
         memberId: memberId,
         skillId: skillId,
-        tripId: tripId,
-        comment: comment,
+        tripId: tripId ?? 0, // tripId is required by API
       );
 
       // Invalidate member skills to refresh
@@ -344,12 +343,9 @@ class LogbookActionsNotifier extends StateNotifier<bool> {
       final repository = _ref.read(mainApiRepositoryProvider);
       await repository.createTripReport(
         tripId: tripId,
-        report: report,
-        safetyNotes: safetyNotes,
-        weatherConditions: weatherConditions,
-        terrainNotes: terrainNotes,
-        participantCount: participantCount,
-        issues: issues,
+        title: 'Trip Report', // Required field
+        reportText: report,
+        // Note: API doesn't support these fields, removing them
       );
     } finally {
       state = false;

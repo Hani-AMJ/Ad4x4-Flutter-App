@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
-import '../../../../core/utils/image_proxy.dart';
 import '../../../../data/models/upgrade_request_model.dart';
+import '../../../../data/models/upgrade_status_choice_model.dart';
 import '../providers/upgrade_requests_provider.dart';
+import '../providers/upgrade_status_provider.dart';
 
 /// Admin Upgrade Requests List Screen
 /// 
@@ -19,14 +20,16 @@ class AdminUpgradeRequestsScreen extends ConsumerStatefulWidget {
 
 class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequestsScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  TabController? _tabController;
+  final int _fallbackTabLength = 4; // Default for loading/error states
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
     
-    // Load upgrade requests on first build
+    // ✅ FIXED: Load ALL requests without filter
+    // Backend doesn't support "pending" as a filter value
+    // Frontend will filter by tabs client-side
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(upgradeRequestsProvider.notifier).loadRequests();
     });
@@ -34,8 +37,16 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     super.dispose();
+  }
+  
+  /// Initialize TabController with dynamic length from loaded statuses
+  void _initializeTabController(int length) {
+    if (_tabController == null || _tabController!.length != length) {
+      _tabController?.dispose();
+      _tabController = TabController(length: length, vsync: this);
+    }
   }
 
   @override
@@ -91,9 +102,93 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
     }
 
     final upgradeRequestsState = ref.watch(upgradeRequestsProvider);
+    final statusesAsync = ref.watch(upgradeStatusChoicesProvider);
 
+    return statusesAsync.when(
+      data: (statuses) {
+        // Initialize TabController with dynamic count (statuses + "All" tab)
+        final tabCount = statuses.length + 1;
+        _initializeTabController(tabCount);
+        
+        return _buildScaffold(
+          context,
+          theme,
+          colors,
+          upgradeRequestsState,
+          statuses,
+          canApprove,
+          canVote,
+          user,
+        );
+      },
+      loading: () {
+        // Initialize with fallback count during loading
+        _initializeTabController(_fallbackTabLength);
+        return _buildScaffold(
+          context,
+          theme,
+          colors,
+          upgradeRequestsState,
+          _getFallbackStatuses(),
+          canApprove,
+          canVote,
+          user,
+        );
+      },
+      error: (e, s) {
+        // Initialize with fallback count on error
+        _initializeTabController(_fallbackTabLength);
+        return _buildScaffold(
+          context,
+          theme,
+          colors,
+          upgradeRequestsState,
+          _getFallbackStatuses(),
+          canApprove,
+          canVote,
+          user,
+        );
+      },
+    );
+  }
+  
+  /// Fallback statuses for loading/error states
+  List<UpgradeStatusChoice> _getFallbackStatuses() {
+    return const [
+      UpgradeStatusChoice(
+        value: 'pending',
+        label: 'Pending',
+        description: 'Awaiting review',
+        order: 1,
+      ),
+      UpgradeStatusChoice(
+        value: 'approved',
+        label: 'Approved',
+        description: 'Request approved',
+        order: 2,
+      ),
+      UpgradeStatusChoice(
+        value: 'declined',
+        label: 'Declined',
+        description: 'Request declined',
+        order: 3,
+      ),
+    ];
+  }
+  
+  /// Build the main scaffold with dynamic tabs
+  Widget _buildScaffold(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colors,
+    UpgradeRequestsState upgradeRequestsState,
+    List<UpgradeStatusChoice> statuses,
+    bool canApprove,
+    bool canVote,
+    dynamic user,
+  ) {
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: colors.surface,
         elevation: 0,
@@ -103,123 +198,13 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
           indicatorColor: colors.primary,
           labelColor: colors.primary,
           unselectedLabelColor: colors.onSurface.withValues(alpha: 0.6),
+          isScrollable: true,
           onTap: (index) {
-            // Update filter based on tab
-            String? status;
-            switch (index) {
-              case 0:
-                status = 'pending';
-                break;
-              case 1:
-                status = 'approved';
-                break;
-              case 2:
-                status = 'declined';
-                break;
-              case 3:
-                status = null; // All
-                break;
-            }
-            ref.read(upgradeRequestsProvider.notifier).setStatusFilter(status);
+            // ✅ FIXED: Don't send status filter to API (backend doesn't support it)
+            // Just switch tabs - filtering is done client-side in _buildTabViews
+            // No need to call setStatusFilter which triggers API reload
           },
-          tabs: [
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Pending'),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFA726).withValues(alpha: 0.15), // Amber/Orange
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${upgradeRequestsState.pendingRequests.length}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFFFA726),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Approved'),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF66BB6A).withValues(alpha: 0.15), // Green
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${upgradeRequestsState.approvedRequests.length}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF66BB6A),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Declined'),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: colors.error.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${upgradeRequestsState.declinedRequests.length}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: colors.error,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('All'),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${upgradeRequestsState.totalCount}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: colors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          tabs: _buildDynamicTabs(statuses, upgradeRequestsState, colors),
         ),
       ),
       body: upgradeRequestsState.isLoading
@@ -260,36 +245,14 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
                 )
               : TabBarView(
                   controller: _tabController,
-                  children: [
-                    _buildRequestsList(
-                      upgradeRequestsState.pendingRequests,
-                      canApprove,
-                      canVote,
-                      colors,
-                      theme,
-                    ),
-                    _buildRequestsList(
-                      upgradeRequestsState.approvedRequests,
-                      canApprove,
-                      canVote,
-                      colors,
-                      theme,
-                    ),
-                    _buildRequestsList(
-                      upgradeRequestsState.declinedRequests,
-                      canApprove,
-                      canVote,
-                      colors,
-                      theme,
-                    ),
-                    _buildRequestsList(
-                      upgradeRequestsState.allRequests,
-                      canApprove,
-                      canVote,
-                      colors,
-                      theme,
-                    ),
-                  ],
+                  children: _buildTabViews(
+                    statuses,
+                    upgradeRequestsState,
+                    canApprove,
+                    canVote,
+                    colors,
+                    theme,
+                  ),
                 ),
       floatingActionButton: user?.hasPermission('create_upgrade_req_for_self') ?? false
           ? FloatingActionButton.extended(
@@ -301,6 +264,163 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
             )
           : null,
     );
+  }
+
+  /// Build dynamic tabs from status choices
+  List<Widget> _buildDynamicTabs(
+    List<UpgradeStatusChoice> statuses,
+    UpgradeRequestsState state,
+    ColorScheme colors,
+  ) {
+    final tabs = <Widget>[];
+    
+    // ✅ FIXED: Add "All" tab FIRST (not last)
+    tabs.add(
+      Tab(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('All'),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${state.requests.length}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: colors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    
+    // Create tab for each status
+    for (final status in statuses) {
+      // Get count for this status
+      // ✅ UPDATED: Show "New" and "Pending"/"In Progress" separately
+      final count = state.requests.where((r) {
+        final requestStatus = r.status.toLowerCase();
+        final filterStatus = status.value.toLowerCase();
+        
+        // Map status values to handle variations
+        if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress') {
+          // "Pending" or "In Progress" tab shows requests with votes
+          return requestStatus == 'pending' || requestStatus == 'in progress' || requestStatus == 'in_progress';
+        } else if (filterStatus == 'new') {
+          // "New" tab shows requests without votes
+          return requestStatus == 'new';
+        }
+        return requestStatus == filterStatus;
+      }).length;
+      
+      // Determine color based on status value
+      Color badgeColor;
+      final statusLower = status.value.toLowerCase();
+      if (statusLower == 'new') {
+        badgeColor = const Color(0xFF9C27B0); // Purple for "New"
+      } else if (statusLower == 'pending' || statusLower == 'in progress' || statusLower == 'in_progress' || status.value.toUpperCase() == 'P') {
+        badgeColor = const Color(0xFFFFA726); // Orange for "Pending"/"In Progress"
+      } else if (statusLower == 'approved' || status.value.toUpperCase() == 'A') {
+        badgeColor = const Color(0xFF66BB6A); // Green for "Approved"
+      } else if (statusLower == 'declined' || status.value.toUpperCase() == 'D') {
+        badgeColor = colors.error; // Red for "Declined"
+      } else {
+        badgeColor = colors.primary; // Default
+      }
+      
+      tabs.add(
+        Tab(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(status.label),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: badgeColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: badgeColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    // ✅ FIXED: "All" tab already added at the beginning
+    return tabs;
+  }
+  
+  /// Build dynamic tab views from status choices
+  List<Widget> _buildTabViews(
+    List<UpgradeStatusChoice> statuses,
+    UpgradeRequestsState state,
+    bool canApprove,
+    bool canVote,
+    ColorScheme colors,
+    ThemeData theme,
+  ) {
+    final views = <Widget>[];
+    
+    // ✅ FIXED: Add "All" view FIRST (not last)
+    views.add(
+      _buildRequestsList(
+        state.allRequests,
+        canApprove,
+        canVote,
+        colors,
+        theme,
+      ),
+    );
+    
+    // Create view for each status
+    for (final status in statuses) {
+      // ✅ UPDATED: Filter statuses with proper mapping
+      final filteredRequests = state.requests.where((r) {
+        final requestStatus = r.status.toLowerCase();
+        final filterStatus = status.value.toLowerCase();
+        
+        // Map status values to handle variations
+        if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress') {
+          // \"Pending\" or \"In Progress\" filter shows requests with votes
+          return requestStatus == 'pending' || requestStatus == 'in progress' || requestStatus == 'in_progress';
+        } else if (filterStatus == 'new') {
+          // \"New\" filter shows requests without votes
+          return requestStatus == 'new';
+        }
+        return requestStatus == filterStatus;
+      }).toList();
+      
+      views.add(
+        _buildRequestsList(
+          filteredRequests,
+          canApprove,
+          canVote,
+          colors,
+          theme,
+        ),
+      );
+    }
+    
+    // ✅ FIXED: "All" view already added at the beginning
+    return views;
   }
 
   Widget _buildRequestsList(
@@ -388,7 +508,7 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
                   CircleAvatar(
                     radius: 24,
                     backgroundImage: request.member.profileImage != null
-                        ? NetworkImage(ImageProxy.getProxiedUrl(request.member.profileImage))
+                        ? NetworkImage(request.member.profileImage!)
                         : null,
                     child: request.member.profileImage == null
                         ? Text(
@@ -528,111 +648,45 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
                 ],
               ),
               
-              // Action buttons (only for pending requests with proper permissions)
-              if (request.isPending && (canApprove || canVote))
+              // ✅ SIMPLIFIED UI: Progress bar instead of action buttons
+              if (request.voteSummary.totalVotes > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (canApprove) ...[
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () async {
-                              // Quick approve action
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Approve Upgrade Request'),
-                                  content: Text('Approve ${request.member.displayName} for ${request.requestedLevel}?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context, false),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () => Navigator.pop(context, true),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF66BB6A),
-                                      ),
-                                      child: const Text('Approve'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              
-                              if (confirm == true && mounted) {
-                                try {
-                                  await ref.read(upgradeRequestActionsProvider.notifier).approve(request.id);
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Request approved successfully!'),
-                                        backgroundColor: Color(0xFF66BB6A),
-                                      ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error: $e'),
-                                        backgroundColor: colors.error,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                            icon: const Icon(Icons.check, color: Color(0xFF66BB6A)),
-                            label: const Text('Approve', style: TextStyle(color: Color(0xFF66BB6A))),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFF66BB6A)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Approval Rate',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: colors.onSurface.withValues(alpha: 0.8),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => context.push('/admin/upgrade-requests/${request.id}'),
-                            icon: Icon(Icons.cancel, color: colors.error),
-                            label: Text('Decline', style: TextStyle(color: colors.error)),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: colors.error),
+                          Text(
+                            '${request.voteSummary.approvalPercentage.toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: colors.primary,
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => context.push('/admin/upgrade-requests/${request.id}'),
-                          icon: const Icon(Icons.visibility),
-                          label: const Text('View Details'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.primary,
-                            foregroundColor: colors.onPrimary,
-                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: request.voteSummary.approvalPercentage / 100,
+                          backgroundColor: colors.error.withValues(alpha: 0.2),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF66BB6A)),
+                          minHeight: 6,
                         ),
                       ),
                     ],
-                  ),
-                ),
-                
-              // View details button for non-pending or non-approve users
-              if (!request.isPending || (!canApprove && !canVote))
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => context.push('/admin/upgrade-requests/${request.id}'),
-                      icon: const Icon(Icons.visibility),
-                      label: const Text('View Details'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        foregroundColor: colors.onPrimary,
-                      ),
-                    ),
                   ),
                 ),
             ],

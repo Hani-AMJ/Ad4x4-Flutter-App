@@ -14,13 +14,19 @@ class PermissionDebugScreen extends ConsumerWidget {
     final authState = ref.watch(authProviderV2);
     final user = authState.user;
 
-    // Check admin access with the same logic as home screen
+    // Check admin access with CORRECT permissions (verified from backend API)
+    // Reference: CORRECT_PERMISSIONS_REFERENCE.md
     final hasAdminAccess = user != null &&
-        (user.hasPermission('can_approve_trips') ||
-            user.hasPermission('can_view_all_trips') ||
-            user.hasPermission('can_manage_trips') ||
-            user.hasPermission('can_view_members') ||
-            user.hasPermission('can_manage_meeting_points'));
+        (user.hasPermission('approve_trip') ||              // Trip approval
+            user.hasPermission('edit_trips') ||             // Trip management
+            user.hasPermission('delete_trips') ||           // Trip deletion
+            user.hasPermission('view_members') ||           // View members
+            user.hasPermission('create_meeting_points') ||  // Meeting points (plural!)
+            user.hasPermission('edit_meeting_points') ||    // Meeting points (plural!)
+            user.hasPermission('delete_meeting_points') ||  // Meeting points (plural!)
+            user.hasPermission('edit_trip_registrations') || // Registration management
+            user.hasPermission('delete_trip_comments') ||   // Comment moderation
+            user.hasPermission('edit_trip_media'));         // Media moderation
 
     return Scaffold(
       appBar: AppBar(
@@ -119,15 +125,35 @@ class PermissionDebugScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Required Admin Permissions',
+                            'Required Admin Permissions (CORRECTED)',
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Any ONE of these permissions grants admin access:',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
                           const SizedBox(height: 12),
-                          _PermissionCheck(user, 'can_approve_trips', 'Approve Trips'),
-                          _PermissionCheck(user, 'can_view_all_trips', 'View All Trips'),
-                          _PermissionCheck(user, 'can_manage_trips', 'Manage Trips'),
-                          _PermissionCheck(user, 'can_view_members', 'View Members'),
-                          _PermissionCheck(user, 'can_manage_meeting_points', 'Manage Meeting Points'),
+                          // Trip Management
+                          _PermissionCheck(user, 'approve_trip', 'Approve Trips'),
+                          _PermissionCheck(user, 'edit_trips', 'Edit Trips'),
+                          _PermissionCheck(user, 'delete_trips', 'Delete Trips'),
+                          const Divider(height: 24),
+                          // Member Management
+                          _PermissionCheck(user, 'view_members', 'View Members'),
+                          const Divider(height: 24),
+                          // Meeting Points (note: PLURAL forms!)
+                          _PermissionCheck(user, 'create_meeting_points', 'Create Meeting Points'),
+                          _PermissionCheck(user, 'edit_meeting_points', 'Edit Meeting Points'),
+                          _PermissionCheck(user, 'delete_meeting_points', 'Delete Meeting Points'),
+                          const Divider(height: 24),
+                          // Content Moderation
+                          _PermissionCheck(user, 'edit_trip_registrations', 'Edit Registrations'),
+                          _PermissionCheck(user, 'delete_trip_comments', 'Delete Comments'),
+                          _PermissionCheck(user, 'edit_trip_media', 'Edit Trip Media'),
                         ],
                       ),
                     ),

@@ -6,14 +6,20 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../data/models/level_model.dart';
 import '../../../../data/models/meeting_point_model.dart';
 import '../../../../data/models/user_model.dart';
+import '../../../../data/models/vehicle_modifications_model.dart';
+import '../../../../data/models/trip_area_choice_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/providers/trip_area_provider.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/status_helpers.dart';
+import '../../../../core/utils/level_display_helper.dart';
+import '../../../../core/services/vehicle_modifications_cache_service.dart';
 
 /// Create Trip Screen - Complete multi-step trip creation form
 /// 
@@ -45,6 +51,7 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   int? _selectedLevelId;
+  String? _selectedAreaValue;  // NEW: Selected trip area (desert, mountain, wadi, etc.)
   String? _tripImagePath;  // Local path to cropped image
   String? _tripImageUrl;   // Uploaded image URL
   bool _isUploadingImage = false;
@@ -59,6 +66,20 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   final _capacityController = TextEditingController(text: '20');
   bool _allowWaitlist = true;
   final _requirementsController = TextEditingController();
+  
+  // Vehicle Requirements state
+  bool _hasVehicleRequirements = false;
+  LiftKitType? _minLiftKit;
+  ShocksType? _minShocksType;
+  bool? _requireLongTravelArms;
+  TyreSizeType? _minTyreSize;
+  HorsepowerType? _minHorsepower;
+  bool? _requirePerformanceIntake;
+  bool? _requirePerformanceCatback;
+  bool? _requireOffRoadLight;
+  bool? _requireWinch;
+  bool? _requireArmor;
+  late VehicleModificationsCacheService _vehicleModsService;
   
   // Reference data from APIs
   List<Level> _levels = [];
@@ -76,8 +97,14 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
 - Valid club membership''';
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadReferenceData();
+      _initializeServices();
     });
+  }
+  
+  Future<void> _initializeServices() async {
+    final prefs = await SharedPreferences.getInstance();
+    _vehicleModsService = VehicleModificationsCacheService(prefs);
+    await _loadReferenceData();
   }
   
   @override
@@ -137,7 +164,8 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
       // Load meeting points
       print('🔍 [CREATE TRIP] Fetching meeting points...');
       final meetingPointsResponse = await repository.getMeetingPoints();
-      final meetingPoints = (meetingPointsResponse as List<dynamic>?)
+      final meetingPointsData = meetingPointsResponse['results'] as List<dynamic>?;
+      final meetingPoints = meetingPointsData
           ?.map((m) => MeetingPoint.fromJson(m as Map<String, dynamic>))
           .toList() ?? [];
       print('🔍 [CREATE TRIP] Meeting points loaded: ${meetingPoints.length}');
@@ -286,6 +314,16 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.tripId == null ? 'Create Trip' : 'Edit Trip'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/trips');
+            }
+          },
+        ),
         actions: [
           if (_currentStep > 0)
             TextButton(
@@ -505,6 +543,20 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           ),
           const SizedBox(height: 24),
           
+          // NEW: Trip Area Selector
+          Consumer(
+            builder: (context, ref, _) {
+              final areasAsync = ref.watch(tripAreaChoicesProvider);
+              
+              return areasAsync.when(
+                data: (areas) => _buildAreaSelector(areas),
+                loading: () => _buildAreaSelector(_getFallbackAreas()),
+                error: (e, s) => _buildAreaSelector(_getFallbackAreas()),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          
           // Trip Image (Optional)
           const Text(
             'Trip Image (Optional)',
@@ -572,70 +624,148 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     );
   }
   
-  /// Build level badge widget with icons
+  /// Build level badge widget with icons using centralized helper
   Widget _buildLevelBadge(Level level) {
-    Color badgeColor;
-    Widget iconWidget;
-    
-    // Uniform icon size for consistency
-    const double iconSize = 20.0;
-    
-    // Map level names to icons (case-insensitive)
-    final levelName = level.name.toLowerCase();
-    
-    if (levelName.contains('club event')) {
-      // Club Event (5) → Calendar/Event icon
-      badgeColor = Colors.purple;
-      iconWidget = const Icon(Icons.event, size: iconSize, color: Colors.purple);
-    } else if (levelName.contains('anit') || level.numericLevel == 10) {
-      // ANIT (10) → Education/School icon (learning/training)
-      badgeColor = Colors.green;
-      iconWidget = const Icon(Icons.school, size: iconSize, color: Colors.green);
-    } else if (levelName.contains('newbie')) {
-      // Newbie (10) → Halo star (star with border)
-      badgeColor = Colors.amber;
-      iconWidget = const Icon(Icons.star_border, size: iconSize, color: Colors.amber);
-    } else if (levelName.contains('intermediate')) {
-      // Intermediate (100) → Progress/Trending up icon
-      badgeColor = Colors.blue;
-      iconWidget = const Icon(Icons.trending_up, size: iconSize, color: Colors.blue);
-    } else if (levelName.contains('advanced')) {
-      // Advanced (200) → Racing/Speed icon
-      badgeColor = Colors.deepOrange;
-      iconWidget = const Icon(Icons.speed, size: iconSize, color: Colors.deepOrange);
-    } else if (levelName.contains('explorer')) {
-      // Explorer (400) → Explore/Compass icon (adventure)
-      badgeColor = Colors.red;
-      iconWidget = const Icon(Icons.explore, size: iconSize, color: Colors.red);
-    } else if (levelName.contains('marshal')) {
-      // Marshal (600) → Shield icon (ORANGE)
-      badgeColor = Colors.orange;
-      iconWidget = const Icon(Icons.shield, size: iconSize, color: Colors.orange);
-    } else if (levelName.contains('board')) {
-      // Board Member (800) → Crown/Admin icon
-      badgeColor = Colors.indigo;
-      iconWidget = const Icon(Icons.workspace_premium, size: iconSize, color: Colors.indigo);
-    } else {
-      // Default fallback
-      badgeColor = Colors.grey;
-      iconWidget = Text(
-        level.numericLevel.toString(),
-        style: const TextStyle(
-          color: Colors.grey,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      );
-    }
+    // Use centralized LevelDisplayHelper for consistent display
+    final color = LevelDisplayHelper.getLevelColor(level.numericLevel);
+    final icon = LevelDisplayHelper.getLevelIcon(level.numericLevel);
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: badgeColor, width: 1.5),
+        border: Border.all(color: color, width: 1.5),
       ),
-      child: iconWidget,
+      child: Icon(icon, size: 20, color: color),
+    );
+  }
+  
+  /// Fallback trip areas for loading/error states
+  List<TripAreaChoice> _getFallbackAreas() {
+    return const [
+      TripAreaChoice(value: 'desert', label: 'Desert', icon: 'desert', color: '#FFA726', order: 1),
+      TripAreaChoice(value: 'mountain', label: 'Mountain', icon: 'terrain', color: '#8D6E63', order: 2),
+      TripAreaChoice(value: 'wadi', label: 'Wadi', icon: 'water', color: '#42A5F5', order: 3),
+      TripAreaChoice(value: 'beach', label: 'Beach', icon: 'beach_access', color: '#26C6DA', order: 4),
+      TripAreaChoice(value: 'mixed', label: 'Mixed', icon: 'layers', color: '#66BB6A', order: 5),
+    ];
+  }
+  
+  /// Build trip area selector with icon grid
+  Widget _buildAreaSelector(List<TripAreaChoice> areas) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Trip Area',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Select the primary terrain type for this trip',
+          style: TextStyle(fontSize: 13, color: Colors.grey),
+        ),
+        const SizedBox(height: 16),
+        
+        // 3-column grid layout
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 1.1,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: areas.length,
+          itemBuilder: (context, index) {
+            final area = areas[index];
+            final isSelected = _selectedAreaValue == area.value;
+            
+            return _buildAreaCard(area, isSelected);
+          },
+        ),
+      ],
+    );
+  }
+  
+  /// Build individual area card
+  Widget _buildAreaCard(TripAreaChoice area, bool isSelected) {
+    // Parse color from hex string
+    Color cardColor;
+    try {
+      if (area.color != null && area.color!.startsWith('#')) {
+        final hexColor = area.color!.substring(1);
+        cardColor = Color(int.parse('FF$hexColor', radix: 16));
+      } else {
+        cardColor = Theme.of(context).colorScheme.primary;
+      }
+    } catch (e) {
+      cardColor = Theme.of(context).colorScheme.primary;
+    }
+    
+    // Map icon name to IconData
+    IconData areaIcon;
+    switch (area.icon?.toLowerCase()) {
+      case 'desert':
+        areaIcon = Icons.wb_sunny;
+        break;
+      case 'terrain':
+        areaIcon = Icons.terrain;
+        break;
+      case 'water':
+        areaIcon = Icons.water;
+        break;
+      case 'beach_access':
+        areaIcon = Icons.beach_access;
+        break;
+      case 'layers':
+        areaIcon = Icons.layers;
+        break;
+      default:
+        areaIcon = Icons.landscape;
+    }
+    
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedAreaValue = isSelected ? null : area.value;
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? cardColor.withValues(alpha: 0.15)
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? cardColor : Colors.grey.withValues(alpha: 0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              areaIcon,
+              size: 36,
+              color: isSelected ? cardColor : Colors.grey.shade600,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              area.label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? cardColor : Colors.grey.shade700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
   
@@ -941,6 +1071,11 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
             maxLines: 10,
             maxLength: 1000,
           ),
+          
+          const SizedBox(height: 24),
+          
+          // Vehicle Requirements Section
+          _buildVehicleRequirementsSection(),
         ],
       ),
     );
@@ -977,6 +1112,23 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
               _selectedLevelId != null
                   ? (_levels.where((l) => l.id == _selectedLevelId).firstOrNull?.name ?? 'Unknown Level')
                   : 'Not selected',
+            ),
+            // NEW: Area display in review
+            Consumer(
+              builder: (context, ref, _) {
+                final areasAsync = ref.watch(tripAreaChoicesProvider);
+                return areasAsync.when(
+                  data: (areas) {
+                    final selectedArea = areas.where((a) => a.value == _selectedAreaValue).firstOrNull;
+                    return _buildReviewRow(
+                      'Trip Area',
+                      selectedArea != null ? selectedArea.label : (_selectedAreaValue != null ? _selectedAreaValue! : 'Not selected'),
+                    );
+                  },
+                  loading: () => _buildReviewRow('Trip Area', _selectedAreaValue ?? 'Loading...'),
+                  error: (e, s) => _buildReviewRow('Trip Area', _selectedAreaValue ?? 'Not selected'),
+                );
+              },
             ),
           ],
         ),
@@ -1221,6 +1373,7 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
       // TODO: Implement proper image upload endpoint integration
       // 'image': _tripImagePath ?? '',  // DISABLED: Blob URL causes "not a file" error
       if (_selectedMeetingPointId != null) 'meetingPoint': _selectedMeetingPointId,  // camelCase
+      if (_selectedAreaValue != null) 'area': _selectedAreaValue,  // NEW: Trip area field
       // Note: requirements not in API spec, might be rejected
     };
     
@@ -1243,6 +1396,11 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
         final tripData = response['message'] as Map<String, dynamic>?;
         final tripId = tripData?['id'] as int?;
         final approvalStatus = tripData?['approvalStatus'] as String?;
+        
+        // Save vehicle requirements if enabled
+        if (tripId != null && _hasVehicleRequirements) {
+          await _saveVehicleRequirements(tripId);
+        }
         
         setState(() => _isSubmitting = false);
         
@@ -1371,5 +1529,277 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
         ],
       ),
     );
+  }
+  
+  Widget _buildVehicleRequirementsSection() {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    
+    // Only show for Advanced (200) and Expert (300) trips
+    final isAdvancedOrExpert = _selectedLevelId != null &&
+        (_levels.any((l) => l.id == _selectedLevelId && (l.numericLevel >= 200 && l.numericLevel <= 300)));
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.build, color: colors.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Vehicle Requirements',
+                    style: theme.textTheme.titleLarge,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Set minimum vehicle modification requirements for this trip (optional)',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            
+            if (!isAdvancedOrExpert) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Vehicle requirements are only available for Advanced and Expert level trips',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            
+            if (isAdvancedOrExpert) ...[
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: const Text('Require Vehicle Modifications'),
+                subtitle: Text(
+                  _hasVehicleRequirements
+                      ? 'Members must meet requirements to register'
+                      : 'No vehicle requirements (backward compatible)',
+                  style: theme.textTheme.bodySmall,
+                ),
+                value: _hasVehicleRequirements,
+                onChanged: (value) {
+                  setState(() {
+                    _hasVehicleRequirements = value;
+                  });
+                },
+              ),
+              
+              if (_hasVehicleRequirements) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                
+                // Info banner
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Only members with verified modifications meeting these requirements can register',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.orange.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                Text(
+                  'Suspension & Tires',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                _buildRequirementDropdown<LiftKitType>(
+                  label: 'Minimum Lift Kit',
+                  value: _minLiftKit,
+                  items: LiftKitType.values,
+                  onChanged: (value) => setState(() => _minLiftKit = value),
+                  getDisplay: (item) => item.displayName,
+                ),
+                const SizedBox(height: 12),
+                
+                _buildRequirementDropdown<ShocksType>(
+                  label: 'Minimum Shocks Type',
+                  value: _minShocksType,
+                  items: ShocksType.values,
+                  onChanged: (value) => setState(() => _minShocksType = value),
+                  getDisplay: (item) => item.displayName,
+                ),
+                const SizedBox(height: 12),
+                
+                SwitchListTile(
+                  title: const Text('Require Long Travel Arms'),
+                  value: _requireLongTravelArms ?? false,
+                  onChanged: (value) => setState(() => _requireLongTravelArms = value),
+                ),
+                const SizedBox(height: 12),
+                
+                _buildRequirementDropdown<TyreSizeType>(
+                  label: 'Minimum Tyre Size',
+                  value: _minTyreSize,
+                  items: TyreSizeType.values,
+                  onChanged: (value) => setState(() => _minTyreSize = value),
+                  getDisplay: (item) => item.displayName,
+                ),
+                const SizedBox(height: 16),
+                
+                Text(
+                  'Engine',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                _buildRequirementDropdown<HorsepowerType>(
+                  label: 'Minimum Horsepower',
+                  value: _minHorsepower,
+                  items: HorsepowerType.values,
+                  onChanged: (value) => setState(() => _minHorsepower = value),
+                  getDisplay: (item) => item.displayName,
+                ),
+                const SizedBox(height: 12),
+                
+                SwitchListTile(
+                  title: const Text('Require Performance Air Intake'),
+                  value: _requirePerformanceIntake ?? false,
+                  onChanged: (value) => setState(() => _requirePerformanceIntake = value),
+                ),
+                const SizedBox(height: 12),
+                
+                SwitchListTile(
+                  title: const Text('Require Performance Catback Exhaust'),
+                  value: _requirePerformanceCatback ?? false,
+                  onChanged: (value) => setState(() => _requirePerformanceCatback = value),
+                ),
+                const SizedBox(height: 16),
+                
+                Text(
+                  'Equipment',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                SwitchListTile(
+                  title: const Text('Require Off-Road Lights'),
+                  value: _requireOffRoadLight ?? false,
+                  onChanged: (value) => setState(() => _requireOffRoadLight = value),
+                ),
+                const SizedBox(height: 12),
+                
+                SwitchListTile(
+                  title: const Text('Require Winch'),
+                  value: _requireWinch ?? false,
+                  onChanged: (value) => setState(() => _requireWinch = value),
+                ),
+                const SizedBox(height: 12),
+                
+                SwitchListTile(
+                  title: const Text('Require Armor (skid plates, rock sliders, etc.)'),
+                  value: _requireArmor ?? false,
+                  onChanged: (value) => setState(() => _requireArmor = value),
+                ),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequirementDropdown<T>({
+    required String label,
+    required T? value,
+    required List<T> items,
+    required ValueChanged<T?> onChanged,
+    required String Function(T) getDisplay,
+  }) {
+    return DropdownButtonFormField<T>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      items: [
+        DropdownMenuItem<T>(
+          value: null,
+          child: Text('No requirement', style: TextStyle(color: Colors.grey.shade600)),
+        ),
+        ...items.map((item) {
+          return DropdownMenuItem<T>(
+            value: item,
+            child: Text(getDisplay(item)),
+          );
+        }).toList(),
+      ],
+      onChanged: onChanged,
+    );
+  }
+  
+  Future<void> _saveVehicleRequirements(int tripId) async {
+    try {
+      final requirements = TripVehicleRequirements(
+        id: '', // Will be generated by service
+        tripId: tripId,
+        minLiftKit: _minLiftKit,
+        minShocksType: _minShocksType,
+        requireLongTravelArms: _requireLongTravelArms,
+        minTyreSize: _minTyreSize,
+        minHorsepower: _minHorsepower,
+        requirePerformanceIntake: _requirePerformanceIntake,
+        requirePerformanceCatback: _requirePerformanceCatback,
+        requireOffRoadLight: _requireOffRoadLight,
+        requireWinch: _requireWinch,
+        requireArmor: _requireArmor,
+        createdAt: DateTime.now(),
+      );
+
+      await _vehicleModsService.saveRequirements(requirements);
+      print('✅ [CREATE TRIP] Vehicle requirements saved for trip $tripId');
+    } catch (e) {
+      print('❌ [CREATE TRIP] Failed to save vehicle requirements: $e');
+      // Don't fail the trip creation if requirements save fails
+    }
   }
 }

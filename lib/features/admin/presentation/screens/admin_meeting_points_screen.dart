@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/meeting_point_model.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -43,7 +44,8 @@ class _AdminMeetingPointsScreenState extends ConsumerState<AdminMeetingPointsScr
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       final data = await repository.getMeetingPoints();
-      final meetingPoints = data
+      final results = data['results'] as List<dynamic>? ?? [];
+      final meetingPoints = results
           .map((json) => MeetingPoint.fromJson(json as Map<String, dynamic>))
           .toList();
 
@@ -331,8 +333,19 @@ class _MeetingPointCard extends StatelessWidget {
             if (meetingPoint.link != null) ...[
               const SizedBox(height: 8),
               InkWell(
-                onTap: () {
-                  // TODO: Launch URL
+                onTap: () async {
+                  if (meetingPoint.link != null) {
+                    final uri = Uri.parse(meetingPoint.link!);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not open Google Maps')),
+                        );
+                      }
+                    }
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),

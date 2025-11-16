@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/trip_model.dart';
@@ -282,8 +283,17 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
                   icon: Icons.email,
                   label: 'Email',
                   value: member.email!,
-                  onTap: () {
-                    // TODO: Launch email
+                  onTap: () async {
+                    final uri = Uri(scheme: 'mailto', path: member.email);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not launch email client')),
+                        );
+                      }
+                    }
                   },
                 ),
               if (member.phone != null)
@@ -291,8 +301,17 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
                   icon: Icons.phone,
                   label: 'Phone',
                   value: member.phone!,
-                  onTap: () {
-                    // TODO: Launch phone
+                  onTap: () async {
+                    final uri = Uri(scheme: 'tel', path: member.phone);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not launch phone dialer')),
+                        );
+                      }
+                    }
                   },
                 ),
             ],

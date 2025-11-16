@@ -134,6 +134,142 @@ class _FullScreenPhotoViewerState extends ConsumerState<FullScreenPhotoViewer> {
     }
   }
 
+  Future<void> _rotatePhoto(String direction) async {
+    final photo = _photos[_currentIndex];
+    
+    // Show loading indicator
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Rotating photo ${direction == 'left' ? 'left' : 'right'}...'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    try {
+      await _galleryRepository.rotatePhoto(photo.id, direction: direction);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo rotated successfully! Refresh to see changes.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to rotate photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _downloadPhoto() async {
+    final photo = _photos[_currentIndex];
+    
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Download feature requires platform-specific implementation'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+    
+    // Note: Full download implementation requires platform channels or packages
+    // like path_provider + dio to download and save to device storage
+    // For now, we just show the download URL
+    print('📥 Download URL: ${_galleryRepository.getPhotoDownloadUrl(photo.id)}');
+  }
+
+  Future<void> _deletePhoto() async {
+    final photo = _photos[_currentIndex];
+    
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Photo?'),
+        content: const Text(
+          'This photo will be permanently deleted. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Show loading
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Deleting photo...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+    try {
+      await _galleryRepository.deletePhoto(photo.id);
+      
+      // Remove photo from list
+      setState(() {
+        _photos.removeAt(_currentIndex);
+      });
+
+      if (_photos.isEmpty) {
+        // No more photos, go back
+        if (mounted) {
+          Navigator.pop(context, _photos);
+        }
+      } else {
+        // Adjust current index if needed
+        if (_currentIndex >= _photos.length) {
+          _currentIndex = _photos.length - 1;
+        }
+        
+        // Jump to adjusted index
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(_currentIndex);
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _onPageChanged(int index) {
     setState(() {
       _currentIndex = index;
@@ -163,11 +299,37 @@ class _FullScreenPhotoViewerState extends ConsumerState<FullScreenPhotoViewer> {
                     )
                   : null,
               actions: [
+                // Rotate Left
+                IconButton(
+                  icon: const Icon(Icons.rotate_left, color: Colors.white),
+                  onPressed: () => _rotatePhoto('left'),
+                  tooltip: 'Rotate Left',
+                ),
+                // Rotate Right
+                IconButton(
+                  icon: const Icon(Icons.rotate_right, color: Colors.white),
+                  onPressed: () => _rotatePhoto('right'),
+                  tooltip: 'Rotate Right',
+                ),
+                // Download
+                IconButton(
+                  icon: const Icon(Icons.download, color: Colors.white),
+                  onPressed: _downloadPhoto,
+                  tooltip: 'Download',
+                ),
+                // Share
                 IconButton(
                   icon: const Icon(Icons.share, color: Colors.white),
                   onPressed: _sharePhoto,
                   tooltip: 'Share',
                 ),
+                // Delete
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.white),
+                  onPressed: _deletePhoto,
+                  tooltip: 'Delete',
+                ),
+                // Info
                 IconButton(
                   icon: Icon(
                     _showInfo ? Icons.info : Icons.info_outline,

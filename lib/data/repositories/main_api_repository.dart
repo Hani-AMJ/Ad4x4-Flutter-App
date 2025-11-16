@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/config/api_config.dart';
 import '../../core/network/api_client.dart';
+import '../../core/network/api_endpoints.dart';
 import '../../core/network/main_api_endpoints.dart';
 import '../models/trip_model.dart';
 
@@ -8,13 +11,66 @@ import '../models/trip_model.dart';
 /// 
 /// Handles all API calls to the Main API (Django backend)
 /// 
-/// ⚠️ IMPORTANT: Check docs/API_QUERY_PARAMETERS.md for available query parameters!
-/// Many endpoints support server-side filtering - use it instead of fetching all data.
+/// ============================================================================
+/// 📚 COMPREHENSIVE API DOCUMENTATION REFERENCE
+/// ============================================================================
 /// 
-/// Examples:
-/// - GET /api/members/?level_Name=Marshal (filter by level)
-/// - GET /api/members/?firstName_Icontains=john (search by name)
-/// - GET /api/trips/?status=upcoming (filter by status)
+/// **PRIMARY DOCUMENTATION SOURCE:**
+/// `/home/user/docs/upload_files/Ad4x4_Main_API_Documentation_updated.md`
+/// 
+/// This comprehensive API documentation (5,051 lines) contains:
+/// - ✅ Complete endpoint specifications (88 endpoints documented)
+/// - ✅ All query parameters with types and constraints
+/// - ✅ Request body schemas with required/optional fields
+/// - ✅ Response schemas with exact field names (camelCase)
+/// - ✅ Authentication requirements per endpoint
+/// - ✅ Pagination parameters (page, pageSize)
+/// - ✅ Filter parameters for list endpoints
+/// - ✅ Exact HTTP methods (GET/POST/PUT/PATCH/DELETE)
+/// - ✅ Trailing slash rules (Django routing conventions)
+/// - ✅ Example cURL requests for each endpoint
+/// 
+/// **WHEN DEVELOPING NEW FEATURES:**
+/// 1. ✅ ALWAYS reference the complete API documentation FIRST
+/// 2. ✅ Check exact field names (API uses camelCase in responses)
+/// 3. ✅ Verify query parameters available for filtering/search
+/// 4. ✅ Check request body schema (required vs optional fields)
+/// 5. ✅ Confirm pagination support (page, pageSize)
+/// 6. ✅ Review authentication requirements
+/// 7. ✅ Check trailing slash rules (GET /list/ vs POST /create)
+/// 
+/// **AUDIT REPORTS (for reference):**
+/// - `/home/user/docs/AUDIT_REPORT_Section_1_Auth_Profile.md`
+/// - `/home/user/docs/AUDIT_REPORT_Section_2_Trip_Management.md`
+/// - `/home/user/docs/AUDIT_REPORT_Section_3_Comments_Reports.md`
+/// - `/home/user/docs/AUDIT_REPORT_Section_4_Member_Management.md`
+/// - `/home/user/docs/AUDIT_REPORT_Section_5_Logbook_System.md`
+/// - `/home/user/docs/AUDIT_REPORT_Section_6_Administrative.md`
+/// - `/home/user/docs/AUDIT_REPORT_Section_7_Supporting.md`
+/// - `/home/user/docs/AUDIT_REPORT_FINAL_COMPREHENSIVE.md`
+/// 
+/// **CONSOLIDATED TESTING GUIDE:**
+/// `/home/user/docs/CONSOLIDATED_TESTING_GUIDE_All_Phases.md`
+/// - 50+ test scenarios with cURL examples
+/// - Complete testing instructions for all implemented features
+/// 
+/// **COMMON MISTAKES TO AVOID:**
+/// - ❌ Using wrong field names (backend uses camelCase in responses)
+/// - ❌ Forgetting query parameters (many endpoints support server-side filtering)
+/// - ❌ Using wrong HTTP methods (check documentation!)
+/// - ❌ Missing required fields in request body
+/// - ❌ Incorrect trailing slash (POST /api/trips vs GET /api/trips/)
+/// - ❌ Using 'limit' instead of 'pageSize' (API uses pageSize)
+/// 
+/// **HELPFUL TIPS:**
+/// - 💡 Most list endpoints support pagination (page, pageSize)
+/// - 💡 Many endpoints support _Icontains for case-insensitive search
+/// - 💡 Range filters use format: 'min,max' or 'min,' or ',max'
+/// - 💡 Array filters accept comma-separated values
+/// - 💡 Date filters use ISO 8601 format (YYYY-MM-DD)
+/// 
+/// ============================================================================
+/// 
 class MainApiRepository {
   final ApiClient _apiClient;
 
@@ -40,6 +96,65 @@ class MainApiRepository {
     return response.data;
   }
 
+  /// Register new user
+  Future<Map<String, dynamic>> register({
+    required String username,
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String phone,
+    // Optional fields
+    String? dob,
+    String? gender,
+    String? city,
+    String? nationality,
+    String? carBrand,
+    String? carModel,
+    String? carColor,
+    int? carYear,
+    String? iceName,
+    String? icePhone,
+    String? avatar,
+  }) async {
+    final data = <String, dynamic>{
+      'username': username,
+      'email': email,
+      'password': password,
+      'password2': password, // Confirmation password (same as password)
+      'firstName': firstName,
+      'lastName': lastName,
+      'phone': phone,
+    };
+    
+    // Add optional fields only if provided
+    if (dob != null) data['dob'] = dob;
+    if (gender != null) data['gender'] = gender;
+    if (city != null) data['city'] = city;
+    if (nationality != null) data['nationality'] = nationality;
+    if (carBrand != null) data['carBrand'] = carBrand;
+    if (carModel != null) data['carModel'] = carModel;
+    if (carColor != null) data['carColor'] = carColor;
+    if (carYear != null) data['carYear'] = carYear;
+    if (iceName != null) data['iceName'] = iceName;
+    if (icePhone != null) data['icePhone'] = icePhone;
+    if (avatar != null) data['avatar'] = avatar;
+    
+    final response = await _apiClient.post(
+      ApiEndpoints.register,
+      data: data,
+    );
+    return response.data;
+  }
+
+  /// Request password reset (forgot password)
+  Future<void> forgotPassword({required String email}) async {
+    await _apiClient.post(
+      ApiEndpoints.forgotPassword,
+      data: {'email': email},
+    );
+  }
+
   /// Get current user profile
   Future<Map<String, dynamic>> getProfile() async {
     final response = await _apiClient.get(MainApiEndpoints.profile);
@@ -57,14 +172,16 @@ class MainApiRepository {
 
   /// Change password
   Future<void> changePassword({
-    required String currentPassword,
-    required String newPassword,
+    required String oldPassword,
+    required String password,
+    required String passwordConfirm,
   }) async {
     await _apiClient.post(
       MainApiEndpoints.changePassword,
       data: {
-        'current_password': currentPassword,
-        'new_password': newPassword,
+        'oldPassword': oldPassword,
+        'password': password,
+        'passwordConfirm': passwordConfirm,
       },
     );
   }
@@ -79,7 +196,7 @@ class MainApiRepository {
 
   /// Reset password with token
   Future<void> resetPassword({
-    required int userId,
+    required String userId,
     required int timestamp,
     required String signature,
     required String password,
@@ -102,19 +219,42 @@ class MainApiRepository {
   /// Get trips list with filters
   /// Returns list of TripListItem objects
   /// 
-  /// NOTE: Backend doesn't support approvalStatus filter yet.
-  /// To get pending trips, fetch all and filter client-side by trip.approvalStatus == 'pending'
+  /// Get trips with comprehensive filtering and pagination
+  /// 
+  /// Supports filtering by:
+  /// - Time ranges: startTime, endTime, cutOff (after/before)
+  /// - Approval status: P/A/R/D (Pending/Approved/Rejected/Deleted)
+  /// - Level: levelId, levelNumericLevel (exact and range)
+  /// - Meeting point: meetingPoint (ID) or meetingPointArea (area code)
+  /// - Lead: lead (member ID), deputyLeads (array of member IDs)
+  /// - Ordering: any trip field for sorting
   Future<Map<String, dynamic>> getTrips({
+    // Time range filters
     String? startTimeAfter,
     String? startTimeBefore,
+    String? endTimeAfter,       // ✅ ADDED
+    String? endTimeBefore,      // ✅ ADDED
     String? cutOffAfter,
     String? cutOffBefore,
-    // String? approvalStatus,  // NOT SUPPORTED BY BACKEND - filter client-side
+    
+    // Status and approval
+    String? approvalStatus,     // ✅ FIXED: Backend DOES support (P/A/R/D)
+    
+    // Level filters
     int? levelId,
     int? levelNumericLevel,
     String? levelNumericLevelRange,
-    String? meetingPointArea,
-    String? ordering,  // ✅ FIXED: Make optional, no default - caller decides
+    
+    // Meeting point filters
+    int? meetingPoint,          // ✅ ADDED: Filter by meeting point ID
+    String? meetingPointArea,   // Filter by area (DXB/NOR/AUH/AAN/LIW)
+    
+    // Lead filters
+    int? lead,                  // ✅ ADDED: Filter by lead member ID
+    List<int>? deputyLeads,     // ✅ ADDED: Filter by deputy leads
+    
+    // Pagination and ordering
+    String? ordering,
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -123,31 +263,49 @@ class MainApiRepository {
       'pageSize': pageSize,
     };
     
-    // ✅ FIXED: Only add ordering if explicitly provided
-    if (ordering != null) {
-      queryParams['ordering'] = ordering;
-    }
+    if (ordering != null) queryParams['ordering'] = ordering;
 
+    // Time filters
     if (startTimeAfter != null) queryParams['startTimeAfter'] = startTimeAfter;
     if (startTimeBefore != null) queryParams['startTimeBefore'] = startTimeBefore;
+    if (endTimeAfter != null) queryParams['endTimeAfter'] = endTimeAfter;
+    if (endTimeBefore != null) queryParams['endTimeBefore'] = endTimeBefore;
     if (cutOffAfter != null) queryParams['cutOffAfter'] = cutOffAfter;
     if (cutOffBefore != null) queryParams['cutOffBefore'] = cutOffBefore;
+    
+    // Status
+    if (approvalStatus != null) queryParams['approvalStatus'] = approvalStatus;
+    
+    // Level filters
     if (levelId != null) queryParams['level_Id'] = levelId;
-    if (levelNumericLevel != null) {
-      queryParams['level_NumericLevel'] = levelNumericLevel;
+    if (levelNumericLevel != null) queryParams['level_NumericLevel'] = levelNumericLevel;
+    if (levelNumericLevelRange != null) queryParams['level_NumericLevel_Range'] = levelNumericLevelRange;
+    
+    // Meeting point filters
+    if (meetingPoint != null) queryParams['meetingPoint'] = meetingPoint;
+    if (meetingPointArea != null) queryParams['meetingPoint_Area'] = meetingPointArea;
+    
+    // Lead filters
+    if (lead != null) queryParams['lead'] = lead;
+    if (deputyLeads != null && deputyLeads.isNotEmpty) {
+      queryParams['deputyLeads'] = deputyLeads;
     }
-    if (levelNumericLevelRange != null) {
-      queryParams['level_NumericLevel_Range'] = levelNumericLevelRange;
-    }
-    if (meetingPointArea != null) {
-      queryParams['meetingPoint_Area'] = meetingPointArea;
-    }
-    // approvalStatus NOT supported by backend - removed
+
+    // Debug: Log query parameters
+    print('🌐 [MainApiRepository] GET /api/trips/ with params: $queryParams');
 
     final response = await _apiClient.get(
       MainApiEndpoints.tripsList,
       queryParameters: queryParams,
     );
+    
+    // Debug: Log response summary
+    final results = response.data['results'] as List?;
+    if (results != null && results.isNotEmpty) {
+      final firstTrip = results.first as Map<String, dynamic>;
+      print('📊 [MainApiRepository] First trip: ID=${firstTrip['id']}, Start=${firstTrip['startTime']}');
+    }
+    
     return response.data;
   }
 
@@ -316,25 +474,100 @@ class MainApiRepository {
   // MEETING POINTS & LEVELS
   // ============================================================================
 
-  /// Get meeting points
-  Future<List<dynamic>> getMeetingPoints() async {
-    final response = await _apiClient.get(MainApiEndpoints.meetingPoints);
-    // API returns paginated response: {count, next, previous, results}
-    // Extract the results array
-    if (response.data is Map<String, dynamic>) {
-      return response.data['results'] as List<dynamic>? ?? [];
-    }
-    // Fallback for non-paginated response (backward compatibility)
-    return response.data is List ? response.data : [];
+  /// Get meeting points with filters
+  /// Supports filtering by area and name search
+  Future<Map<String, dynamic>> getMeetingPoints({
+    String? area,  // Filter by area: 'DXB', 'NOR', 'AUH', 'AAN', 'LIW'
+    String? name,  // Exact name match
+    String? nameContains,  // Partial name search
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'pageSize': pageSize,
+    };
+    if (area != null) queryParams['area'] = area;
+    if (name != null) queryParams['name'] = name;
+    if (nameContains != null) queryParams['name_Icontains'] = nameContains;
+
+    final response = await _apiClient.get(
+      MainApiEndpoints.meetingPoints,
+      queryParameters: queryParams,
+    );
+    return response.data;
+  }
+
+  /// Get meeting point detail
+  Future<Map<String, dynamic>> getMeetingPointDetail(int id) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.meetingPointDetail(id),
+    );
+    return response.data;
   }
 
   /// Create meeting point
-  Future<Map<String, dynamic>> createMeetingPoint(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> createMeetingPoint({
+    required String name,
+    String? lat,
+    String? lon,
+    String? link,
+    String? area,  // 'DXB', 'NOR', 'AUH', 'AAN', 'LIW'
+  }) async {
+    final data = {
+      'name': name,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (link != null) 'link': link,
+      if (area != null) 'area': area,
+    };
     final response = await _apiClient.post(
       MainApiEndpoints.meetingPoints,
       data: data,
     );
     return response.data;
+  }
+
+  /// Update meeting point (full update)
+  Future<Map<String, dynamic>> updateMeetingPoint({
+    required int id,
+    String? name,
+    String? lat,
+    String? lon,
+    String? link,
+    String? area,
+  }) async {
+    final data = {
+      if (name != null) 'name': name,
+      if (lat != null) 'lat': lat,
+      if (lon != null) 'lon': lon,
+      if (link != null) 'link': link,
+      if (area != null) 'area': area,
+    };
+    final response = await _apiClient.put(
+      MainApiEndpoints.meetingPointDetail(id),
+      data: data,
+    );
+    return response.data;
+  }
+
+  /// Patch meeting point (partial update)
+  Future<Map<String, dynamic>> patchMeetingPoint({
+    required int id,
+    Map<String, dynamic>? updates,
+  }) async {
+    final response = await _apiClient.patch(
+      MainApiEndpoints.meetingPointDetail(id),
+      data: updates,
+    );
+    return response.data;
+  }
+
+  /// Delete meeting point
+  Future<void> deleteMeetingPoint(int id) async {
+    await _apiClient.delete(
+      MainApiEndpoints.meetingPointDetail(id),
+    );
   }
 
   /// Get levels
@@ -357,31 +590,98 @@ class MainApiRepository {
   /// For advanced filtering (e.g., by level), use ApiClient directly:
   /// 
   /// Example - Filter by level:
-  /// ```dart
-  /// final response = await apiClient.get('/api/members/', queryParameters: {
-  ///   'level_Name': 'Marshal',
-  ///   'pageSize': 500,
-  /// });
-  /// ```
+  /// Get members list with extensive filtering support
   /// 
-  /// See docs/API_QUERY_PARAMETERS.md for all available parameters.
+  /// Supports comprehensive filtering by:
+  /// - Name: firstName, lastName (exact and contains)
+  /// - Contact: email, phone (exact and contains)
+  /// - Location: city, nationality
+  /// - Car: carBrand (exact and contains), carYear (exact and range)
+  /// - Level: level_Name (exact and contains), level_NumericLevel (exact and range)
+  /// - Activity: tripCount (exact and range)
+  /// 
+  /// Example usage:
+  /// ```dart
+  /// // Find members with Land Rover, level 2-4, who've done 5+ trips
+  /// final response = await apiClient.getMembers(
+  ///   carBrand: 'LR',
+  ///   levelNumericLevelRange: '2,4',
+  ///   tripCountRange: '5,',
+  /// );
+  /// ```
   Future<Map<String, dynamic>> getMembers({
-    String? firstNameContains,
-    String? lastNameContains,
+    // Pagination
     int page = 1,
     int pageSize = 20,
+    
+    // Name filters
+    String? firstName,
+    String? firstNameContains,
+    String? lastName,
+    String? lastNameContains,
+    
+    // Contact filters
+    String? email,
+    String? emailContains,
+    String? phone,
+    String? phoneContains,
+    
+    // Location filters
+    String? city,
+    String? nationality,
+    
+    // Car filters
+    String? carBrand,           // Exact match (e.g., 'LR' for Land Rover, 'TO' for Toyota)
+    String? carBrandContains,   // Partial match
+    int? carYear,               // Exact year
+    String? carYearRange,       // Format: 'min,max' or 'min,' or ',max'
+    
+    // Level filters
+    String? levelName,          // Exact match (e.g., 'Marshal', 'Member')
+    String? levelNameContains,  // Partial match
+    int? levelNumericLevel,     // Exact level number
+    String? levelNumericLevelRange, // Format: 'min,max' or 'min,' or ',max'
+    
+    // Activity filters
+    int? tripCount,             // Exact trip count
+    String? tripCountRange,     // Format: 'min,max' or 'min,' or ',max'
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
       'pageSize': pageSize,
     };
 
-    if (firstNameContains != null) {
-      queryParams['firstName_Icontains'] = firstNameContains;
-    }
-    if (lastNameContains != null) {
-      queryParams['lastName_Icontains'] = lastNameContains;
-    }
+    // Name filters
+    if (firstName != null) queryParams['firstName'] = firstName;
+    if (firstNameContains != null) queryParams['firstName_Icontains'] = firstNameContains;
+    if (lastName != null) queryParams['lastName'] = lastName;
+    if (lastNameContains != null) queryParams['lastName_Icontains'] = lastNameContains;
+    
+    // Contact filters
+    if (email != null) queryParams['email'] = email;
+    if (emailContains != null) queryParams['email_Icontains'] = emailContains;
+    if (phone != null) queryParams['phone'] = phone;
+    if (phoneContains != null) queryParams['phone_Icontains'] = phoneContains;
+    
+    // Location filters
+    if (city != null) queryParams['city'] = city;
+    if (nationality != null) queryParams['nationality'] = nationality;
+    
+    // Car filters
+    if (carBrand != null) queryParams['carBrand'] = carBrand;
+    if (carBrandContains != null) queryParams['carBrand_Icontains'] = carBrandContains;
+    if (carYear != null) queryParams['carYear'] = carYear;
+    if (carYearRange != null) queryParams['carYear_Range'] = carYearRange;
+    
+    // Level filters
+    if (levelName != null) queryParams['level_Name'] = levelName;
+    if (levelNameContains != null) queryParams['level_Name_Icontains'] = levelNameContains;
+    if (levelNumericLevel != null) queryParams['level_NumericLevel'] = levelNumericLevel;
+    if (levelNumericLevelRange != null) queryParams['level_NumericLevel_Range'] = levelNumericLevelRange;
+    
+    // Activity filters
+    if (tripCount != null) queryParams['tripCount'] = tripCount;
+    if (tripCountRange != null) queryParams['tripCount_Range'] = tripCountRange;
 
     final response = await _apiClient.get(
       MainApiEndpoints.members,
@@ -417,17 +717,197 @@ class MainApiRepository {
   }
 
   /// Get member trip history
+  /// [checkedIn] - Optional filter to include only trips where member is checked in
   Future<Map<String, dynamic>> getMemberTripHistory({
+    required int memberId,
+    bool? checkedIn,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'pageSize': pageSize,
+    };
+    if (checkedIn != null) queryParams['checkedIn'] = checkedIn;
+    
+    final response = await _apiClient.get(
+      MainApiEndpoints.memberTripHistory(memberId),
+      queryParameters: queryParams,
+    );
+    return response.data;
+  }
+
+  /// Get member feedback
+  /// Returns paginated list of feedback for a specific member
+  Future<Map<String, dynamic>> getMemberFeedback({
     required int memberId,
     int page = 1,
     int pageSize = 20,
   }) async {
     final response = await _apiClient.get(
-      MainApiEndpoints.memberTripHistory(memberId),
+      MainApiEndpoints.memberFeedback(memberId),
       queryParameters: {
         'page': page,
         'pageSize': pageSize,
       },
+    );
+    return response.data;
+  }
+
+  /// Submit feedback
+  /// Submit user feedback (bug report, feature request, etc.)
+  /// ✅ NEW: Phase A Task #5 - Profile Screen Enhancements
+  /// 
+  /// [feedbackType] - Type of feedback (BUG, FEATURE, IMPROVEMENT, COMPLAINT, PRAISE, OTHER)
+  /// [message] - Feedback message (required)
+  /// [image] - Optional screenshot or image URL
+  /// 
+  /// Returns the created feedback object with ID and status
+  Future<Map<String, dynamic>> submitFeedback({
+    required String feedbackType,
+    required String message,
+    String? image,
+  }) async {
+    final response = await _apiClient.post(
+      MainApiEndpoints.submitFeedback,
+      data: {
+        'feedbackType': feedbackType,
+        'message': message,
+        if (image != null) 'image': image,
+      },
+    );
+    return response.data;
+  }
+
+  /// Get all feedback (admin only)
+  /// ✅ NEW: Phase B Task #2 - Feedback Admin Management
+  Future<Map<String, dynamic>> getAllFeedback({
+    int page = 1,
+    int pageSize = 20,
+    String? status,  // Filter by status: SUBMITTED, IN_REVIEW, RESOLVED, CLOSED
+    String? feedbackType,  // Filter by type: BUG, FEATURE, IMPROVEMENT, COMPLAINT, PRAISE, OTHER
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.feedback,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        if (status != null) 'status': status,
+        if (feedbackType != null) 'feedbackType': feedbackType,
+      },
+    );
+    return response.data;
+  }
+
+  /// Update feedback status and add admin response (admin only)
+  /// ✅ NEW: Phase B Task #2 - Feedback Admin Management
+  Future<Map<String, dynamic>> updateFeedback({
+    required int feedbackId,
+    String? status,  // SUBMITTED, IN_REVIEW, RESOLVED, CLOSED
+    String? adminResponse,
+  }) async {
+    final data = <String, dynamic>{};
+    if (status != null) data['status'] = status;
+    if (adminResponse != null && adminResponse.isNotEmpty) {
+      data['admin_response'] = adminResponse;
+    }
+
+    final response = await _apiClient.patch(
+      MainApiEndpoints.feedbackDetail(feedbackId),
+      data: data,
+    );
+    return response.data;
+  }
+
+  /// Delete feedback (admin only)
+  /// ✅ NEW: Phase B Task #2 - Feedback Admin Management
+  Future<void> deleteFeedback(int feedbackId) async {
+    await _apiClient.delete(
+      MainApiEndpoints.feedbackDetail(feedbackId),
+    );
+  }
+
+  /// Get member logbook entries
+  /// Returns paginated list of logbook entries for a specific member
+  Future<Map<String, dynamic>> getMemberLogbookEntries({
+    required int memberId,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.memberLogbookEntries(memberId),
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
+    return response.data;
+  }
+
+  /// Get member logbook skills
+  /// Returns paginated list of skill references (sign-offs) for a specific member
+  /// ✅ NEW: Proper endpoint implementation (was incomplete)
+  Future<Map<String, dynamic>> getMemberLogbookSkills({
+    required int memberId,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.memberLogbookSkills(memberId),
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
+    return response.data;
+  }
+
+  /// Get member trip counts and statistics
+  /// Returns detailed statistics about member's trip participation
+  /// No pagination - returns single stats object
+  Future<Map<String, dynamic>> getMemberTripCounts(int memberId) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.memberTripCounts(memberId),
+    );
+    return response.data;
+  }
+
+  /// Get member upgrade requests
+  /// Returns paginated list of upgrade requests for a specific member
+  Future<Map<String, dynamic>> getMemberUpgradeRequests({
+    required int memberId,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.memberUpgradeRequests(memberId),
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
+    
+    // 🔍 DEBUG: Log response structure
+    if (kDebugMode) {
+      print('📦 [Repository] getMemberUpgradeRequests Response:');
+      print('   Response type: ${response.runtimeType}');
+      print('   Response.data type: ${response.data.runtimeType}');
+      print('   Response.data: ${response.data}');
+    }
+    
+    return response.data;
+  }
+
+  /// Update member payment status
+  /// Admin-only endpoint to mark member as paid/unpaid
+  /// Requires EDIT_MEMBERSHIP_PAYMENTS permission
+  Future<Map<String, dynamic>> updateMemberPayment({
+    required int memberId,
+    required bool paymentReceived,
+  }) async {
+    final response = await _apiClient.post(
+      MainApiEndpoints.memberPayments(memberId),
+      data: {'paymentReceived': paymentReceived},
     );
     return response.data;
   }
@@ -451,6 +931,74 @@ class MainApiRepository {
     return response.data;
   }
 
+  /// Mark notification as read
+  Future<void> markNotificationAsRead(String notificationId) async {
+    await _apiClient.post(
+      '${ApiEndpoints.notifications}/$notificationId/read',
+    );
+  }
+
+  /// Mark all notifications as read
+  Future<void> markAllNotificationsAsRead() async {
+    await _apiClient.post(
+      ApiEndpoints.markAllRead,
+    );
+  }
+
+  // ============================================================================
+  // NOTIFICATION SETTINGS
+  // ============================================================================
+
+  /// Get notification settings for current user
+  Future<Map<String, dynamic>> getNotificationSettings({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.notificationSettings,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
+    return response.data;
+  }
+
+  /// Update notification settings (full update)
+  Future<Map<String, dynamic>> updateNotificationSettings({
+    bool? clubNewsEnabledEmail,
+    bool? clubNewsEnabledAppPush,
+    bool? newTripAlertsEnabledEmail,
+    bool? newTripAlertsEnabledAppPush,
+    bool? upgradeRequestReminderEmail,
+    List<int>? newTripAlertsLevelFilter,
+  }) async {
+    final data = <String, dynamic>{};
+    if (clubNewsEnabledEmail != null) data['clubNewsEnabledEmail'] = clubNewsEnabledEmail;
+    if (clubNewsEnabledAppPush != null) data['clubNewsEnabledAppPush'] = clubNewsEnabledAppPush;
+    if (newTripAlertsEnabledEmail != null) data['newTripAlertsEnabledEmail'] = newTripAlertsEnabledEmail;
+    if (newTripAlertsEnabledAppPush != null) data['newTripAlertsEnabledAppPush'] = newTripAlertsEnabledAppPush;
+    if (upgradeRequestReminderEmail != null) data['upgradeRequestReminderEmail'] = upgradeRequestReminderEmail;
+    if (newTripAlertsLevelFilter != null) data['newTripAlertsLevelFilter'] = newTripAlertsLevelFilter;
+
+    final response = await _apiClient.put(
+      MainApiEndpoints.notificationSettings,
+      data: data,
+    );
+    return response.data;
+  }
+
+  /// Patch notification settings (partial update)
+  Future<Map<String, dynamic>> patchNotificationSettings(
+    Map<String, dynamic> updates,
+  ) async {
+    final response = await _apiClient.patch(
+      MainApiEndpoints.notificationSettings,
+      data: updates,
+    );
+    return response.data;
+  }
+
   // ============================================================================
   // CLUB NEWS
   // ============================================================================
@@ -466,6 +1014,106 @@ class MainApiRepository {
         'page': page,
         'pageSize': pageSize,
       },
+    );
+    return response.data;
+  }
+
+  /// Get club news detail
+  /// ✅ NEW: Added detail endpoint for single news item
+  Future<Map<String, dynamic>> getClubNewsDetail(int id) async {
+    final response = await _apiClient.get('${MainApiEndpoints.clubNews}$id/');
+    return response.data;
+  }
+
+  // ============================================================================
+  // SPONSORS
+  // ============================================================================
+
+  /// Get sponsors list
+  /// Returns list of all sponsors (non-paginated endpoint)
+  Future<List<dynamic>> getSponsors() async {
+    final response = await _apiClient.get(MainApiEndpoints.sponsors);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get sponsor detail
+  Future<Map<String, dynamic>> getSponsorDetail(int id) async {
+    final response = await _apiClient.get(MainApiEndpoints.sponsorDetail(id));
+    return response.data;
+  }
+
+  // ============================================================================
+  // FAQS
+  // ============================================================================
+
+  /// Get FAQs list
+  /// Returns list of frequently asked questions (non-paginated endpoint)
+  Future<List<dynamic>> getFAQs() async {
+    final response = await _apiClient.get(MainApiEndpoints.faqs);
+    return response.data is List ? response.data : [];
+  }
+
+  // ============================================================================
+  // GLOBAL SETTINGS
+  // ============================================================================
+
+  /// Get global settings
+  /// Returns list of configurable settings (non-paginated endpoint)
+  Future<List<dynamic>> getGlobalSettings() async {
+    final response = await _apiClient.get(MainApiEndpoints.globalSettings);
+    return response.data is List ? response.data : [];
+  }
+
+  // ============================================================================
+  // GROUPS
+  // ============================================================================
+
+  /// Get groups list
+  /// Returns paginated list of user groups
+  Future<Map<String, dynamic>> getGroups({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.groups,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
+    return response.data;
+  }
+
+  /// Get group detail
+  Future<Map<String, dynamic>> getGroupDetail(int id) async {
+    final response = await _apiClient.get(MainApiEndpoints.groupDetail(id));
+    return response.data;
+  }
+
+  // ============================================================================
+  // PERMISSION MATRIX
+  // ============================================================================
+
+  /// Get permission matrix list
+  /// Returns paginated list of permission matrix entries
+  Future<Map<String, dynamic>> getPermissionMatrix({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.permissionMatrix,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+      },
+    );
+    return response.data;
+  }
+
+  /// Get permission matrix detail
+  Future<Map<String, dynamic>> getPermissionMatrixDetail(int id) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.permissionMatrixDetail(id),
     );
     return response.data;
   }
@@ -491,25 +1139,84 @@ class MainApiRepository {
   }
 
   /// Create trip request
+  /// 
+  /// Creates a new trip request with structured data matching OpenAPI schema
+  /// 
+  /// [date] - Required trip date
+  /// [levelId] - Optional trip difficulty level ID
+  /// [timeOfDay] - Optional time preference (MOR/MID/AFT/EVE/ANY)
+  /// [area] - Optional area preference (DXB/NOR/AUH/AAN/LIW)
   Future<Map<String, dynamic>> createTripRequest({
-    required String title,
-    required String description,
-    String? suggestedLocation,
-    DateTime? suggestedDate,
+    required DateTime date,
+    int? levelId,
+    String? timeOfDay,
+    String? area,
   }) async {
     final data = {
-      'title': title,
-      'description': description,
-      if (suggestedLocation != null) 'suggested_location': suggestedLocation,
-      if (suggestedDate != null)
-        'suggested_date': suggestedDate.toIso8601String().split('T')[0],
+      'date': date.toIso8601String().split('T')[0],  // Required - YYYY-MM-DD format
+      if (levelId != null) 'level': levelId,
+      if (timeOfDay != null) 'timeOfDay': timeOfDay,
+      if (area != null) 'area': area,
     };
+
+    if (kDebugMode) {
+      debugPrint('🔍 [TripRequestRepo] Creating trip request with data: $data');
+    }
 
     final response = await _apiClient.post(
       MainApiEndpoints.createTripRequest,
       data: data,
     );
+    
+    if (kDebugMode) {
+      debugPrint('🔍 [TripRequestRepo] Response status: ${response.statusCode}');
+      debugPrint('🔍 [TripRequestRepo] Response data type: ${response.data.runtimeType}');
+      debugPrint('🔍 [TripRequestRepo] Response data: ${response.data}');
+    }
+    
     return response.data;
+  }
+
+  /// Get all trip requests (admin only)
+  Future<Map<String, dynamic>> getAllTripRequests({
+    int page = 1,
+    int pageSize = 20,
+    String? status,  // Filter by status: pending, approved, declined, converted
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.tripRequests,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        if (status != null) 'status': status,
+      },
+    );
+    return response.data;
+  }
+
+  /// Update trip request status (admin only)
+  Future<Map<String, dynamic>> updateTripRequestStatus({
+    required int requestId,
+    required String status,  // pending, approved, declined, converted
+    String? adminNotes,
+  }) async {
+    final data = {
+      'status': status,
+      if (adminNotes != null && adminNotes.isNotEmpty) 'admin_notes': adminNotes,
+    };
+
+    final response = await _apiClient.patch(
+      MainApiEndpoints.tripRequestDetail(requestId),
+      data: data,
+    );
+    return response.data;
+  }
+
+  /// Delete trip request (admin only)
+  Future<void> deleteTripRequest(int requestId) async {
+    await _apiClient.delete(
+      MainApiEndpoints.tripRequestDetail(requestId),
+    );
   }
 
   // ============================================================================
@@ -537,6 +1244,16 @@ class MainApiRepository {
       MainApiEndpoints.upgradeRequests,
       queryParameters: queryParams,
     );
+    
+    // 🔍 DEBUG: Log response structure
+    if (kDebugMode) {
+      print('📦 [Repository] getUpgradeRequests Response:');
+      print('   Response type: ${response.runtimeType}');
+      print('   Response.data type: ${response.data.runtimeType}');
+      print('   Response.data keys: ${response.data is Map ? (response.data as Map).keys.toList() : "Not a Map"}');
+      print('   Response.data: ${response.data}');
+    }
+    
     return response.data;
   }
 
@@ -550,20 +1267,28 @@ class MainApiRepository {
 
   /// Vote on an upgrade request
   /// [requestId] - ID of the upgrade request
-  /// [approve] - true to approve, false to decline
-  /// [comment] - Optional comment with the vote
+  /// [vote] - Vote value: "Y" (yes/approve), "N" (no/decline), or "D" (defer)
+  /// Note: Vote endpoint does not support comments - use createUpgradeRequestComment separately
   Future<void> voteUpgradeRequest({
     required int requestId,
-    required bool approve,
-    String? comment,
+    required String vote,  // "Y" (yes), "N" (no), or "D" (defer)
   }) async {
-    await _apiClient.post(
+    if (kDebugMode) {
+      print('🗳️ [Repository] POST /api/upgraderequests/$requestId/vote');
+      print('🗳️ [Repository] Vote data: {"vote": "$vote"}');
+    }
+    
+    // ✅ FIXED: Send {"vote": "Y", "N", or "D"} per API spec
+    final response = await _apiClient.post(
       MainApiEndpoints.upgradeRequestVote(requestId),
       data: {
-        'approve': approve,
-        if (comment != null) 'comment': comment,
+        'vote': vote,  // Must be "Y" (yes), "N" (no), or "D" (defer)
       },
     );
+    
+    if (kDebugMode) {
+      print('✅ [Repository] Vote response: ${response.data}');
+    }
   }
 
   /// Approve an upgrade request (final approval by admin/board)
@@ -576,15 +1301,30 @@ class MainApiRepository {
 
   /// Decline an upgrade request (final decline by admin/board)
   /// [requestId] - ID of the upgrade request
-  /// [reason] - Reason for declining
+  /// [verdictReason] - Reason for declining (required by API)
   Future<void> declineUpgradeRequest({
     required int requestId,
-    required String reason,
+    required String verdictReason,
   }) async {
     await _apiClient.post(
       MainApiEndpoints.upgradeRequestDecline(requestId),
-      data: {'reason': reason},
+      data: {'verdictReason': verdictReason},
     );
+  }
+
+  /// Fetch comments for an upgrade request
+  /// [requestId] - ID of the upgrade request
+  /// Returns list of comments with author, text, and created timestamp
+  Future<List<Map<String, dynamic>>> getUpgradeRequestComments({
+    required int requestId,
+  }) async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.upgradeRequestCommentsCreate,
+      queryParameters: {
+        'upgradeRequest': requestId,  // Filter by upgrade request ID
+      },
+    );
+    return List<Map<String, dynamic>>.from(response.data['results'] ?? []);
   }
 
   /// Add comment to an upgrade request
@@ -594,9 +1334,13 @@ class MainApiRepository {
     required int requestId,
     required String text,
   }) async {
+    // ✅ FIXED: Use correct endpoint and request body per API spec (lines 3756-3780)
     final response = await _apiClient.post(
-      MainApiEndpoints.upgradeRequestComments(requestId),
-      data: {'text': text},
+      MainApiEndpoints.upgradeRequestCommentsCreate,  // Changed from upgradeRequestComments(requestId)
+      data: {
+        'upgradeRequest': requestId,  // ✅ FIXED: Added upgradeRequest field
+        'text': text,
+      },
     );
     return response.data;
   }
@@ -617,16 +1361,66 @@ class MainApiRepository {
     required int memberId,
     required String requestedLevel,
     required String reason,
+    List<int>? nominatedVoters,  // Optional, backend may auto-assign
+    dynamic supportingDocument,  // XFile or File object for file upload
   }) async {
+    // If file is provided, use multipart form data
+    if (supportingDocument != null) {
+      final formData = FormData.fromMap({
+        'applicant': memberId,
+        'targetLevel': int.parse(requestedLevel),
+        'applicantReason': reason,
+        'nominatedVoters': nominatedVoters ?? [],
+      });
+      
+      // Add file to form data
+      if (supportingDocument is XFile) {
+        // XFile from image_picker (web & mobile compatible)
+        final bytes = await supportingDocument.readAsBytes();
+        formData.files.add(
+          MapEntry(
+            'supportingDocument',
+            MultipartFile.fromBytes(
+              bytes,
+              filename: supportingDocument.name,
+            ),
+          ),
+        );
+      }
+      
+      final response = await _apiClient.post(
+        MainApiEndpoints.upgradeRequests,
+        data: formData,
+      );
+      
+      if (response.data == null) {
+        return {'success': true, 'message': 'Upgrade request created'};
+      }
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {'success': true, 'data': response.data};
+    }
+    
+    // No file - use regular JSON request
     final response = await _apiClient.post(
       MainApiEndpoints.upgradeRequests,
       data: {
-        'member_id': memberId,
-        'requested_level': requestedLevel,
-        'reason': reason,
+        'applicant': memberId,  // ✅ FIXED: Changed from 'member_id' to 'applicant'
+        'targetLevel': int.parse(requestedLevel),  // ✅ FIXED: Changed to 'targetLevel' and convert to int
+        'applicantReason': reason,  // ✅ FIXED: Changed from 'reason' to 'applicantReason'
+        'nominatedVoters': nominatedVoters ?? [],  // ✅ FIXED: Added required field (empty array if not provided)
       },
     );
-    return response.data;
+    // ✅ FIXED: Handle different response types (UnifiedResponse might be string, null, or object)
+    if (response.data == null) {
+      return {'success': true, 'message': 'Upgrade request created'};
+    }
+    if (response.data is Map<String, dynamic>) {
+      return response.data as Map<String, dynamic>;
+    }
+    // If response is a string or other type, wrap it
+    return {'success': true, 'data': response.data};
   }
 
   /// Edit an existing upgrade request
@@ -668,11 +1462,11 @@ class MainApiRepository {
     int? memberId,
     int? tripId,
     int page = 1,
-    int limit = 20,
+    int pageSize = 20,  // ✅ FIXED: Changed from 'limit' to 'pageSize'
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
-      'limit': limit,
+      'pageSize': pageSize,
     };
     if (memberId != null) queryParams['member'] = memberId;
     if (tripId != null) queryParams['trip'] = tripId;
@@ -688,11 +1482,13 @@ class MainApiRepository {
   /// [tripId] - ID of the trip
   /// [memberId] - ID of the member
   /// [skillIds] - List of skill IDs verified
+  /// [signedBy] - Optional: ID of person who signed/verified
   /// [comment] - Optional comment
   Future<Map<String, dynamic>> createLogbookEntry({
     required int tripId,
     required int memberId,
     required List<int> skillIds,
+    int? signedBy,
     String? comment,
   }) async {
     final response = await _apiClient.post(
@@ -701,24 +1497,80 @@ class MainApiRepository {
         'trip': tripId,
         'member': memberId,
         'skillsVerified': skillIds,
+        if (signedBy != null) 'signedBy': signedBy,
         if (comment != null) 'comment': comment,
       },
     );
     return response.data;
   }
 
+  /// Get logbook entry detail
+  Future<Map<String, dynamic>> getLogbookEntryDetail(int id) async {
+    final response = await _apiClient.get(
+      '${MainApiEndpoints.logbookEntries}$id/',
+    );
+    return response.data;
+  }
+
+  /// Update logbook entry (PUT - full update)
+  Future<Map<String, dynamic>> updateLogbookEntry({
+    required int id,
+    required int tripId,
+    required int memberId,
+    List<int>? skillsVerified,
+    int? signedBy,
+    String? comment,
+  }) async {
+    final response = await _apiClient.put(
+      '${MainApiEndpoints.logbookEntries}$id/',
+      data: {
+        'trip': tripId,
+        'member': memberId,
+        if (skillsVerified != null) 'skillsVerified': skillsVerified,
+        if (signedBy != null) 'signedBy': signedBy,
+        if (comment != null) 'comment': comment,
+      },
+    );
+    return response.data;
+  }
+
+  /// Patch logbook entry (PATCH - partial update)
+  Future<Map<String, dynamic>> patchLogbookEntry({
+    required int id,
+    Map<String, dynamic>? updates,
+  }) async {
+    final response = await _apiClient.patch(
+      '${MainApiEndpoints.logbookEntries}$id/',
+      data: updates ?? {},
+    );
+    return response.data;
+  }
+
+  /// Delete logbook entry
+  Future<void> deleteLogbookEntry(int id) async {
+    await _apiClient.delete(
+      '${MainApiEndpoints.logbookEntries}$id/',
+    );
+  }
+
   /// Get all logbook skills
-  /// Returns paginated list of available skills
+  /// Returns paginated list of available skills with level filtering
   Future<Map<String, dynamic>> getLogbookSkills({
-    int? levelId,
+    int? levelEq,  // ✅ FIXED: Use correct API parameter name
+    int? levelGte,
+    int? levelLte,
+    bool? levelNull,
     int page = 1,
-    int limit = 100,
+    int pageSize = 100,  // ✅ FIXED: Changed from 'limit' to 'pageSize'
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
-      'limit': limit,
+      'pageSize': pageSize,
     };
-    if (levelId != null) queryParams['level'] = levelId;
+    if (levelEq != null) queryParams['levelEq'] = levelEq;
+    if (levelGte != null) queryParams['levelGte'] = levelGte;
+    if (levelLte != null) queryParams['levelLte'] = levelLte;
+    if (levelNull != null) queryParams['levelNull'] = levelNull;
 
     final response = await _apiClient.get(
       MainApiEndpoints.logbookSkills,
@@ -729,86 +1581,180 @@ class MainApiRepository {
 
   /// Get member's logbook skills status
   /// Returns list of skills with verification status for a specific member
-  Future<Map<String, dynamic>> getMemberLogbookSkills(int memberId) async {
-    final response = await _apiClient.get(
-      MainApiEndpoints.memberLogbookSkills(memberId),
-    );
-    return response.data;
-  }
+  // ============================================================================
+  // LOGBOOK SKILL REFERENCES - ✅ COMPLETE CRUD
+  // ============================================================================
 
-  /// Sign off on a skill for a member
-  /// Creates a logbook skill reference
-  /// [memberId] - ID of the member
-  /// [skillId] - ID of the skill
-  /// [tripId] - Optional trip ID where skill was demonstrated
-  /// [comment] - Optional comment
-  Future<Map<String, dynamic>> signOffSkill({
-    required int memberId,
-    required int skillId,
-    int? tripId,
-    String? comment,
-  }) async {
-    final response = await _apiClient.post(
-      MainApiEndpoints.logbookSkillReferences,
-      data: {
-        'member': memberId,
-        'logbookSkill': skillId,
-        if (tripId != null) 'trip': tripId,
-        if (comment != null) 'comment': comment,
-      },
-    );
-    return response.data;
-  }
-
-  /// Create a trip report
-  /// [tripId] - ID of the trip
-  /// [report] - Main report content
-  /// [safetyNotes] - Optional safety notes
-  /// [weatherConditions] - Optional weather description
-  /// [terrainNotes] - Optional terrain notes
-  /// [participantCount] - Number of participants
-  /// [issues] - Optional list of issues encountered
-  Future<Map<String, dynamic>> createTripReport({
-    required int tripId,
-    required String report,
-    String? safetyNotes,
-    String? weatherConditions,
-    String? terrainNotes,
-    int? participantCount,
-    List<String>? issues,
-  }) async {
-    final response = await _apiClient.post(
-      MainApiEndpoints.createTripLogbookEntry(tripId),
-      data: {
-        'report': report,
-        if (safetyNotes != null) 'safetyNotes': safetyNotes,
-        if (weatherConditions != null) 'weatherConditions': weatherConditions,
-        if (terrainNotes != null) 'terrainNotes': terrainNotes,
-        if (participantCount != null) 'participantCount': participantCount,
-        if (issues != null) 'issues': issues,
-      },
-    );
-    return response.data;
-  }
-
-  /// Get trip reports
-  /// Optional filter by trip ID
-  Future<Map<String, dynamic>> getTripReports({
+  /// Get logbook skill references with filters
+  Future<Map<String, dynamic>> getLogbookSkillReferences({
+    int? memberId,
+    int? skillId,
     int? tripId,
     int page = 1,
-    int limit = 20,
+    int pageSize = 20,
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
-      'limit': limit,
+      'pageSize': pageSize,
     };
+    if (memberId != null) queryParams['member'] = memberId;
+    if (skillId != null) queryParams['logbookSkill'] = skillId;
     if (tripId != null) queryParams['trip'] = tripId;
 
     final response = await _apiClient.get(
-      '/api/tripreports/',
+      '${MainApiEndpoints.logbookSkillReferences}/',  // Add trailing slash
       queryParameters: queryParams,
     );
     return response.data;
+  }
+
+  /// Get skill reference detail
+  Future<Map<String, dynamic>> getLogbookSkillReferenceDetail(int id) async {
+    final response = await _apiClient.get(
+      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+    );
+    return response.data;
+  }
+
+  /// Sign off on a skill for a member (Create skill reference)
+  /// ✅ FIXED: trip is required by API, removed comment (not in API schema)
+  Future<Map<String, dynamic>> signOffSkill({
+    required int memberId,
+    required int skillId,
+    required int tripId,  // ✅ FIXED: Made required as per API
+  }) async {
+    final response = await _apiClient.post(
+      '${MainApiEndpoints.logbookSkillReferences}/',
+      data: {
+        'member': memberId,
+        'logbookSkill': skillId,
+        'trip': tripId,
+      },
+    );
+    return response.data;
+  }
+
+  /// Update skill reference (PUT - full update)
+  Future<Map<String, dynamic>> updateLogbookSkillReference({
+    required int id,
+    required int logbookSkill,
+    required int member,
+    required int trip,
+  }) async {
+    final response = await _apiClient.put(
+      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+      data: {
+        'logbookSkill': logbookSkill,
+        'member': member,
+        'trip': trip,
+      },
+    );
+    return response.data;
+  }
+
+  /// Patch skill reference (PATCH - partial update)
+  Future<Map<String, dynamic>> patchLogbookSkillReference({
+    required int id,
+    Map<String, dynamic>? updates,
+  }) async {
+    final response = await _apiClient.patch(
+      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+      data: updates ?? {},
+    );
+    return response.data;
+  }
+
+  /// Delete skill reference
+  Future<void> deleteLogbookSkillReference(int id) async {
+    await _apiClient.delete(
+      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+    );
+  }
+
+  // ============================================================================
+  // TRIP REPORTS - ✅ FIXED: Correct endpoint and schema
+  // ============================================================================
+
+  /// Create a trip report
+  /// Uses correct /api/tripreports/ endpoint with proper schema
+  Future<Map<String, dynamic>> createTripReport({
+    required int tripId,
+    required String title,
+    required String reportText,
+    String? trackFile,
+    String? trackImage,
+    List<String>? imageFiles,
+  }) async {
+    final response = await _apiClient.post(
+      MainApiEndpoints.tripReports,
+      data: {
+        'trip': tripId,
+        'title': title,
+        'reportText': reportText,
+        if (trackFile != null) 'trackFile': trackFile,
+        if (trackImage != null) 'trackImage': trackImage,
+        if (imageFiles != null) 'imageFiles': imageFiles,
+      },
+    );
+    return response.data;
+  }
+
+  /// Get trip reports with filters
+  Future<Map<String, dynamic>> getTripReports({
+    int? tripId,
+    int? memberId,
+    String? ordering,
+    int page = 1,
+    int pageSize = 20,  // ✅ FIXED: Changed from 'limit' to 'pageSize'
+  }) async {
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'pageSize': pageSize,
+    };
+    if (tripId != null) queryParams['trip'] = tripId;
+    if (memberId != null) queryParams['member'] = memberId;
+    if (ordering != null) queryParams['ordering'] = ordering;
+
+    final response = await _apiClient.get(
+      MainApiEndpoints.tripReports,
+      queryParameters: queryParams,
+    );
+    return response.data;
+  }
+
+  /// Get trip report detail
+  Future<Map<String, dynamic>> getTripReportDetail(int id) async {
+    final response = await _apiClient.get(MainApiEndpoints.tripReportDetail(id));
+    return response.data;
+  }
+
+  /// Update trip report (PUT)
+  Future<Map<String, dynamic>> updateTripReport({
+    required int id,
+    required int tripId,
+    required String title,
+    required String reportText,
+    String? trackFile,
+    String? trackImage,
+    List<String>? imageFiles,
+  }) async {
+    final response = await _apiClient.put(
+      MainApiEndpoints.tripReportDetail(id),
+      data: {
+        'trip': tripId,
+        'title': title,
+        'reportText': reportText,
+        if (trackFile != null) 'trackFile': trackFile,
+        if (trackImage != null) 'trackImage': trackImage,
+        if (imageFiles != null) 'imageFiles': imageFiles,
+      },
+    );
+    return response.data;
+  }
+
+  /// Delete trip report
+  Future<void> deleteTripReport(int id) async {
+    await _apiClient.delete(MainApiEndpoints.tripReportDetail(id));
   }
 
   // ============================================================================
@@ -1203,5 +2149,79 @@ class MainApiRepository {
       queryParameters: queryParams,
     );
     return response.data;
+  }
+
+  // ============================================================================
+  // CHOICES - Dropdown Data
+  // ============================================================================
+
+  /// Get approval status choices
+  /// Returns list of available trip approval statuses for dropdowns
+  Future<List<dynamic>> getApprovalStatusChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesApprovalStatus);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get car brand choices
+  /// Returns list of available car brands for dropdowns
+  Future<List<dynamic>> getCarBrandChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesCarBrand);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get country choices
+  /// Returns list of available countries for dropdowns
+  Future<List<dynamic>> getCountryChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesCountries);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get Emirates choices
+  /// Returns list of available Emirates for dropdowns
+  Future<List<dynamic>> getEmiratesChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesEmirates);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get gender choices
+  /// Returns list of available gender options for dropdowns
+  Future<List<dynamic>> getGenderChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesGender);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get permission matrix action choices
+  /// Returns list of available permission actions for dropdowns
+  Future<List<dynamic>> getPermissionMatrixActionChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesPermissionMatrixAction);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get time of day choices
+  /// Returns list of available time of day options for dropdowns
+  Future<List<dynamic>> getTimeOfDayChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesTimeOfDay);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get trip request area choices
+  /// Returns list of available areas for trip requests dropdowns
+  Future<List<dynamic>> getTripRequestAreaChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesTripRequestArea);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get upgrade request status choices
+  /// Returns list of available upgrade request statuses for dropdowns
+  Future<List<dynamic>> getUpgradeRequestStatusChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesUpgradeRequestStatus);
+    return response.data is List ? response.data : [];
+  }
+
+  /// Get upgrade request vote choices
+  /// Returns list of available upgrade request vote options for dropdowns
+  Future<List<dynamic>> getUpgradeRequestVoteChoices() async {
+    final response = await _apiClient.get(MainApiEndpoints.choicesUpgradeRequestVote);
+    return response.data is List ? response.data : [];
   }
 }

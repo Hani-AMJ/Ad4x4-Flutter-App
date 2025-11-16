@@ -57,8 +57,8 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
 
       // Load all skills and member's skill status in parallel
       final results = await Future.wait([
-        _repository.getLogbookSkills(limit: 200),
-        _repository.getMemberLogbookSkills(targetMemberId),
+        _repository.getLogbookSkills(pageSize: 200),
+        _repository.getMemberLogbookSkills(memberId: targetMemberId),
       ]);
 
       // Parse all skills

@@ -44,36 +44,63 @@ class MainApiEndpoints {
   static const String postTripComment = '/api/tripcomments/';
 
   // Trip requests
-  static String memberTripRequests(int memberId) => '/api/members/$memberId/triprequests';
-  static const String createTripRequest = '/api/triprequests';
+  static const String tripRequests = '/api/triprequests/';  // List all (admin)
+  static const String createTripRequest = '/api/triprequests/';  // ✅ FIXED: Added trailing slash for Django compatibility
+  static String tripRequestDetail(int id) => '/api/triprequests/$id/';  // Update/detail (admin)
 
   // Meeting points
   static const String meetingPoints = '/api/meetingpoints/';  // ✅ FIXED: Added trailing slash per API docs
+  static String meetingPointDetail(int id) => '/api/meetingpoints/$id/';
 
   // Levels
   static const String levels = '/api/levels/';
 
+  // Feedback
+  static const String feedback = '/api/feedback/';  // List all (admin)
+  static const String submitFeedback = '/api/feedback/';
+  static String feedbackDetail(int id) => '/api/feedback/$id/';  // Update/detail (admin)
+
   // Members
   static const String members = '/api/members/';
   static String memberDetail(int id) => '/api/members/$id/';
-  static String memberTripHistory(int id) => '/api/members/$id/triphistory';
+  static String memberFeedback(int id) => '/api/members/$id/feedback';
+  static String memberLogbookEntries(int id) => '/api/members/$id/logbookentries';
   static String memberLogbookSkills(int id) => '/api/members/$id/logbookskills';
   static String memberTripCounts(int id) => '/api/members/$id/tripcounts';
+  static String memberTripHistory(int id) => '/api/members/$id/triphistory';
+  static String memberTripRequests(int id) => '/api/members/$id/triprequests';
+  static String memberUpgradeRequests(int id) => '/api/members/$id/upgraderequests';
+  static String memberPayments(int id) => '/api/members/$id/payments';
 
   // Logbook endpoints
   static const String logbookEntries = '/api/logbookentries/';
   static const String logbookSkills = '/api/logbookskills/';
   static const String logbookSkillReferences = '/api/logbookskillreferences';
-  static String createTripLogbookEntry(int tripId) => '/api/trips/$tripId/logbook-entries';
+
+  // Trip reports - ✅ FIXED: Correct endpoint
+  static const String tripReports = '/api/tripreports/';
+  static String tripReportDetail(int id) => '/api/tripreports/$id/';
 
   // Club news
   static const String clubNews = '/api/clubnews/';
 
   // Sponsors
   static const String sponsors = '/api/sponsors/';
+  static String sponsorDetail(int id) => '/api/sponsors/$id/';
 
   // FAQs
   static const String faqs = '/api/faqs/';
+
+  // Global Settings
+  static const String globalSettings = '/api/globalsettings/';
+
+  // Groups
+  static const String groups = '/api/groups/';
+  static String groupDetail(int id) => '/api/groups/$id/';
+
+  // Permission Matrix
+  static const String permissionMatrix = '/api/permissionmatrix/';
+  static String permissionMatrixDetail(int id) => '/api/permissionmatrix/$id/';
 
   // Notifications
   static const String notifications = '/api/notifications/';
@@ -81,13 +108,27 @@ class MainApiEndpoints {
   // Search (future unified endpoint)
   static const String search = '/api/search';
 
+  // Choices endpoints (dropdown data)
+  static const String choicesApprovalStatus = '/api/choices/approvalstatus';
+  static const String choicesCarBrand = '/api/choices/carbrand';
+  static const String choicesCountries = '/api/choices/countries';
+  static const String choicesEmirates = '/api/choices/emirates';
+  static const String choicesGender = '/api/choices/gender';
+  static const String choicesPermissionMatrixAction = '/api/choices/permissionmatrixaction';
+  static const String choicesTimeOfDay = '/api/choices/timeofday';
+  static const String choicesTripRequestArea = '/api/choices/triprequestarea';
+  static const String choicesUpgradeRequestStatus = '/api/choices/upgraderequeststatus';
+  static const String choicesUpgradeRequestVote = '/api/choices/upgraderequestvote';
+
   // Upgrade requests
   // ✅ FIXED: Corrected to match API docs - no hyphen in "upgraderequests"
   static const String upgradeRequests = '/api/upgraderequests/';
   static String upgradeRequestDetail(int id) => '/api/upgraderequests/$id/';
-  static String upgradeRequestVote(int id) => '/api/upgraderequests/$id/vote';
+  static String upgradeRequestVote(int id) => '/api/upgraderequests/$id/vote';  // ✅ POST {"vote": "Y" (yes), "N" (no), or "D" (defer)}
   static String upgradeRequestApprove(int id) => '/api/upgraderequests/$id/approve';
   static String upgradeRequestDecline(int id) => '/api/upgraderequests/$id/decline';
-  static String upgradeRequestComments(int id) => '/api/upgraderequests/$id/comments';
+  // ✅ FIXED: Comment creation endpoint - POST /api/upgraderequestcomments/ with {"upgradeRequest": id, "text": text}
+  // ✅ FIXED: Comment fetching endpoint - GET /api/upgraderequestcomments/?upgradeRequest=id
+  static const String upgradeRequestCommentsCreate = '/api/upgraderequestcomments/';
   static String upgradeRequestCommentDelete(int commentId) => '/api/upgraderequestcomments/$commentId/';
 }

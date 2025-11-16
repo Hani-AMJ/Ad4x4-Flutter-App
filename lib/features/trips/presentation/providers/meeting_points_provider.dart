@@ -10,8 +10,9 @@ final meetingPointsProvider = FutureProvider<List<MeetingPoint>>((ref) async {
     final response = await repository.getMeetingPoints();
     
     // Parse meeting points from API response
+    final results = response['results'] as List<dynamic>? ?? [];
     final meetingPoints = <MeetingPoint>[];
-    for (var mpJson in response) {
+    for (var mpJson in results) {
       try {
         final meetingPoint = MeetingPoint.fromJson(mpJson as Map<String, dynamic>);
         meetingPoints.add(meetingPoint);

@@ -6,6 +6,8 @@ import 'package:dio/dio.dart';
 import '../../../../data/models/meeting_point_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/providers/here_maps_settings_provider.dart';
+import '../../../../core/providers/here_maps_service_provider.dart';
 
 /// Admin Meeting Point Form Screen
 /// 
@@ -71,6 +73,113 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
     super.dispose();
   }
 
+  /// Fetch location from Here Maps using coordinates
+  Future<void> _fetchLocationFromHereMaps() async {
+    // Validate coordinates are provided
+    if (_latController.text.trim().isEmpty || _lonController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Please enter latitude and longitude first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final lat = double.parse(_latController.text.trim());
+      final lon = double.parse(_lonController.text.trim());
+
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              ),
+              SizedBox(width: 12),
+              Text('🗺️ Fetching location from Here Maps...'),
+            ],
+          ),
+          duration: Duration(seconds: 10),
+        ),
+      );
+
+      // Get Here Maps settings and service
+      final settings = ref.read(hereMapsSettingsProvider);
+      final service = ref.read(hereMapsServiceProvider);
+
+      // Call Here Maps API
+      final areaValue = await service.reverseGeocode(
+        lat: lat,
+        lon: lon,
+        settings: settings,
+      );
+
+      // Hide loading snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+
+      // Check if we got data
+      if (areaValue.isEmpty) {
+        // No data - show warning with selected field names
+        final fieldNames = settings.selectedFields
+            .map((f) => f.displayName)
+            .join(', ');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('⚠️ No data available for: $fieldNames'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+        
+        // Leave area field blank
+        setState(() {
+          _areaController.text = '';
+        });
+      } else {
+        // Got data - update field and show success
+        setState(() {
+          _areaController.text = areaValue;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✅ Location fetched: $areaValue'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } on FormatException {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('❌ Invalid coordinates format'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Failed to fetch location: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _loadMeetingPoint() async {
     setState(() {
       _isLoading = true;
@@ -80,7 +189,8 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       final data = await repository.getMeetingPoints();
-      final meetingPoints = data
+      final results = data['results'] as List<dynamic>? ?? [];
+      final meetingPoints = results
           .map((json) => MeetingPoint.fromJson(json as Map<String, dynamic>))
           .toList();
       
@@ -101,6 +211,17 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
         
         _isLoading = false;
       });
+
+      // Auto-fetch area if empty and coordinates are available
+      if ((meetingPoint.area == null || meetingPoint.area!.isEmpty) &&
+          meetingPoint.lat != null &&
+          meetingPoint.lon != null &&
+          meetingPoint.lat!.isNotEmpty &&
+          meetingPoint.lon!.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _fetchLocationFromHereMaps();
+        });
+      }
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to load meeting point: ${e.toString()}';
@@ -205,7 +326,13 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
           );
         }
       } else {
-        await repository.createMeetingPoint(data);
+        await repository.createMeetingPoint(
+          name: data['name'] as String,
+          area: data['area'] as String?,
+          lat: data['lat'] as String?,
+          lon: data['lon'] as String?,
+          link: data['link'] as String?,
+        );
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -388,20 +515,21 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
               controller: _areaController,
               decoration: InputDecoration(
                 labelText: 'Area',
-                hintText: 'Auto-populated from GPS coordinates',
+                hintText: 'Will be populated automatically',
                 border: const OutlineInputBorder(),
-                enabled: false,
                 filled: true,
-                fillColor: Colors.grey[100],
-                suffixIcon: const Tooltip(
-                  message: 'Area name will be automatically fetched from GPS coordinates when you save',
-                  child: Icon(Icons.info_outline, size: 20),
+                fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.location_searching),
+                  onPressed: _fetchLocationFromHereMaps,
+                  tooltip: 'Fetch location from Here Maps',
                 ),
-                helperText: '✨ Automatically populated from GPS coordinates on save',
+                helperText: '🗺️ Automatically Populated from Here Maps',
                 helperMaxLines: 2,
               ),
+              readOnly: true,
               style: TextStyle(
-                color: Colors.grey[700],
+                color: Theme.of(context).colorScheme.onSurface,
                 fontStyle: FontStyle.italic,
               ),
             ),

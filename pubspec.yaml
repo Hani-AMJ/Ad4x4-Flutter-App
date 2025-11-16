@@ -55,6 +55,13 @@ dependencies:
   freezed_annotation: ^2.4.1
   web: ^1.1.0  # Modern web platform APIs
   js: ^0.6.7    # JavaScript interop for web storage clearing
+  uuid: ^4.5.1  # UUID generation for vehicle modifications cache
+  
+  # Export functionality (Phase B Task #3)
+  csv: ^6.0.0  # CSV generation
+  syncfusion_flutter_xlsio: ^27.2.5  # Excel generation (web-compatible)
+  pdf: ^3.11.1  # PDF generation
+  printing: ^5.13.2  # PDF preview and download
 
 dev_dependencies:
   flutter_test:

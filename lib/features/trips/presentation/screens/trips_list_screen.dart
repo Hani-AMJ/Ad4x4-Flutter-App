@@ -201,6 +201,9 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final tripsState = ref.watch(tripsProvider);
+    final authState = ref.watch(authProviderV2);
+    final currentUser = authState.user;
+    final canCreateTrip = currentUser?.hasPermission('create_trip') ?? false;
 
     if (trips.isEmpty && !tripsState.isLoading) {
       return EmptyStateWidget(
@@ -209,8 +212,10 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
         message: filters.isDefault
             ? 'There are no trips available at the moment.'
             : 'No trips match your filters. Try adjusting them.',
-        actionButtonText: 'Create Trip',
-        onAction: () => context.push('/trips/create'),
+        actionButtonText: canCreateTrip ? 'Create Trip' : 'Request Trip',
+        onAction: () => canCreateTrip 
+            ? context.push('/trips/create')
+            : context.push('/trips/requests'),
       );
     }
 

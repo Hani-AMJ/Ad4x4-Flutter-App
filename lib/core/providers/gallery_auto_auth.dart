@@ -30,8 +30,9 @@ final galleryAutoAuthProvider = Provider<void>((ref) {
         if (success) {
           print('✅ [GalleryAutoAuth] Gallery API auto-authenticated with main token');
         } else {
-          print('⚠️ [GalleryAutoAuth] Main token not accepted by Gallery API');
-          print('💡 [GalleryAutoAuth] User will need to login separately to Gallery API');
+          print('ℹ️ [GalleryAutoAuth] Gallery API token validation failed');
+          print('ℹ️ [GalleryAutoAuth] Read-only operations will still work (Gallery API allows anonymous reads)');
+          print('💡 [GalleryAutoAuth] Write operations (upload, like) will require separate Gallery login');
         }
       }
     }

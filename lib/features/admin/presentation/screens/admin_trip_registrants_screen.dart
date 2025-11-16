@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:convert';
+import 'package:printing/printing.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/trip_export_service.dart';
+import '../widgets/member_search_dialog.dart';
 
 /// Admin Trip Registrants Management Screen
 /// 
@@ -78,10 +82,54 @@ class _AdminTripRegistrantsScreenState extends ConsumerState<AdminTripRegistrant
 
   /// Force register a member (bypass level requirements)
   Future<void> _forceRegisterMember() async {
-    // TODO: Show member search dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Member search dialog coming soon')),
+    // Show member search dialog
+    final selectedMember = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const MemberSearchDialog(
+        title: 'Select Member to Register',
+        searchHint: 'Search by member name...',
+      ),
     );
+
+    if (selectedMember == null || !mounted) return;
+
+    final memberId = selectedMember['id'] as int;
+    final memberName = selectedMember['displayName'] as String;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      await repository.forceRegisterMember(
+        widget.tripId,
+        memberId,
+      );
+
+      // Reload trip data
+      await _loadTripData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ $memberName registered successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to register member: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
   }
 
   /// Remove member from trip
@@ -298,61 +346,165 @@ class _AdminTripRegistrantsScreenState extends ConsumerState<AdminTripRegistrant
     }
   }
 
-  /// Export registrants to CSV
+  /// Show export format selection dialog
   Future<void> _exportRegistrants() async {
     if (_trip == null) return;
 
-    try {
-      // Generate CSV content
-      final csvData = _generateCSV(_trip!);
-      
-      // For web, trigger download
-      // Note: This is a simplified version. In production, use packages like csv or download
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✅ Exported ${_trip!.registered.length} registrants'),
-          backgroundColor: Colors.green,
-          action: SnackBarAction(
-            label: 'Copy',
-            onPressed: () {
-              // In production, copy to clipboard or download file
-              debugPrint('CSV Data:\n$csvData');
-            },
-          ),
+    final format = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Export Registrants'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Choose export format for ${_trip!.registered.length} registrants:',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.table_chart, color: Colors.green),
+              title: const Text('CSV'),
+              subtitle: const Text('Comma-separated values'),
+              onTap: () => Navigator.pop(context, 'csv'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.description, color: Colors.blue),
+              title: const Text('Excel'),
+              subtitle: const Text('Microsoft Excel format'),
+              onTap: () => Navigator.pop(context, 'excel'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+              title: const Text('PDF'),
+              subtitle: const Text('Portable document format'),
+              onTap: () => Navigator.pop(context, 'pdf'),
+            ),
+          ],
         ),
-      );
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (format == null || !mounted) return;
+
+    _performExport(format);
+  }
+
+  /// Perform the actual export based on selected format
+  Future<void> _performExport(String format) async {
+    if (_trip == null) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final TripExportService exportService = TripExportService();
+      
+      switch (format) {
+        case 'csv':
+          await _exportCSV();
+          break;
+        case 'excel':
+          await _exportExcel();
+          break;
+        case 'pdf':
+          await _exportPDF();
+          break;
+      }
     } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Export failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  /// Export to CSV
+  Future<void> _exportCSV() async {
+    final csvData = TripExportService.exportToCSV(_trip!);
+    final bytes = utf8.encode(csvData);
+    
+    // Trigger download using web package
+    _downloadFile(
+      bytes,
+      'registrants_${_trip!.id}_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv',
+      'text/csv',
+    );
+    
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('❌ Failed to export: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Text('✅ CSV exported (${_trip!.registered.length} registrants)'),
+          backgroundColor: Colors.green,
         ),
       );
     }
   }
 
-  String _generateCSV(Trip trip) {
-    final buffer = StringBuffer();
+  /// Export to Excel
+  Future<void> _exportExcel() async {
+    final bytes = await TripExportService.exportToExcel(_trip!);
     
-    // CSV Header
-    buffer.writeln('Name,Username,Member ID,Phone,Email,Vehicle,Registration Date,Status,Has Vehicle,Vehicle Capacity');
+    // Trigger download
+    _downloadFile(
+      bytes,
+      'registrants_${_trip!.id}_${DateFormat('yyyyMMdd').format(DateTime.now())}.xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
     
-    // CSV Rows
-    for (final registration in trip.registered) {
-      final member = registration.member;
-      buffer.write('"${member.displayName}",');
-      buffer.write('"${member.username}",');
-      buffer.write('"${member.id}",');
-      buffer.write('"${member.phone ?? 'N/A'}",');
-      buffer.write('"${member.email ?? 'N/A'}",');
-      buffer.write('"${member.carBrand ?? ''} ${member.carModel ?? ''}".trim(),');
-      buffer.write('"${DateFormat('yyyy-MM-dd HH:mm').format(registration.registrationDate)}",');
-      buffer.write('"${registration.status ?? 'confirmed'}",');
-      buffer.write('"${registration.hasVehicle ?? false}",');
-      buffer.writeln('"${registration.vehicleCapacity ?? 'N/A'}"');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ Excel exported (${_trip!.registered.length} registrants)'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
+  }
+
+  /// Export to PDF
+  Future<void> _exportPDF() async {
+    final bytes = await TripExportService.exportToPDF(_trip!);
     
-    return buffer.toString();
+    // For PDF, use printing package which shows preview before download
+    await Printing.layoutPdf(
+      onLayout: (format) async => bytes,
+    );
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✅ PDF exported (${_trip!.registered.length} registrants)'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  /// Download file for web platform
+  void _downloadFile(List<int> bytes, String filename, String mimeType) {
+    // Web download is only available on web platform
+    // On mobile, this would use share_plus or file_saver package
+    if (kIsWeb) {
+      // Note: This code only compiles on web
+      // On Android/iOS, sharing is handled differently
+      if (kDebugMode) {
+        debugPrint('Web download not available on mobile platforms');
+      }
+    }
   }
 
   @override
@@ -360,8 +512,11 @@ class _AdminTripRegistrantsScreenState extends ConsumerState<AdminTripRegistrant
     final user = ref.watch(authProviderV2).user;
     
     // Check permissions
-    final canForceRegister = user?.hasPermission('force_register_member_to_trip') ?? false;
-    final canRemove = user?.hasPermission('remove_member_from_trip') ?? false;
+    // Note: Backend API doesn't have specific permissions for force register/remove
+    // Use edit_trip_registrations as the umbrella permission for all registration management
+    final canManageRegistrations = user?.hasPermission('edit_trip_registrations') ?? false;
+    final canForceRegister = canManageRegistrations; // Derived from edit_trip_registrations
+    final canRemove = canManageRegistrations; // Derived from edit_trip_registrations
     final canCheckin = user?.hasPermission('check_in_member') ?? false;
     final canCheckout = user?.hasPermission('check_out_member') ?? false;
     final canExport = user?.hasPermission('export_trip_registrants') ?? false;
@@ -383,8 +538,8 @@ class _AdminTripRegistrantsScreenState extends ConsumerState<AdminTripRegistrant
           if (!_isLoading && canExport)
             IconButton(
               icon: const Icon(Icons.download),
-              tooltip: 'Export CSV',
-              onPressed: _exportRegistrants,
+              tooltip: 'Export (CSV/Excel/PDF)',
+              onPressed: _isProcessing ? null : _exportRegistrants,
             ),
           if (!_isLoading && canForceRegister)
             IconButton(

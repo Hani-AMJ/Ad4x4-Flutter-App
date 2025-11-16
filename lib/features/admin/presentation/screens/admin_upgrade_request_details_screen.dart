@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/utils/image_proxy.dart';
@@ -987,7 +988,7 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
     try {
       await ref.read(upgradeRequestActionsProvider.notifier).vote(
         requestId: int.parse(widget.requestId),
-        approve: approve,
+        vote: approve ? 'Y' : 'N',  // Convert bool to Y/N format
       );
       
       if (mounted) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/registration_analytics_model.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
@@ -188,8 +189,24 @@ class _AdminRegistrationAnalyticsScreenState
             content: const Text('Export ready!'),
             action: SnackBarAction(
               label: 'Download',
-              onPressed: () {
-                // TODO: Open download URL
+              onPressed: () async {
+                // Open download URL in browser
+                final downloadUrl = exportState.downloadUrl;
+                if (downloadUrl != null) {
+                  final uri = Uri.parse(downloadUrl);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to open download link'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
               },
             ),
           ),

@@ -147,6 +147,13 @@ class LogbookHomeScreen extends ConsumerWidget {
         color: const Color(0xFF64B5F6),
         onTap: () => context.push('/logbook/trip-history'),
       ),
+      _QuickActionData(
+        icon: Icons.trending_up,
+        title: 'Level Upgrades',
+        subtitle: 'Request upgrade',
+        color: const Color(0xFFFF9800),
+        onTap: () => context.push('/logbook/upgrade-requests'),
+      ),
       if (isMarshal)
         _QuickActionData(
           icon: Icons.admin_panel_settings,

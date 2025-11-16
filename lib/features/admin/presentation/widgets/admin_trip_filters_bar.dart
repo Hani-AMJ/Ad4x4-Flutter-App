@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../trips/presentation/providers/levels_provider.dart';
+import '../providers/approval_status_provider.dart';
+import '../../../../core/utils/level_display_helper.dart';
 
 /// Admin Trip Filters Bar
 /// 
@@ -11,7 +15,7 @@ import 'package:intl/intl.dart';
 /// - Sort options (newest, oldest, start date)
 /// - Level filter (difficulty levels)
 /// - Organizer filter
-class AdminTripFiltersBar extends StatefulWidget {
+class AdminTripFiltersBar extends ConsumerStatefulWidget {
   final String statusFilter;
   final DateTime? startDate;
   final DateTime? endDate;
@@ -39,10 +43,10 @@ class AdminTripFiltersBar extends StatefulWidget {
   });
 
   @override
-  State<AdminTripFiltersBar> createState() => _AdminTripFiltersBarState();
+  ConsumerState<AdminTripFiltersBar> createState() => _AdminTripFiltersBarState();
 }
 
-class _AdminTripFiltersBarState extends State<AdminTripFiltersBar> {
+class _AdminTripFiltersBarState extends ConsumerState<AdminTripFiltersBar> {
   late TextEditingController _searchController;
 
   @override
@@ -129,7 +133,9 @@ class _AdminTripFiltersBarState extends State<AdminTripFiltersBar> {
 
                 // Level filter
                 _FilterChip(
-                  label: widget.levelFilter != null ? 'Level: ${widget.levelFilter}' : 'All Levels',
+                  label: widget.levelFilter != null 
+                      ? _getLevelName(widget.levelFilter!)
+                      : 'All Levels',
                   icon: Icons.terrain,
                   onTap: () => _showLevelFilterDialog(context),
                 ),
@@ -167,17 +173,32 @@ class _AdminTripFiltersBarState extends State<AdminTripFiltersBar> {
   }
 
   String _getStatusLabel(String status) {
-    switch (status) {
-      case 'pending':
+    // Handle backend codes (P, A, R, D) and legacy values (pending, approved)
+    switch (status.toUpperCase()) {
+      case 'P':
+      case 'PENDING':
         return 'Pending';
-      case 'approved':
+      case 'A':
+      case 'APPROVED':
         return 'Approved';
-      case 'upcoming':
+      case 'R':
+      case 'REJECTED':
+        return 'Rejected';
+      case 'D':
+      case 'DECLINED':
+      case 'DELETED':
+        return 'Deleted'; // ✅ FIXED: Show "Deleted" instead of "Declined"
+      case 'UPCOMING':
         return 'Upcoming';
-      case 'completed':
+      case 'COMPLETED':
         return 'Completed';
-      default:
+      case 'ALL':
         return 'All Trips';
+      default:
+        // For any unknown status, capitalize first letter
+        return status.isNotEmpty 
+            ? status[0].toUpperCase() + status.substring(1).toLowerCase()
+            : 'All Trips';
     }
   }
 
@@ -193,20 +214,67 @@ class _AdminTripFiltersBarState extends State<AdminTripFiltersBar> {
     return 'Date Range';
   }
 
+  String _getLevelName(int levelId) {
+    // ✅ Get level name from loaded levels
+    final levelsAsync = ref.read(levelsProvider);
+    return levelsAsync.maybeWhen(
+      data: (levels) {
+        final level = levels.where((l) => l.id == levelId).firstOrNull;
+        return level?.name ?? 'Level $levelId';
+      },
+      orElse: () => 'Level $levelId',
+    );
+  }
+
   Future<void> _showStatusFilterDialog(BuildContext context) async {
+    // ✅ Load dynamic approval statuses from backend
+    final statusesAsync = ref.read(approvalStatusChoicesProvider);
+    
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filter by Status'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _StatusOption('all', 'All Trips', widget.statusFilter),
-            _StatusOption('pending', 'Pending Approval', widget.statusFilter),
-            _StatusOption('approved', 'Approved', widget.statusFilter),
-            _StatusOption('upcoming', 'Upcoming', widget.statusFilter),
-            _StatusOption('completed', 'Completed', widget.statusFilter),
-          ],
+        content: statusesAsync.when(
+          data: (statuses) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Always include "All Trips" option first
+                  _StatusOption('all', 'All Trips', widget.statusFilter),
+                  // Then dynamic backend statuses
+                  ...statuses.map((status) => _StatusOption(
+                    status.value, 
+                    status.label, 
+                    widget.statusFilter,
+                  )),
+                  // Add computed filters (upcoming, completed) if needed
+                  _StatusOption('upcoming', 'Upcoming', widget.statusFilter),
+                  _StatusOption('completed', 'Completed', widget.statusFilter),
+                ],
+              ),
+            );
+          },
+          loading: () => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _StatusOption('all', 'All Trips', widget.statusFilter),
+              _StatusOption('P', 'Pending', widget.statusFilter),
+              _StatusOption('A', 'Approved', widget.statusFilter),
+              _StatusOption('upcoming', 'Upcoming', widget.statusFilter),
+              _StatusOption('completed', 'Completed', widget.statusFilter),
+            ],
+          ),
+          error: (e, s) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _StatusOption('all', 'All Trips', widget.statusFilter),
+              _StatusOption('P', 'Pending', widget.statusFilter),
+              _StatusOption('A', 'Approved', widget.statusFilter),
+              _StatusOption('upcoming', 'Upcoming', widget.statusFilter),
+              _StatusOption('completed', 'Completed', widget.statusFilter),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -241,24 +309,47 @@ class _AdminTripFiltersBarState extends State<AdminTripFiltersBar> {
   }
 
   Future<void> _showLevelFilterDialog(BuildContext context) async {
+    // ✅ Load actual levels from database
+    final levelsAsync = ref.read(levelsProvider);
+    
     final result = await showDialog<int?>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filter by Level'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _LevelOption(null, 'All Levels', widget.levelFilter),
-              _LevelOption(1, 'Level 1 - Easy', widget.levelFilter),
-              _LevelOption(2, 'Level 2', widget.levelFilter),
-              _LevelOption(3, 'Level 3', widget.levelFilter),
-              _LevelOption(4, 'Level 4', widget.levelFilter),
-              _LevelOption(5, 'Level 5', widget.levelFilter),
-              _LevelOption(6, 'Level 6', widget.levelFilter),
-              _LevelOption(7, 'Level 7', widget.levelFilter),
-              _LevelOption(8, 'Level 8 - Extreme', widget.levelFilter),
-            ],
+        content: levelsAsync.when(
+          data: (levels) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _LevelOption(null, 'All Levels', widget.levelFilter, null, null),
+                  ...levels.map((level) {
+                    // ✅ Use actual level data with icons and colors
+                    final color = LevelDisplayHelper.getLevelColor(level.numericLevel);
+                    final icon = LevelDisplayHelper.getLevelIcon(level.numericLevel);
+                    return _LevelOption(
+                      level.id,
+                      level.name, // ✅ Show actual name (Club Event, Newbie, etc.)
+                      widget.levelFilter,
+                      icon,
+                      color,
+                    );
+                  }),
+                ],
+              ),
+            );
+          },
+          loading: () => const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: CircularProgressIndicator(),
+            ),
+          ),
+          error: (error, stack) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text('Error loading levels: $error'),
+            ),
           ),
         ),
         actions: [
@@ -342,13 +433,29 @@ class _LevelOption extends StatelessWidget {
   final int? value;
   final String label;
   final int? currentValue;
+  final IconData? icon;
+  final Color? color;
 
-  const _LevelOption(this.value, this.label, this.currentValue);
+  const _LevelOption(
+    this.value,
+    this.label,
+    this.currentValue,
+    this.icon,
+    this.color,
+  );
 
   @override
   Widget build(BuildContext context) {
     return RadioListTile<int?>(
-      title: Text(label),
+      title: Row(
+        children: [
+          if (icon != null && color != null) ...[
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 12),
+          ],
+          Text(label),
+        ],
+      ),
       value: value,
       groupValue: currentValue,
       onChanged: (val) => Navigator.pop(context, val),

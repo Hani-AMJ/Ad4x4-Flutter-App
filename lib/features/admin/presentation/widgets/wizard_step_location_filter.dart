@@ -44,8 +44,9 @@ class _WizardStepLocationFilterState
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       final pointsData = await repository.getMeetingPoints();
-
-      final points = pointsData
+      
+      final results = pointsData['results'] as List<dynamic>? ?? [];
+      final points = results
           .map((json) => MeetingPoint.fromJson(json as Map<String, dynamic>))
           .toList();
 

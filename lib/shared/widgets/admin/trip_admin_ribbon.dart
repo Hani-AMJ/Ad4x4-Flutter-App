@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/status_helpers.dart';
 
 /// Trip Admin Ribbon
 /// 
 /// Sticky action bar for marshal/admin trip management actions
+/// 
+/// Now accepts status as String (backend code: A, P, D) instead of enum
+/// for better compatibility with dynamic approval statuses.
 class TripAdminRibbon extends StatelessWidget {
   final String tripId;
-  final TripApprovalStatus approvalStatus;
+  final String approvalStatus; // Backend code: "A", "P", "D"
   final VoidCallback? onApprove;
   final VoidCallback? onDecline;
   final VoidCallback? onEdit;
@@ -89,7 +93,7 @@ class TripAdminRibbon extends StatelessWidget {
               child: Row(
                 children: [
                   // Approval actions (if pending)
-                  if (approvalStatus == TripApprovalStatus.pending) ...[
+                  if (isPending(approvalStatus)) ...[
                     _ActionButton(
                       icon: Icons.check_circle,
                       label: 'Approve',
@@ -158,37 +162,22 @@ class TripAdminRibbon extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(TripApprovalStatus status, ColorScheme colors) {
-    switch (status) {
-      case TripApprovalStatus.pending:
-        return Colors.orange;
-      case TripApprovalStatus.approved:
-        return Colors.green;
-      case TripApprovalStatus.declined:
-        return Colors.red;
-    }
+  Color _getStatusColor(String status, ColorScheme colors) {
+    if (isApproved(status)) return Colors.green;
+    if (isPending(status)) return Colors.orange;
+    if (isDeclined(status)) return Colors.red;
+    return Colors.grey; // Unknown status
   }
 
-  IconData _getStatusIcon(TripApprovalStatus status) {
-    switch (status) {
-      case TripApprovalStatus.pending:
-        return Icons.pending;
-      case TripApprovalStatus.approved:
-        return Icons.check_circle;
-      case TripApprovalStatus.declined:
-        return Icons.cancel;
-    }
+  IconData _getStatusIcon(String status) {
+    if (isApproved(status)) return Icons.check_circle;
+    if (isPending(status)) return Icons.pending;
+    if (isDeclined(status)) return Icons.cancel;
+    return Icons.help; // Unknown status
   }
 
-  String _getStatusText(TripApprovalStatus status) {
-    switch (status) {
-      case TripApprovalStatus.pending:
-        return 'PENDING APPROVAL';
-      case TripApprovalStatus.approved:
-        return 'APPROVED';
-      case TripApprovalStatus.declined:
-        return 'DECLINED';
-    }
+  String _getStatusText(String status) {
+    return getApprovalStatusText(status).toUpperCase();
   }
 }
 
@@ -247,6 +236,16 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
+/// ⚠️ DEPRECATED: TripApprovalStatus enum
+/// 
+/// This enum is kept for backward compatibility but is no longer used.
+/// The TripAdminRibbon now accepts String status codes (A, P, D) directly.
+/// 
+/// For new code, use:
+/// - String status codes: "A", "P", "D"
+/// - Status helpers: isApproved(), isPending(), isDeclined()
+/// - Dynamic choices: ApprovalStatusChoice model + provider
+@Deprecated('Use String status codes with status_helpers.dart instead')
 enum TripApprovalStatus {
   pending,
   approved,

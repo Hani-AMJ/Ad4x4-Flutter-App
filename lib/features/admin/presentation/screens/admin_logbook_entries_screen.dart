@@ -6,6 +6,8 @@ import '../../../../data/models/logbook_model.dart';
 import '../../../../data/models/user_model.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../providers/logbook_provider.dart';
+import '../widgets/member_search_dialog.dart';
+import '../widgets/trip_search_dialog.dart';
 
 /// Admin Logbook Entries Screen
 /// 
@@ -154,16 +156,24 @@ class _AdminLogbookEntriesScreenState
           
           Row(
             children: [
-              // Member filter (placeholder - would need member search)
+              // Member filter with search dialog
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Show member search dialog
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Member filter coming soon'),
+                  onPressed: () async {
+                    // Show member search dialog
+                    final selectedMember = await showDialog<Map<String, dynamic>>(
+                      context: context,
+                      builder: (context) => const MemberSearchDialog(
+                        title: 'Filter by Member',
+                        searchHint: 'Search member by name...',
                       ),
                     );
+
+                    if (selectedMember != null) {
+                      final memberId = selectedMember['id'] as int;
+                      final memberName = selectedMember['displayName'] as String;
+                      ref.read(logbookEntriesProvider.notifier).setMemberFilter(memberId);
+                    }
                   },
                   icon: const Icon(Icons.person),
                   label: Text(
@@ -176,16 +186,24 @@ class _AdminLogbookEntriesScreenState
               
               const SizedBox(width: 8),
               
-              // Trip filter (placeholder - would need trip search)
+              // Trip filter with search dialog
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Show trip search dialog
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Trip filter coming soon'),
+                  onPressed: () async {
+                    // Show trip search dialog
+                    final selectedTrip = await showDialog<Map<String, dynamic>>(
+                      context: context,
+                      builder: (context) => const TripSearchDialog(
+                        title: 'Filter by Trip',
+                        searchHint: 'Search trip by title...',
                       ),
                     );
+
+                    if (selectedTrip != null) {
+                      final tripId = selectedTrip['id'] as int;
+                      final tripTitle = selectedTrip['title'] as String;
+                      ref.read(logbookEntriesProvider.notifier).setTripFilter(tripId);
+                    }
                   },
                   icon: const Icon(Icons.directions_car),
                   label: Text(
@@ -328,9 +346,48 @@ class _AdminLogbookEntriesScreenState
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to entry details
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Entry #${entry.id} details coming soon')),
+          // Show entry details dialog
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Logbook Entry #${entry.id}'),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Member: ${entry.member.displayName}'),
+                    const SizedBox(height: 8),
+                    if (entry.trip != null) ...[
+                      Text('Trip: ${entry.trip!.title}'),
+                      const SizedBox(height: 8),
+                    ],
+                    Text('Signed by: ${entry.signedBy.displayName}'),
+                    const SizedBox(height: 8),
+                    Text('Date: ${DateFormat('MMM d, yyyy • h:mm a').format(entry.createdAt)}'),
+                    const SizedBox(height: 16),
+                    const Text('Skills Verified:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    ...entry.skillsVerified.map((skill) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text('• ${skill.name}'),
+                    )),
+                    if (entry.comment != null && entry.comment!.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      const Text('Comment:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(entry.comment!),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
           );
         },
         borderRadius: BorderRadius.circular(12),

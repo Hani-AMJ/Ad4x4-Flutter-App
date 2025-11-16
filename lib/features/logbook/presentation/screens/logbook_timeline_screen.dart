@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+
 import '../../../../shared/widgets/widgets.dart';
+import 'logbook_entry_detail_screen.dart';
 
 /// Logbook Timeline Screen
 /// 
@@ -118,6 +120,22 @@ class _LogbookTimelineScreenState extends ConsumerState<LogbookTimelineScreen> {
     }
   }
 
+  /// Navigate to entry detail screen
+  void _navigateToDetail(LogbookEntry entry) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LogbookEntryDetailScreen(entry: entry),
+      ),
+    ).then((changed) {
+      // Refresh list if entry was edited or deleted
+      if (changed == true) {
+        _currentPage = 1;
+        _loadLogbookEntries();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -166,7 +184,7 @@ class _LogbookTimelineScreenState extends ConsumerState<LogbookTimelineScreen> {
                       icon: Icons.trending_up,
                       label: 'Current Level',
                       value: '${user.level?.numericLevel ?? 0}',
-                      color: const Color(0xFFFFB74D),
+                      color: _getLevelColor(user.level?.numericLevel ?? 0),
                     ),
                   ),
                 ],
@@ -228,6 +246,7 @@ class _LogbookTimelineScreenState extends ConsumerState<LogbookTimelineScreen> {
                       entry: entry,
                       isFirst: index == 0,
                       isLast: index == _entries.length - 1,
+                      onTap: () => _navigateToDetail(entry),
                     );
                   },
                 ),
@@ -322,16 +341,37 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+/// Get level color helper (avoids import)
+Color _getLevelColor(int numericLevel) {
+  if (numericLevel <= 10) {
+    return const Color(0xFF4CAF50);  // Green
+  } else if (numericLevel <= 100) {
+    return const Color(0xFF2196F3);  // Blue
+  } else if (numericLevel <= 200) {
+    return const Color(0xFFE91E63);  // Pink/Red
+  } else if (numericLevel <= 300) {
+    return const Color(0xFF9C27B0);  // Purple
+  } else if (numericLevel <= 400) {
+    return const Color(0xFF673AB7);  // Deep Purple
+  } else if (numericLevel <= 600) {
+    return const Color(0xFFFF9800);  // Orange
+  } else {
+    return const Color(0xFFE5E4E2);  // Platinum instead of dark gray
+  }
+}
+
 /// Logbook Entry Card Widget
 class _LogbookEntryCard extends StatelessWidget {
   final LogbookEntry entry;
   final bool isFirst;
   final bool isLast;
+  final VoidCallback onTap;
 
   const _LogbookEntryCard({
     required this.entry,
     required this.isFirst,
     required this.isLast,
+    required this.onTap,
   });
 
   @override
@@ -377,11 +417,14 @@ class _LogbookEntryCard extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                     // Trip Info
                     if (entry.trip != null) ...[
                       Row(
@@ -526,11 +569,25 @@ class _LogbookEntryCard extends StatelessWidget {
                         ),
                       ),
                     ],
+
+                    // Tap to view indicator
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 12,
+                          color: colors.onSurface.withValues(alpha: 0.4),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
           ),
+            ),
         ],
       ),
     );

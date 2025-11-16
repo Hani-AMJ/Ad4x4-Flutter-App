@@ -10,6 +10,12 @@ class TripFilters {
   final int? levelId;
   final String? area;
   final String ordering;
+  
+  // ✅ NEW: Advanced filters (Phase A Task #4)
+  final int? meetingPointId;
+  final int? leadId;
+  final DateTime? endTimeAfter;
+  final DateTime? endTimeBefore;
 
   const TripFilters({
     this.view = TripViewMode.list,
@@ -17,6 +23,10 @@ class TripFilters {
     this.levelId,
     this.area,
     this.ordering = 'start_time',  // ✅ Ascending order (soonest first) for upcoming trips
+    this.meetingPointId,
+    this.leadId,
+    this.endTimeAfter,
+    this.endTimeBefore,
   });
 
   TripFilters copyWith({
@@ -25,6 +35,10 @@ class TripFilters {
     int? levelId,
     String? area,
     String? ordering,
+    int? meetingPointId,
+    int? leadId,
+    DateTime? endTimeAfter,
+    DateTime? endTimeBefore,
   }) {
     return TripFilters(
       view: view ?? this.view,
@@ -32,6 +46,10 @@ class TripFilters {
       levelId: levelId ?? this.levelId,
       area: area ?? this.area,
       ordering: ordering ?? this.ordering,
+      meetingPointId: meetingPointId ?? this.meetingPointId,
+      leadId: leadId ?? this.leadId,
+      endTimeAfter: endTimeAfter ?? this.endTimeAfter,
+      endTimeBefore: endTimeBefore ?? this.endTimeBefore,
     );
   }
 
@@ -93,6 +111,10 @@ class TripFilters {
         dateRange == TripDateRange.all &&
         levelId == null &&
         area == null &&
+        meetingPointId == null &&
+        leadId == null &&
+        endTimeAfter == null &&
+        endTimeBefore == null &&
         ordering == 'start_time';
   }
 
@@ -102,6 +124,9 @@ class TripFilters {
     if (dateRange != TripDateRange.all) count++;
     if (levelId != null) count++;
     if (area != null) count++;
+    if (meetingPointId != null) count++;
+    if (leadId != null) count++;
+    if (endTimeAfter != null || endTimeBefore != null) count++;
     return count;
   }
 
@@ -112,6 +137,10 @@ class TripFilters {
       'levelId': levelId,
       'area': area,
       'ordering': ordering,
+      'meetingPointId': meetingPointId,
+      'leadId': leadId,
+      'endTimeAfter': endTimeAfter?.toIso8601String(),
+      'endTimeBefore': endTimeBefore?.toIso8601String(),
     };
   }
 }

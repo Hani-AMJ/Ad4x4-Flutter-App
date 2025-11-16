@@ -5,7 +5,7 @@ class SampleGallery {
   static List<Album> getAlbums() {
     return [
       Album(
-        id: 1,
+        id: 'mock-1',  // UUID-style mock ID
         title: 'Desert Safari 2024',
         description: 'Amazing desert adventure with the crew',
         coverImageUrl: 'https://picsum.photos/seed/desert1/400/300',
@@ -14,7 +14,7 @@ class SampleGallery {
         createdBy: 'Hani Al-Mansouri',
       ),
       Album(
-        id: 2,
+        id: 'mock-2',
         title: 'Empty Quarter Expedition',
         description: '3-day journey through the Empty Quarter',
         coverImageUrl: 'https://picsum.photos/seed/desert2/400/300',
@@ -23,7 +23,7 @@ class SampleGallery {
         createdBy: 'Ahmad Al-Mansoori',
       ),
       Album(
-        id: 3,
+        id: 'mock-3',
         title: 'Sunset Dune Bash',
         description: 'Evening fun on the dunes',
         coverImageUrl: 'https://picsum.photos/seed/sunset1/400/300',
@@ -32,7 +32,7 @@ class SampleGallery {
         createdBy: 'Khalid Al-Dhaheri',
       ),
       Album(
-        id: 4,
+        id: 'mock-4',
         title: 'Hafeet Mountain Trail',
         description: 'Scenic drive up Jebel Hafeet',
         coverImageUrl: 'https://picsum.photos/seed/mountain1/400/300',
@@ -41,7 +41,7 @@ class SampleGallery {
         createdBy: 'Saif Al-Ketbi',
       ),
       Album(
-        id: 5,
+        id: 'mock-5',
         title: 'Night Desert Camp',
         description: 'Camping under the stars',
         coverImageUrl: 'https://picsum.photos/seed/camp1/400/300',
@@ -50,7 +50,7 @@ class SampleGallery {
         createdBy: 'Rashid Al-Blooshi',
       ),
       Album(
-        id: 6,
+        id: 'mock-6',
         title: 'Coastal Dunes Adventure',
         description: 'Beach and dunes combination',
         coverImageUrl: 'https://picsum.photos/seed/coast1/400/300',
@@ -61,19 +61,19 @@ class SampleGallery {
     ];
   }
 
-  static Album getAlbumById(int id) {
+  static Album getAlbumById(String id) {
     return getAlbums().firstWhere(
       (album) => album.id == id,
       orElse: () => getAlbums().first,
     );
   }
 
-  static List<Photo> getPhotosForAlbum(int albumId) {
+  static List<Photo> getPhotosForAlbum(String albumId) {
     // Generate sample photos for the album
     return List.generate(
       12,
       (index) => Photo(
-        id: albumId * 100 + index,  // Generate unique int ID
+        id: 'mock-photo-$albumId-$index',  // Generate unique String ID
         url: 'https://picsum.photos/seed/photo${albumId}_$index/800/600',
         thumbnailUrl: 'https://picsum.photos/seed/photo${albumId}_$index/200/150',
         caption: 'Amazing moment from the trip #${index + 1}',
@@ -85,6 +85,7 @@ class SampleGallery {
         uploadedAt: DateTime.now().subtract(Duration(hours: index * 2)),
         likes: (index + 1) * 5,
         isLiked: index % 4 == 0,
+        galleryId: albumId,
       ),
     );
   }

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/notification_model.dart';
-import '../../../../data/sample_data/sample_notifications.dart';
+import '../../../../data/repositories/main_api_repository.dart';
+import '../../../../core/providers/repository_providers.dart';
 import 'package:intl/intl.dart';
 
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   List<NotificationModel> _notifications = [];
   bool _isLoading = false;
 
@@ -24,13 +26,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _loadNotifications() async {
     setState(() => _isLoading = true);
 
-    // TODO: Replace with actual API call
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final response = await repository.getNotifications();
+      
+      // Parse notifications from API response
+      final List<dynamic> notificationsData = response['results'] ?? response['notifications'] ?? [];
+      final notifications = notificationsData
+          .map((data) => NotificationModel.fromJson(data as Map<String, dynamic>))
+          .toList();
 
-    setState(() {
-      _notifications = sampleNotifications;
-      _isLoading = false;
-    });
+      if (mounted) {
+        setState(() {
+          _notifications = notifications;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading notifications: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load notifications: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleRefresh() async {
@@ -40,35 +63,55 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _handleMarkAsRead(NotificationModel notification) async {
     if (notification.isRead) return;
 
-    // TODO: Implement actual API call
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      await repository.markNotificationAsRead(notification.id);
 
-    setState(() {
-      final index = _notifications.indexWhere((n) => n.id == notification.id);
-      if (index != -1) {
-        _notifications[index] = notification.copyWith(isRead: true);
+      if (mounted) {
+        setState(() {
+          final index = _notifications.indexWhere((n) => n.id == notification.id);
+          if (index != -1) {
+            _notifications[index] = notification.copyWith(isRead: true);
+          }
+        });
       }
-    });
+    } catch (e) {
+      print('Error marking notification as read: $e');
+      // Silent fail - not critical
+    }
   }
 
   Future<void> _handleMarkAllAsRead() async {
     setState(() => _isLoading = true);
 
-    // TODO: Implement actual API call
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      await repository.markAllNotificationsAsRead();
 
-    setState(() {
-      _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
-      _isLoading = false;
-    });
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All notifications marked as read'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          _notifications = _notifications.map((n) => n.copyWith(isRead: true)).toList();
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All notifications marked as read'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error marking all as read: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to mark notifications as read: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

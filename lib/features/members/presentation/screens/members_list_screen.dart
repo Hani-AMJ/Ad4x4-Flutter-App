@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../../core/utils/level_display_helper.dart';
 import 'dart:async';
 
 class MembersListScreen extends ConsumerStatefulWidget {
@@ -27,6 +28,17 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
   int _currentPage = 1;
   bool _hasMore = true;
   final _scrollController = ScrollController();
+
+  // ✅ NEW: Advanced Filters
+  String? _selectedCarBrand;
+  String? _selectedCity;
+  String? _selectedNationality;
+  String? _selectedLevel;
+  int? _minTripCount;
+  int? _maxTripCount;
+  int? _minCarYear;
+  int? _maxCarYear;
+  bool _hasActiveFilters = false;
 
   @override
   void initState() {
@@ -59,6 +71,13 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
         page: _currentPage,
         pageSize: 20,
         firstNameContains: _searchController.text.isNotEmpty ? _searchController.text : null,
+        // ✅ NEW: Apply advanced filters
+        carBrand: _selectedCarBrand,
+        city: _selectedCity,
+        nationality: _selectedNationality,
+        levelName: _selectedLevel,
+        tripCountRange: _buildTripCountRange(),
+        carYearRange: _buildCarYearRange(),
       );
 
       // Parse response
@@ -134,6 +153,79 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
     _loadMembers();
   }
 
+  // ✅ NEW: Build trip count range string
+  String? _buildTripCountRange() {
+    if (_minTripCount == null && _maxTripCount == null) return null;
+    final min = _minTripCount ?? '';
+    final max = _maxTripCount ?? '';
+    return '$min,$max';
+  }
+
+  // ✅ NEW: Build car year range string
+  String? _buildCarYearRange() {
+    if (_minCarYear == null && _maxCarYear == null) return null;
+    final min = _minCarYear ?? '';
+    final max = _maxCarYear ?? '';
+    return '$min,$max';
+  }
+
+  // ✅ NEW: Show filter bottom sheet
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _FilterBottomSheet(
+        selectedCarBrand: _selectedCarBrand,
+        selectedCity: _selectedCity,
+        selectedNationality: _selectedNationality,
+        selectedLevel: _selectedLevel,
+        minTripCount: _minTripCount,
+        maxTripCount: _maxTripCount,
+        minCarYear: _minCarYear,
+        maxCarYear: _maxCarYear,
+        onApply: (filters) {
+          setState(() {
+            _selectedCarBrand = filters['carBrand'];
+            _selectedCity = filters['city'];
+            _selectedNationality = filters['nationality'];
+            _selectedLevel = filters['level'];
+            _minTripCount = filters['minTripCount'];
+            _maxTripCount = filters['maxTripCount'];
+            _minCarYear = filters['minCarYear'];
+            _maxCarYear = filters['maxCarYear'];
+            _hasActiveFilters = _selectedCarBrand != null ||
+                _selectedCity != null ||
+                _selectedNationality != null ||
+                _selectedLevel != null ||
+                _minTripCount != null ||
+                _maxTripCount != null ||
+                _minCarYear != null ||
+                _maxCarYear != null;
+            _currentPage = 1;
+          });
+          _loadMembers();
+        },
+      ),
+    );
+  }
+
+  // ✅ NEW: Clear all filters
+  void _clearFilters() {
+    setState(() {
+      _selectedCarBrand = null;
+      _selectedCity = null;
+      _selectedNationality = null;
+      _selectedLevel = null;
+      _minTripCount = null;
+      _maxTripCount = null;
+      _minCarYear = null;
+      _maxCarYear = null;
+      _hasActiveFilters = false;
+      _currentPage = 1;
+    });
+    _loadMembers();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -143,6 +235,28 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
       appBar: AppBar(
         title: const Text('Members'),
         actions: [
+          // ✅ NEW: Filter button with badge
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.filter_list),
+                onPressed: _showFilterSheet,
+              ),
+              if (_hasActiveFilters)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: colors.error,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -177,6 +291,79 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
               ),
             ),
           ),
+
+          // ✅ NEW: Active Filters Chips
+          if (_hasActiveFilters)
+            Container(
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  if (_selectedCarBrand != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Chip(
+                        label: Text('Car: $_selectedCarBrand'),
+                        onDeleted: () {
+                          setState(() => _selectedCarBrand = null);
+                          _currentPage = 1;
+                          _loadMembers();
+                        },
+                      ),
+                    ),
+                  if (_selectedLevel != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Chip(
+                        label: Text('Level: $_selectedLevel'),
+                        onDeleted: () {
+                          setState(() => _selectedLevel = null);
+                          _currentPage = 1;
+                          _loadMembers();
+                        },
+                      ),
+                    ),
+                  if (_selectedCity != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Chip(
+                        label: Text('City: $_selectedCity'),
+                        onDeleted: () {
+                          setState(() => _selectedCity = null);
+                          _currentPage = 1;
+                          _loadMembers();
+                        },
+                      ),
+                    ),
+                  if (_minTripCount != null || _maxTripCount != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Chip(
+                        label: Text(
+                          'Trips: ${_minTripCount ?? "0"}-${_maxTripCount ?? "∞"}',
+                        ),
+                        onDeleted: () {
+                          setState(() {
+                            _minTripCount = null;
+                            _maxTripCount = null;
+                          });
+                          _currentPage = 1;
+                          _loadMembers();
+                        },
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: ActionChip(
+                      label: const Text('Clear All'),
+                      onPressed: _clearFilters,
+                      avatar: const Icon(Icons.clear, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Loading Indicator (first load)
           if (_isLoading && _members.isEmpty)
@@ -260,7 +447,6 @@ class _MemberCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    final levelColor = _getLevelColor(member.level?.displayName);
     final memberName = '${member.firstName} ${member.lastName}'.trim();
 
     return Card(
@@ -305,26 +491,11 @@ class _MemberCard extends StatelessWidget {
                     // Level + Stats
                     Row(
                       children: [
-                        // Level Badge
-                        if (member.level?.displayName?.isNotEmpty ?? false)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: levelColor.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: levelColor, width: 1),
-                            ),
-                            child: Text(
-                              member.level!.displayName!,
-                              style: TextStyle(
-                                color: levelColor,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                        // Level Badge - using centralized helper for UserLevel
+                        if (member.level != null)
+                          LevelDisplayHelper.buildCompactBadgeFromString(
+                            levelName: member.level!.displayName ?? member.level!.name,
+                            numericLevel: member.level!.numericLevel,
                           ),
                         
                         const SizedBox(width: 8),
@@ -360,23 +531,392 @@ class _MemberCard extends StatelessWidget {
     );
   }
 
-  /// Get level color
-  Color _getLevelColor(String? level) {
-    if (level == null) return Colors.grey;
-    
-    final levelLower = level.toLowerCase();
-    if (levelLower.contains('marshal') || levelLower.contains('admin')) {
-      return const Color(0xFFD32F2F);  // Red
-    } else if (levelLower.contains('explorer')) {
-      return const Color(0xFF1976D2);  // Blue
-    } else if (levelLower.contains('advanced')) {
-      return const Color(0xFF388E3C);  // Green
-    } else if (levelLower.contains('intermediate')) {
-      return const Color(0xFFFFA000);  // Orange
-    } else if (levelLower.contains('newbie') || levelLower.contains('beginner')) {
-      return const Color(0xFF7B1FA2);  // Purple
-    }
-    
-    return Colors.grey;
+
+}
+
+/// ✅ NEW: Filter Bottom Sheet Widget
+class _FilterBottomSheet extends StatefulWidget {
+  final String? selectedCarBrand;
+  final String? selectedCity;
+  final String? selectedNationality;
+  final String? selectedLevel;
+  final int? minTripCount;
+  final int? maxTripCount;
+  final int? minCarYear;
+  final int? maxCarYear;
+  final Function(Map<String, dynamic>) onApply;
+
+  const _FilterBottomSheet({
+    required this.selectedCarBrand,
+    required this.selectedCity,
+    required this.selectedNationality,
+    required this.selectedLevel,
+    required this.minTripCount,
+    required this.maxTripCount,
+    required this.minCarYear,
+    required this.maxCarYear,
+    required this.onApply,
+  });
+
+  @override
+  State<_FilterBottomSheet> createState() => _FilterBottomSheetState();
+}
+
+class _FilterBottomSheetState extends State<_FilterBottomSheet> {
+  late String? _carBrand;
+  late String? _city;
+  late String? _nationality;
+  late String? _level;
+  late TextEditingController _minTripController;
+  late TextEditingController _maxTripController;
+  late TextEditingController _minYearController;
+  late TextEditingController _maxYearController;
+
+  // Popular car brands for AD4x4
+  final List<String> _popularCarBrands = [
+    'Land Rover',
+    'Toyota',
+    'Nissan',
+    'Jeep',
+    'Ford',
+    'Chevrolet',
+    'GMC',
+    'Mitsubishi',
+  ];
+
+  // UAE cities
+  final List<String> _popularCities = [
+    'Dubai',
+    'Abu Dhabi',
+    'Sharjah',
+    'Ajman',
+    'Ras Al Khaimah',
+    'Fujairah',
+    'Umm Al Quwain',
+    'Al Ain',
+  ];
+
+  // Common levels
+  final List<String> _levels = [
+    'Newbie',
+    'Member',
+    'Intermediate',
+    'Advanced',
+    'Explorer',
+    'Marshal',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _carBrand = widget.selectedCarBrand;
+    _city = widget.selectedCity;
+    _nationality = widget.selectedNationality;
+    _level = widget.selectedLevel;
+    _minTripController = TextEditingController(
+      text: widget.minTripCount?.toString() ?? '',
+    );
+    _maxTripController = TextEditingController(
+      text: widget.maxTripCount?.toString() ?? '',
+    );
+    _minYearController = TextEditingController(
+      text: widget.minCarYear?.toString() ?? '',
+    );
+    _maxYearController = TextEditingController(
+      text: widget.maxCarYear?.toString() ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _minTripController.dispose();
+    _maxTripController.dispose();
+    _minYearController.dispose();
+    _maxYearController.dispose();
+    super.dispose();
+  }
+
+  void _applyFilters() {
+    final filters = <String, dynamic>{
+      'carBrand': _carBrand,
+      'city': _city,
+      'nationality': _nationality,
+      'level': _level,
+      'minTripCount': _minTripController.text.isNotEmpty
+          ? int.tryParse(_minTripController.text)
+          : null,
+      'maxTripCount': _maxTripController.text.isNotEmpty
+          ? int.tryParse(_maxTripController.text)
+          : null,
+      'minCarYear': _minYearController.text.isNotEmpty
+          ? int.tryParse(_minYearController.text)
+          : null,
+      'maxCarYear': _maxYearController.text.isNotEmpty
+          ? int.tryParse(_maxYearController.text)
+          : null,
+    };
+    widget.onApply(filters);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.9,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: colors.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Filter Members',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _carBrand = null;
+                          _city = null;
+                          _nationality = null;
+                          _level = null;
+                          _minTripController.clear();
+                          _maxTripController.clear();
+                          _minYearController.clear();
+                          _maxYearController.clear();
+                        });
+                      },
+                      child: const Text('Reset'),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Filters Content
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // Car Brand
+                    Text(
+                      'Car Brand',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _popularCarBrands.map((brand) {
+                        final isSelected = _carBrand == brand;
+                        return FilterChip(
+                          label: Text(brand),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _carBrand = selected ? brand : null;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Level
+                    Text(
+                      'Member Level',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _levels.map((level) {
+                        final isSelected = _level == level;
+                        return FilterChip(
+                          label: Text(level),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _level = selected ? level : null;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // City
+                    Text(
+                      'City',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _popularCities.map((city) {
+                        final isSelected = _city == city;
+                        return FilterChip(
+                          label: Text(city),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _city = selected ? city : null;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Trip Count Range
+                    Text(
+                      'Trip Count',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _minTripController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Min',
+                              border: OutlineInputBorder(),
+                              hintText: '0',
+                            ),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text('to'),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _maxTripController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Max',
+                              border: OutlineInputBorder(),
+                              hintText: '∞',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Car Year Range
+                    Text(
+                      'Car Year',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _minYearController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Min',
+                              border: OutlineInputBorder(),
+                              hintText: '2000',
+                            ),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text('to'),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _maxYearController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Max',
+                              border: OutlineInputBorder(),
+                              hintText: '2025',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+
+              // Apply Button
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: colors.outlineVariant,
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: SafeArea(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _applyFilters,
+                      child: const Text('Apply Filters'),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
