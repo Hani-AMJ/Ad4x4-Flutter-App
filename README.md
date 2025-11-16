@@ -23,6 +23,41 @@
 
 ---
 
+## 📌 Project Status & Quick Links
+
+**Current Version:** 1.5.2 (November 2024)  
+**Next Release:** v2.0 - Gallery Integration (Target: December 2024)
+
+### 🔗 Essential Links
+- **📋 Task Board:** [GitHub Issues](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues)
+- **📊 Projects Board:** [GitHub Projects](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/projects)
+- **📝 Todo List:** [TODO.md](TODO.md) - Quick reference of all planned work
+- **📅 Changelog:** [CHANGELOG.md](CHANGELOG.md) - Release history and updates
+- **🆕 New Features:** [/new_features/](new_features/) - Feature specifications and docs
+
+### 🚀 Active Development
+
+#### 🎨 Gallery Integration (In Progress)
+**Status:** Documentation complete, ready for implementation  
+**Timeline:** 17-25 hours (Backend: 6-8h, Flutter: 12-16h)  
+**Docs:** [/new_features/gallery_integration/](new_features/gallery_integration/)
+
+**Backend Tasks:** 
+- Add `gallery_id` field to Trip model
+- Implement Gallery API webhook integration
+- Update trip responses with gallery data
+
+**Flutter Tasks:**
+- Gallery admin tab in trip details
+- Upload photos from trip page  
+- User's personal gallery view
+
+#### ⭐ Trip Rating System (Planned)
+**Status:** Planning phase  
+**Docs:** [/new_features/trip_rating_msi_system/](new_features/trip_rating_msi_system/)
+
+---
+
 ## 🎯 Implementation Status
 
 ### ✅ **Fully Implemented Features**

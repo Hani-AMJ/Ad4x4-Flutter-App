@@ -1,0 +1,114 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for the AD4x4 Mobile App
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please provide details below.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: ✨ Feature Description
+      description: A clear and concise description of the feature
+      placeholder: Describe the feature you'd like to see...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 💡 Problem Statement
+      description: What user problem does this solve?
+      placeholder: Explain the problem this feature addresses...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 🎯 Proposed Solution
+      description: How you envision this working
+      placeholder: Describe how this feature should work...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 📍 Feature Area
+      description: Which part of the app is this for?
+      options:
+        - Trips Management
+        - Gallery/Photos
+        - User Profile
+        - Logbook/Vehicle
+        - Admin Panel
+        - Notifications
+        - Authentication
+        - Search
+        - Settings
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What defines this feature as "complete"?
+      options:
+        - label: Define acceptance criterion 1
+        - label: Define acceptance criterion 2
+        - label: Define acceptance criterion 3
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: 📊 Estimated Effort
+      description: Rough estimate of implementation time
+      options:
+        - 🟢 Small (1-2 hours)
+        - 🟡 Medium (3-8 hours)
+        - 🟠 Large (1-2 days)
+        - 🔴 Extra Large (1+ weeks)
+        - ❓ Unknown
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🎯 Priority
+      description: How important is this feature?
+      options:
+        - 🔴 Must Have (critical for next release)
+        - 🟡 Should Have (important but not blocking)
+        - 🟢 Nice to Have (can wait for future release)
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternative Solutions
+      description: Describe any alternative approaches you've considered
+      placeholder: Alternative approaches...
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockups/References
+      description: If applicable, add mockups, sketches, or references
+      placeholder: Add images or links to design references...
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 📝 Additional Context
+      description: Add any other context about the feature request
+      placeholder: Any additional information...

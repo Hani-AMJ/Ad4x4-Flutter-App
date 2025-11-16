@@ -1,0 +1,148 @@
+name: 🔧 Backend Task
+description: Backend development task for Django API
+title: "[BACKEND] "
+labels: ["backend", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Backend development task for the Django API team.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 🔧 Task Description
+      description: Clear description of the backend task
+      placeholder: Describe what needs to be implemented...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: 📋 Task Type
+      description: What type of backend work is this?
+      options:
+        - API Endpoint (new)
+        - API Endpoint (update)
+        - Database Migration
+        - Webhook Integration
+        - Authentication/Authorization
+        - Performance Optimization
+        - Bug Fix
+        - Testing
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: 📝 Requirements
+      description: Detailed technical requirements
+      placeholder: |
+        - Requirement 1
+        - Requirement 2
+        - Requirement 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: api_spec
+    attributes:
+      label: 🌐 API Specification
+      description: If this is an API endpoint, provide the specification
+      placeholder: |
+        **Endpoint:** POST /api/...
+        **Request Body:**
+        ```json
+        {
+          "field": "value"
+        }
+        ```
+        **Response:**
+        ```json
+        {
+          "success": true
+        }
+        ```
+      render: markdown
+
+  - type: textarea
+    id: database
+    attributes:
+      label: 🗄️ Database Changes
+      description: If database changes are needed, describe them
+      placeholder: |
+        - Add column `gallery_id` to `trips` table
+        - Create index on `gallery_id`
+        - Migration script required
+
+  - type: checkboxes
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: What defines this task as "complete"?
+      options:
+        - label: API endpoint implemented and tested
+        - label: Database migration created
+        - label: Unit tests written (>80% coverage)
+        - label: API documentation updated
+        - label: Integration tests passing
+        - label: Deployed to staging
+        - label: Reviewed and approved
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🚨 Priority
+      description: How urgent is this task?
+      options:
+        - 🔴 Critical (blocks other work)
+        - 🟡 High (important for next release)
+        - 🟢 Medium (should be done soon)
+        - ⚪ Low (nice to have)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: 📊 Estimated Effort
+      description: Implementation time estimate
+      options:
+        - 🟢 Small (1-2 hours)
+        - 🟡 Medium (3-8 hours)
+        - 🟠 Large (1-2 days)
+        - 🔴 Extra Large (1+ weeks)
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 🔗 Dependencies
+      description: Any dependencies or blockers?
+      placeholder: |
+        - Depends on #123
+        - Blocks #456
+        - Requires approval from...
+
+  - type: textarea
+    id: related_docs
+    attributes:
+      label: 📚 Related Documentation
+      description: Links to related documentation or specs
+      placeholder: |
+        - Feature spec: /new_features/...
+        - API docs: /docs/...
+        - Design doc: ...
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 📝 Additional Notes
+      description: Any other context or information
+      placeholder: Additional technical details...
