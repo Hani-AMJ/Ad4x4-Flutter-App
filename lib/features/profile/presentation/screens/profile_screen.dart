@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/utils/level_display_helper.dart';
@@ -29,11 +31,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
   bool _isLoadingStats = false;
   String? _statsError;
   
-  // State for feedback history
-  List<feedback_model.Feedback> _feedbackHistory = [];
-  bool _isLoadingFeedback = false;
-  String? _feedbackError;
-  int _feedbackPage = 1;
+  // Feedback submission only - no history tracking
   
   // State for vehicle modifications
   List<VehicleModifications> _vehicleMods = [];
@@ -68,10 +66,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     final user = ref.read(authProviderV2).user;
     if (user == null) return;
     
-    // Load trip statistics, feedback history, and vehicle modifications in parallel
+    // Load trip statistics and vehicle modifications in parallel
     await Future.wait([
       _loadTripStatistics(user.id),
-      _loadFeedbackHistory(user.id),
       _loadVehicleModifications(user.id),
     ]);
   }
@@ -126,46 +123,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     }
   }
   
-  /// Load feedback history
-  Future<void> _loadFeedbackHistory(int userId) async {
-    setState(() {
-      _isLoadingFeedback = true;
-      _feedbackError = null;
-    });
-    
-    try {
-      final response = await _repository.getMemberFeedback(
-        memberId: userId,
-        page: _feedbackPage,
-        pageSize: 20,
-      );
-      
-      final results = response['results'] as List<dynamic>? ?? [];
-      final feedbackList = results
-          .map((item) => feedback_model.Feedback.fromJson(item as Map<String, dynamic>))
-          .toList();
-      
-      setState(() {
-        _feedbackHistory = feedbackList;
-        _isLoadingFeedback = false;
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error loading feedback history: $e');
-      }
-      setState(() {
-        _feedbackError = 'Failed to load feedback history';
-        _isLoadingFeedback = false;
-      });
-    }
-  }
+
   
-  /// Show submit feedback dialog
-  void _showSubmitFeedbackDialog(BuildContext context) {
+  /// Show submit feedback dialog with image upload support
+  void _showSubmitFeedbackDialog(BuildContext context) async {
     final formKey = GlobalKey<FormState>();
     String selectedType = feedback_model.FeedbackType.bug;
     String message = '';
+    String? imageUrl;
+    XFile? selectedImage;
     bool isSubmitting = false;
+    bool isUploadingImage = false;
     
     showDialog(
       context: context,
@@ -219,6 +187,110 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                     },
                     onSaved: (value) => message = value?.trim() ?? '',
                   ),
+                  const SizedBox(height: 16),
+                  
+                  // Image Attachment Section
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.attach_file, 
+                                size: 20, 
+                                color: Theme.of(context).colorScheme.primary
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Attachment (Optional)',
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          if (selectedImage == null) ...[
+                            OutlinedButton.icon(
+                              onPressed: isSubmitting || isUploadingImage 
+                                  ? null 
+                                  : () async {
+                                      setDialogState(() => isUploadingImage = true);
+                                      
+                                      try {
+                                        final ImagePicker picker = ImagePicker();
+                                        final XFile? image = await picker.pickImage(
+                                          source: ImageSource.gallery,
+                                          maxWidth: 1920,
+                                          maxHeight: 1080,
+                                          imageQuality: 85,
+                                        );
+                                        
+                                        if (image != null) {
+                                          setDialogState(() {
+                                            selectedImage = image;
+                                            isUploadingImage = false;
+                                          });
+                                        } else {
+                                          setDialogState(() => isUploadingImage = false);
+                                        }
+                                      } catch (e) {
+                                        if (kDebugMode) {
+                                          debugPrint('Error picking image: $e');
+                                        }
+                                        setDialogState(() => isUploadingImage = false);
+                                        
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Failed to pick image: $e'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                              icon: isUploadingImage
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.add_photo_alternate),
+                              label: Text(isUploadingImage 
+                                  ? 'Selecting...' 
+                                  : 'Add Screenshot'
+                              ),
+                            ),
+                          ] else ...[
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(
+                                Icons.image,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              title: Text(
+                                selectedImage!.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.close, size: 20),
+                                onPressed: isSubmitting 
+                                    ? null 
+                                    : () {
+                                        setDialogState(() {
+                                          selectedImage = null;
+                                          imageUrl = null;
+                                        });
+                                      },
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -229,7 +301,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: isSubmitting
+              onPressed: isSubmitting || isUploadingImage
                   ? null
                   : () async {
                       if (!formKey.currentState!.validate()) return;
@@ -239,9 +311,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       setDialogState(() => isSubmitting = true);
                       
                       try {
+                        // Upload image first if selected
+                        if (selectedImage != null) {
+                          try {
+                            // Convert image to base64 for submission
+                            final bytes = await selectedImage!.readAsBytes();
+                            final base64String = base64Encode(bytes);
+                            imageUrl = 'data:image/jpeg;base64,$base64String';
+                            
+                            if (kDebugMode) {
+                              debugPrint('✅ Image converted to base64 (${base64String.length} chars)');
+                            }
+                          } catch (e) {
+                            if (kDebugMode) {
+                              debugPrint('Error converting image: $e');
+                            }
+                            // Continue without image if conversion fails
+                            imageUrl = null;
+                          }
+                        }
+                        
                         await _repository.submitFeedback(
                           feedbackType: selectedType,
                           message: message,
+                          image: imageUrl,
                         );
                         
                         if (context.mounted) {
@@ -254,11 +347,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                             ),
                           );
                           
-                          // Reload feedback history
-                          final user = ref.read(authProviderV2).user;
-                          if (user != null) {
-                            _loadFeedbackHistory(user.id);
-                          }
+                          // Feedback submitted successfully - admin will view on backend
                         }
                       } catch (e) {
                         if (context.mounted) {
@@ -270,6 +359,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                               backgroundColor: Colors.red,
                             ),
                           );
+                        }
+                      } finally {
+                        if (context.mounted) {
+                          setDialogState(() => isSubmitting = false);
                         }
                       }
                     },
@@ -780,14 +873,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     );
   }
 
-  /// Build feedback section
-  /// ✅ NEW: Phase A Task #5 - Feedback submission and history
+  /// Build feedback section - Clean, modern design
+  /// User can submit feedback, admin views on backend
   Widget _buildFeedbackSection(BuildContext context, ThemeData theme, ColorScheme colors) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header with title and submit button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -809,147 +903,138 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
           ),
           const SizedBox(height: 16),
           
-          if (_isLoadingFeedback)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (_feedbackError != null)
-            Center(
+          // Clean feedback card with centered content
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(32),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, color: colors.error, size: 32),
-                  const SizedBox(height: 8),
-                  Text(_feedbackError!, style: TextStyle(color: colors.error)),
-                ],
-              ),
-            )
-          else if (_feedbackHistory.isEmpty)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Center(
-                  child: Column(
+                  // Large feedback icon with gradient background
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          colors.primaryContainer,
+                          colors.secondaryContainer,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.feedback_outlined,
+                      size: 48,
+                      color: colors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Main heading
+                  Text(
+                    'We Value Your Feedback!',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colors.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Description text
+                  Text(
+                    'Help us improve by sharing your thoughts, reporting bugs, or suggesting new features.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.7),
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Feature highlights
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
                     children: [
-                      Icon(
-                        Icons.feedback_outlined,
-                        size: 48,
-                        color: colors.onSurface.withValues(alpha: 0.5),
+                      _buildFeatureChip(
+                        context,
+                        icon: Icons.bug_report,
+                        label: 'Report Bugs',
+                        colors: colors,
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No feedback submitted yet',
-                        style: TextStyle(
-                          color: colors.onSurface.withValues(alpha: 0.7),
-                        ),
+                      _buildFeatureChip(
+                        context,
+                        icon: Icons.lightbulb_outline,
+                        label: 'Suggest Features',
+                        colors: colors,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Share your thoughts to help us improve!',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.5),
-                        ),
-                        textAlign: TextAlign.center,
+                      _buildFeatureChip(
+                        context,
+                        icon: Icons.chat_bubble_outline,
+                        label: 'General Feedback',
+                        colors: colors,
+                      ),
+                      _buildFeatureChip(
+                        context,
+                        icon: Icons.help_outline,
+                        label: 'Get Support',
+                        colors: colors,
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            )
-          else
-            // Feedback history list (show last 3)
-            Column(
-              children: [
-                ..._feedbackHistory.take(3).map((feedback) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: colors.primaryContainer,
-                        child: Text(
-                          feedback_model.FeedbackType.getIcon(feedback.feedbackType),
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                      ),
-                      title: Text(
-                        feedback_model.FeedbackType.getLabel(feedback.feedbackType),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Text(
-                            feedback.message,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (feedback.created != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatDate(feedback.created!),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.onSurface.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      trailing: feedback.status != null
-                          ? Chip(
-                              label: Text(
-                                feedback_model.FeedbackStatus.getLabel(feedback.status!),
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              visualDensity: VisualDensity.compact,
-                            )
-                          : null,
-                    ),
-                  ),
-                )),
-                
-                if (_feedbackHistory.length > 3)
-                  TextButton.icon(
-                    onPressed: () {
-                      // TODO: Navigate to full feedback history screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Full feedback history view coming soon!'),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.history),
-                    label: Text('View all ${_feedbackHistory.length} feedback'),
-                  ),
-              ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// Build feature chip for feedback types
+  Widget _buildFeatureChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required ColorScheme colors,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colors.outline.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: colors.primary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: colors.onSurface.withValues(alpha: 0.8),
+            ),
+          ),
         ],
       ),
     );
   }
 
   /// Format date for display
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-    
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else if (difference.inDays < 30) {
-      final weeks = (difference.inDays / 7).floor();
-      return '$weeks week${weeks > 1 ? "s" : ""} ago';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
-  }
-
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -768,13 +769,21 @@ class MainApiRepository {
     required String message,
     String? image,
   }) async {
+    // Send BOTH camelCase and snake_case to ensure backend compatibility
+    final requestData = {
+      'feedbackType': feedbackType,     // camelCase (as per API docs)
+      'feedback_type': feedbackType,    // snake_case (backend might expect this)
+      'message': message,
+      if (image != null) 'image': image,
+    };
+    
+    if (kDebugMode) {
+      debugPrint('🔍 [submitFeedback] Sending: ${json.encode(requestData)}');
+    }
+    
     final response = await _apiClient.post(
       MainApiEndpoints.submitFeedback,
-      data: {
-        'feedbackType': feedbackType,
-        'message': message,
-        if (image != null) 'image': image,
-      },
+      data: requestData,
     );
     return response.data;
   }

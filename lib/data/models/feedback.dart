@@ -106,13 +106,13 @@ class Feedback {
 }
 
 /// Feedback type enum matching backend FeedbackTypeEnum
-/// ✅ VERIFIED: Backend types from Django admin (screenshot confirmed)
-/// Types available: Bug Report, Feature Request, General Feedback, Help/Support
+/// ✅ VERIFIED: Backend API testing (January 19, 2025)
+/// Backend expects LOWERCASE values: bug, feature, general, support
 class FeedbackType {
-  static const String bug = 'BUG';              // 🐛 Bug Report
-  static const String feature = 'FEATURE';      // ✨ Feature Request
-  static const String general = 'GENERAL';      // 📝 General Feedback
-  static const String support = 'SUPPORT';      // 💬 Help/Support
+  static const String bug = 'bug';              // 🐛 Bug Report
+  static const String feature = 'feature';      // ✨ Feature Request
+  static const String general = 'general';      // 📝 General Feedback
+  static const String support = 'support';      // 💬 Help/Support
 
   /// Get all feedback types for dropdown/selection
   /// ⚠️ ONLY includes types that backend actually accepts

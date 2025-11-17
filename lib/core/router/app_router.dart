@@ -593,6 +593,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
+
           // Feedback Routes
           GoRoute(
             path: '/admin/feedback',
@@ -603,6 +604,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
+
           // Marshal Panel Routes
           GoRoute(
             path: '/admin/logbook/entries',
