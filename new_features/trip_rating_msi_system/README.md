@@ -87,16 +87,48 @@ Enable members to rate completed trips (both trip quality and leader performance
 
 ## 🚀 Implementation Workflow
 
+### ⚠️ CRITICAL PREREQUISITE: Backend Configuration System
+
+**Before implementing trip rating endpoints, the backend must implement the configuration system:**
+
+1. **Create `rating_configuration` table** (see `BACKEND_API_DOCUMENTATION.md` v2.0)
+   - Stores all rating system settings (thresholds, scales, colors, etc.)
+   - Uses JSON storage for maximum flexibility
+   - Allows future expansion without schema changes
+
+2. **Implement configuration endpoints:**
+   - `GET /api/settings/rating-config/` (public, 15-min cache)
+   - `PUT /api/admin/settings/rating-config/` (admin only)
+
+3. **Update `trip_ratings` table validation:**
+   - Remove hardcoded CHECK constraints
+   - Move validation to application layer using dynamic config
+   - See `BACKEND_API_DOCUMENTATION.md` v2.0 for details
+
+**Why This Matters:**
+- ✅ Admins can adjust rating thresholds without app updates
+- ✅ Color-coded performance bands are configurable
+- ✅ Rating scale and comment length are flexible
+- ✅ Matches the "maximum flexibility" design of Vehicle Modifications System
+- ✅ Prevents need for future database migrations
+
+**Reference Documentation:**
+- `BACKEND_API_DOCUMENTATION.md` v2.0 - Configuration API specification
+- `CRITICAL_FLUTTER_CHANGES_V2.md` - Flutter implementation guide
+
+---
+
 ### Step 1: Backend Team Completes Development
 
 **Tasks:**
-1. Read `BACKEND_API_DOCUMENTATION.md` thoroughly
-2. Create database migration for TripRating table
-3. Implement all 9 API endpoints
-4. Add 4 new permissions to permission system
-5. Implement automatic notification creation
-6. Write unit and integration tests
-7. Deploy to staging environment
+1. Read `BACKEND_API_DOCUMENTATION.md` v2.0 thoroughly
+2. **FIRST:** Create `rating_configuration` table and configuration endpoints
+3. Create database migration for TripRating table (without hardcoded constraints)
+4. Implement all 9 API endpoints
+5. Add 4 new permissions to permission system
+6. Implement automatic notification creation
+7. Write unit and integration tests
+8. Deploy to staging environment
 
 **Deliverables:**
 - ✅ Database migration file
@@ -150,22 +182,31 @@ Ready for frontend development!
 
 ### Step 3: Frontend Team Implementation
 
+**Prerequisites:**
+- ✅ Backend configuration endpoints deployed (`GET /api/settings/rating-config/`)
+- ✅ Backend rating endpoints deployed and tested
+- ✅ Configuration loaded and available in Flutter app startup
+
 **Tasks:**
-1. Read `FRONTEND_IMPLEMENTATION_PLAN.md` thoroughly
-2. Test all API endpoints using Postman
-3. Create data models
-4. Implement repository layer
-5. Build UI components (member experience first)
-6. Build admin screens
-7. Integrate with existing app
-8. Test end-to-end flows
+1. Read `FRONTEND_IMPLEMENTATION_PLAN.md` v2.0 thoroughly
+2. Read `CRITICAL_FLUTTER_CHANGES_V2.md` for configuration implementation
+3. Test all API endpoints using Postman (including config endpoint)
+4. Implement `RatingConfigModel` and `RatingConfigService` (backend-driven)
+5. Create rating data models (using dynamic config, not hardcoded values)
+6. Implement repository layer
+7. Build UI components (member experience first)
+8. Build admin screens
+9. Integrate with existing app
+10. Test end-to-end flows
 
 **Implementation Order:**
-1. **Week 1:** Core models + repository
-2. **Week 2:** Member experience (rating dialog)
-3. **Week 3:** Admin overview screens
+1. **Week 1:** Configuration system + Core models + repository
+2. **Week 2:** Member experience (rating dialog with dynamic thresholds)
+3. **Week 3:** Admin overview screens (dynamic color coding)
 4. **Week 4:** Leader performance + dashboard
 5. **Week 5:** Polish, testing, deployment
+
+**IMPORTANT:** All UI color coding, rating scales, and thresholds must use values from `RatingConfigModel`, NOT hardcoded constants.
 
 **Testing Strategy:**
 - Unit tests for models
@@ -173,7 +214,7 @@ Ready for frontend development!
 - Integration tests for full flows
 - Manual testing on staging
 
-**Estimated Time:** 4-5 weeks
+**Estimated Time:** 4-5 weeks (includes configuration system implementation)
 
 ---
 

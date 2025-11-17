@@ -55,39 +55,91 @@ When trips are created/updated/deleted in Main API, automatically call Gallery A
 
 ## 🔄 Development Workflow
 
+### **⚠️ CONFIGURATION SYSTEM UPDATE (v2.0)**
+
+**New in v2.0:** Backend-driven configuration for maximum flexibility
+
+The Gallery Integration system now supports **backend-driven configuration** matching the design philosophy of Vehicle Modifications and Trip Rating systems.
+
+**Backend Configuration Endpoint:**
+- `GET /api/settings/gallery-config/` - Returns gallery system settings
+- See `GALLERY_INTEGRATION_BACKEND_SPEC.md` v2.0 for complete specification
+
+**Flutter Configuration Loading:**
+- ✅ **IMPLEMENTED:** Gallery configuration loaded on app startup
+- ✅ **IMPLEMENTED:** Dynamic Gallery API URL support
+- ✅ **IMPLEMENTED:** Feature flags (enable/disable gallery, auto-creation)
+- ✅ **IMPLEMENTED:** Graceful fallback to defaults if backend not ready
+
+**What's Configurable:**
+- Gallery system enable/disable
+- Auto-create galleries for trips
+- Manual gallery creation permission
+- Gallery API URL
+- Request timeout
+- User upload/delete permissions
+- Max photo size
+- Supported file formats
+
+**Flexibility Score:** 95% (all behavior controlled by backend)
+
+**Reference Documentation:**
+- `GALLERY_INTEGRATION_BACKEND_SPEC.md` v2.0 - Configuration API
+- `CRITICAL_FLUTTER_CHANGES_GALLERY.md` - Flutter implementation guide
+- `FLEXIBILITY_UPGRADE_SUMMARY.md` - System comparison
+
+---
+
 ### **Step 1: Backend Team (REQUIRED FIRST) - 6-8 hours**
-Read: `GALLERY_INTEGRATION_BACKEND_SPEC.md`
+Read: `GALLERY_INTEGRATION_BACKEND_SPEC.md` v2.0
 
 Tasks:
-1. Add `gallery_id` field to Trip model (database migration)
-2. Create Gallery API service (`gallery_service.py`)
-3. Call webhooks when trips are created/updated/deleted
-4. Include `gallery_id` in trip API responses
-5. Write tests and deploy
+1. **Add gallery configuration to `global_settings` table** (see v2.0 spec)
+2. **Implement `GET /api/settings/gallery-config/` endpoint** (15-min cache)
+3. Add `gallery_id` field to Trip model (database migration)
+4. Create Gallery API service (`gallery_service.py`)
+5. Call webhooks when trips are created/updated/deleted
+6. Include `gallery_id` in trip API responses
+7. Write tests and deploy
 
 **Status Check:** Backend team must complete this before Flutter team can start.
 
 ---
 
 ### **Step 2: Flutter Team (After Backend Complete) - 12-16 hours**
-Read: `GALLERY_INTEGRATION_FLUTTER_WORK.md`
+Read: `GALLERY_INTEGRATION_FLUTTER_WORK.md` v2.0
 
-Tasks:
-1. **Phase 1:** Gallery Admin Tab in Trip Details (4-6 hours)
+**Prerequisites:**
+- ✅ Backend configuration endpoint deployed (`GET /api/settings/gallery-config/`)
+- ✅ **Already Implemented:** Gallery configuration loaded in Flutter app startup
+- ✅ **Already Implemented:** Dynamic Gallery API URL support
+- ✅ Gallery integration endpoints ready (gallery_id field, webhooks)
+
+**Tasks:**
+1. **Configuration Usage:** Use `galleryConfigProvider` for all feature flags
+   - Check `galleryConfig.isAvailable` before showing gallery features
+   - Check `galleryConfig.canUpload` before allowing uploads
+   - Check `galleryConfig.canDelete` before showing delete buttons
+   - Use `galleryConfig.features.maxPhotoSizeMB` for validation
+
+2. **Phase 1:** Gallery Admin Tab in Trip Details (4-6 hours)
    - Add Gallery tab to admin panel
    - Show gallery stats (photo count, last upload, top uploaders)
    - Actions: Upload, View, Rename, Delete
+   - **Honor feature flags:** Only show actions if permitted by config
 
-2. **Phase 2:** Upload Photos from Trip Details (2-3 hours)
+3. **Phase 2:** Upload Photos from Trip Details (2-3 hours)
    - Add Upload button in gallery section
    - Open photo picker
+   - Validate file size using `galleryConfig.features.maxPhotoSize`
+   - Validate file format using `galleryConfig.features.isSupportedFormat()`
    - Upload to trip's gallery
    - Show progress
 
-3. **Phase 3:** User's Personal Gallery (3-4 hours)
+4. **Phase 3:** User's Personal Gallery (3-4 hours)
    - Create "My Gallery" screen
    - Group photos by trip
-   - Allow viewing/deleting own photos
+   - Allow viewing/deleting own photos (if `galleryConfig.canDelete`)
 
 ---
 

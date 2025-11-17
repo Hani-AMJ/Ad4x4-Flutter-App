@@ -204,6 +204,49 @@ All issues reference these key documents:
 
 ---
 
+## 📦 Related Configuration Systems (November 2024)
+
+**Unified Configuration Architecture:**
+
+Following the Vehicle Modifications System's "maximum flexibility" design philosophy, two additional features have been upgraded to use backend-driven configuration:
+
+### 1. Trip Rating & MSI System Configuration
+**Documentation:** `new_features/trip_rating_msi_system/`
+- `BACKEND_API_DOCUMENTATION.md` v2.0
+- `CRITICAL_FLUTTER_CHANGES_V2.md`
+
+**Configurable Elements:**
+- Rating thresholds (excellent/good/needs improvement)
+- Color coding for performance bands
+- Rating scale (1-5 default, but configurable)
+- Comment length limits
+- All display colors and UI behavior
+
+**Backend Endpoint:** `GET /api/settings/rating-config/`
+
+### 2. Gallery Integration Configuration
+**Documentation:** `new_features/gallery_integration/`
+- `GALLERY_INTEGRATION_BACKEND_SPEC.md` v2.0
+- `CRITICAL_FLUTTER_CHANGES_GALLERY.md`
+
+**Configurable Elements:**
+- Gallery system enable/disable
+- Auto-create galleries for trips
+- Gallery API URL
+- User upload/delete permissions
+- Max photo size
+- Supported file formats
+
+**Backend Endpoint:** `GET /api/settings/gallery-config/`
+
+**Implementation Status:**
+- ✅ **Gallery Configuration:** Fully implemented in Flutter (November 2024)
+- ⏳ **Trip Rating Configuration:** Documentation complete, awaiting backend implementation
+
+**See Also:** `new_features/FLEXIBILITY_UPGRADE_SUMMARY.md` for complete comparison of all three configuration systems.
+
+---
+
 ## 📞 Issue Management
 
 **GitHub Repository:** https://github.com/Hani-AMJ/Ad4x4-Flutter-App

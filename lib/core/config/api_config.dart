@@ -1,6 +1,13 @@
 /// API Configuration for AD4x4 App
 /// 
 /// Manages base URLs and endpoints for Main API and Gallery API
+/// 
+/// Design: Backend-driven configuration
+/// - Main API URL: Fixed (always ap.ad4x4.com)
+/// - Gallery API URL: Dynamic (loaded from backend on app startup)
+/// 
+/// Gallery API URL can be updated via updateGalleryApiUrl() after
+/// loading configuration from backend.
 class ApiConfig {
   // Base URLs
   static const String mainApiBaseUrl = String.fromEnvironment(
@@ -8,10 +15,39 @@ class ApiConfig {
     defaultValue: 'https://ap.ad4x4.com',
   );
 
-  static const String galleryApiBaseUrl = String.fromEnvironment(
+  // Gallery API URL - Dynamic (loaded from backend configuration)
+  // Default value used as fallback if backend config unavailable
+  static String _galleryApiBaseUrl = const String.fromEnvironment(
     'GALLERY_API_BASE',
     defaultValue: 'https://media.ad4x4.com',
   );
+  
+  /// Get current Gallery API base URL
+  static String get galleryApiBaseUrl => _galleryApiBaseUrl;
+  
+  /// Update Gallery API base URL from backend configuration
+  /// 
+  /// Called by main.dart after loading GalleryConfigModel on app startup.
+  /// This allows admins to change Gallery API URL without app updates.
+  /// 
+  /// Example:
+  /// ```dart
+  /// final config = await GalleryConfigService.loadConfiguration();
+  /// ApiConfig.updateGalleryApiUrl(config.apiUrl);
+  /// ```
+  static void updateGalleryApiUrl(String url) {
+    if (url.isEmpty) {
+      print('⚠️ Invalid Gallery API URL (empty), keeping current: $_galleryApiBaseUrl');
+      return;
+    }
+    
+    if (_galleryApiBaseUrl != url) {
+      print('🔄 Gallery API URL updated: $_galleryApiBaseUrl → $url');
+      _galleryApiBaseUrl = url;
+    } else {
+      print('✅ Gallery API URL unchanged: $url');
+    }
+  }
 
   // Timeouts
   static const Duration connectTimeout = Duration(seconds: 30);

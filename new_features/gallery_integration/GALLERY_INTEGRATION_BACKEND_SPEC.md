@@ -2,8 +2,23 @@
 
 **Project:** AD4x4 Main API (Django) - Gallery Integration  
 **Date:** November 16, 2024  
+**Updated:** January 17, 2025 - Added flexible backend configuration  
 **Backend Team:** Django Developers  
 **Priority:** 🔴 **CRITICAL** - Blocks Flutter Development
+
+---
+
+## 🎨 Design Philosophy
+
+**Flexibility First**: Following the same philosophy as Vehicle Modifications and Rating Systems:
+
+- ✅ **Gallery API URL configurable** via database settings
+- ✅ **Feature flags backend-controlled** (enable/disable gallery system)
+- ✅ **Timeout values configurable** without code changes
+- ✅ **Auto-creation behavior configurable** (automatic vs manual)
+- ✅ **Future-ready for multi-region support** and custom gallery servers
+
+**Key Principle:** Gallery system behavior controlled by database settings, not hardcoded constants.
 
 ---
 
@@ -11,7 +26,7 @@
 
 The AD4x4 mobile app needs the Main API (Django backend) to integrate with the Gallery API (Node.js service at `https://media.ad4x4.com`). When trips are created, updated, or deleted, the Main API must call Gallery API webhooks to automatically manage photo galleries.
 
-**Estimated Time:** 6-8 hours  
+**Estimated Time:** 8-10 hours (includes configuration system)  
 **Impact:** Enables complete photo gallery feature for 120+ active users
 
 ---
@@ -84,7 +99,62 @@ See `/home/user/flutter_app/docs/GALLERY-API-DOCUMENTATION.md` (2,319 lines)
 
 ### **1. Database Changes (HIGH PRIORITY)**
 
-#### **Add `gallery_id` Field to Trip Model**
+#### **1.1. Add Gallery Configuration to Global Settings (NEW)**
+
+**File:** `global_settings/models.py` (or create new table)
+
+```python
+from django.db import models
+
+class GlobalSettings(models.Model):
+    # ... existing fields ...
+    
+    # NEW FIELDS: Gallery system configuration
+    gallery_api_url = models.CharField(
+        max_length=255,
+        default='https://media.ad4x4.com',
+        help_text="Gallery API base URL - configurable for different environments"
+    )
+    gallery_api_timeout = models.IntegerField(
+        default=30,
+        help_text="Gallery API timeout in seconds"
+    )
+    enable_gallery_system = models.BooleanField(
+        default=True,
+        help_text="Master switch to enable/disable entire gallery system"
+    )
+    auto_create_trip_gallery = models.BooleanField(
+        default=True,
+        help_text="Automatically create galleries when trips are published"
+    )
+    allow_manual_gallery_creation = models.BooleanField(
+        default=True,
+        help_text="Allow admins to manually create galleries"
+    )
+```
+
+**Migration:**
+```sql
+-- Add to existing global_settings table
+ALTER TABLE global_settings ADD COLUMN gallery_api_url VARCHAR(255) DEFAULT 'https://media.ad4x4.com';
+ALTER TABLE global_settings ADD COLUMN gallery_api_timeout INTEGER DEFAULT 30;
+ALTER TABLE global_settings ADD COLUMN enable_gallery_system BOOLEAN DEFAULT TRUE;
+ALTER TABLE global_settings ADD COLUMN auto_create_trip_gallery BOOLEAN DEFAULT TRUE;
+ALTER TABLE global_settings ADD COLUMN allow_manual_gallery_creation BOOLEAN DEFAULT TRUE;
+
+-- Set initial values
+UPDATE global_settings SET 
+    gallery_api_url = 'https://media.ad4x4.com',
+    gallery_api_timeout = 30,
+    enable_gallery_system = TRUE,
+    auto_create_trip_gallery = TRUE,
+    allow_manual_gallery_creation = TRUE
+WHERE id = 1;
+```
+
+---
+
+#### **1.2. Add `gallery_id` Field to Trip Model**
 
 **File:** `trips/models.py` (or equivalent)
 
@@ -148,14 +218,38 @@ class GalleryAPIError(Exception):
 
 
 class GalleryService:
-    """Service for interacting with Gallery API"""
-    
-    BASE_URL = "https://media.ad4x4.com"
+    """Service for interacting with Gallery API with dynamic configuration"""
     
     def __init__(self):
-        """Initialize Gallery Service"""
-        self.base_url = self.BASE_URL
-        self.timeout = 30  # 30 second timeout for API calls
+        """
+        Initialize Gallery Service with configuration from database.
+        Configuration is loaded once and cached for performance.
+        """
+        # Load configuration from database (cached)
+        self._load_configuration()
+    
+    def _load_configuration(self):
+        """Load gallery configuration from global settings"""
+        try:
+            settings = GlobalSettings.objects.first()
+            
+            # Load from database instead of hardcoding
+            self.base_url = settings.gallery_api_url or "https://media.ad4x4.com"
+            self.timeout = settings.gallery_api_timeout or 30
+            self.enabled = settings.enable_gallery_system
+            self.auto_create = settings.auto_create_trip_gallery
+            self.allow_manual = settings.allow_manual_gallery_creation
+            
+            logger.info(f"Gallery Service configured: URL={self.base_url}, Timeout={self.timeout}s, Enabled={self.enabled}")
+            
+        except Exception as e:
+            # Fallback to defaults if settings not available
+            logger.warning(f"Failed to load gallery settings, using defaults: {e}")
+            self.base_url = "https://media.ad4x4.com"
+            self.timeout = 30
+            self.enabled = True
+            self.auto_create = True
+            self.allow_manual = True
     
     def _make_request(self, method, endpoint, data=None, headers=None):
         """
@@ -249,6 +343,16 @@ class GalleryService:
         Raises:
             GalleryAPIError: If creation fails
         """
+        # Check if gallery system is enabled
+        if not self.enabled:
+            logger.info(f"Gallery system disabled - skipping gallery creation for trip {trip_id}")
+            return {'success': False, 'reason': 'gallery_system_disabled'}
+        
+        # Check if auto-creation is enabled
+        if not self.auto_create:
+            logger.info(f"Auto-creation disabled - skipping gallery creation for trip {trip_id}")
+            return {'success': False, 'reason': 'auto_creation_disabled', 'allow_manual': self.allow_manual}
+        
         endpoint = "/api/webhooks/trip/published"
         
         payload = {
@@ -794,13 +898,86 @@ logger.error(f"❌ Gallery API error for trip {trip_id}: {error}")
 
 ---
 
+## 🔧 Configuration API Endpoints (NEW - HIGH PRIORITY)
+
+### GET `/api/settings/gallery-config/`
+
+**Description:** Get current gallery system configuration for Flutter app.
+
+**Authentication:** Optional (public endpoint)
+
+**Response (200 OK):**
+```json
+{
+  "enabled": true,
+  "autoCreate": true,
+  "allowManualCreation": true,
+  "apiUrl": "https://media.ad4x4.com",
+  "timeout": 30,
+  "features": {
+    "allowUserUploads": true,
+    "allowUserDeletes": true,
+    "maxPhotoSize": 10485760,
+    "supportedFormats": ["jpg", "jpeg", "png", "heic"]
+  }
+}
+```
+
+**Backend Implementation:**
+```python
+from django.http import JsonResponse
+from django.views.decorators.cache import cache_page
+
+@cache_page(60 * 15)  # Cache for 15 minutes
+def get_gallery_configuration(request):
+    """Get gallery system configuration"""
+    try:
+        settings = GlobalSettings.objects.first()
+        
+        return JsonResponse({
+            'enabled': settings.enable_gallery_system,
+            'autoCreate': settings.auto_create_trip_gallery,
+            'allowManualCreation': settings.allow_manual_gallery_creation,
+            'apiUrl': settings.gallery_api_url,
+            'timeout': settings.gallery_api_timeout,
+            'features': {
+                'allowUserUploads': True,
+                'allowUserDeletes': True,
+                'maxPhotoSize': 10485760,  # 10MB
+                'supportedFormats': ['jpg', 'jpeg', 'png', 'heic']
+            }
+        })
+    except Exception as e:
+        # Return defaults if settings not found
+        return JsonResponse({
+            'enabled': True,
+            'autoCreate': True,
+            'allowManualCreation': True,
+            'apiUrl': 'https://media.ad4x4.com',
+            'timeout': 30,
+            'features': {
+                'allowUserUploads': True,
+                'allowUserDeletes': True,
+                'maxPhotoSize': 10485760,
+                'supportedFormats': ['jpg', 'jpeg', 'png', 'heic']
+            }
+        })
+```
+
+---
+
 ## 🚀 Deployment Checklist
 
 ### **Pre-Deployment:**
+- [ ] **Gallery configuration migration** created and tested (NEW - CRITICAL)
+- [ ] **Default configuration** values set in global_settings (NEW)
+- [ ] **GET /api/settings/gallery-config/** endpoint deployed (NEW)
 - [ ] Database migration created and reviewed
+- [ ] Gallery service updated to load from database (MODIFIED)
 - [ ] Gallery service code reviewed
 - [ ] Unit tests passing (>80% coverage)
 - [ ] Integration tests passing
+- [ ] Configuration caching tested (NEW)
 - [ ] Logging configured correctly
 - [ ] Error handling tested
 

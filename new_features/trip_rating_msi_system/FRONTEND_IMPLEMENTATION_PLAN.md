@@ -6,9 +6,26 @@
 
 **Purpose:** Enable members to rate completed trips and provide admins with comprehensive analytics on member satisfaction and trip leader performance.
 
-**Version:** 1.0
+**Version:** 2.0
 
 **Created:** November 16, 2025
+**Updated:** January 17, 2025 - Added flexible backend-driven configuration
+
+---
+
+## 🎨 Design Philosophy
+
+**Backend-Driven Configuration**: This feature follows the same flexible design philosophy as the Vehicle Modifications System:
+
+- ✅ **All rating thresholds loaded from backend API** - no hardcoded values
+- ✅ **Color coding determined dynamically** from backend configuration
+- ✅ **Rating scale ranges backend-controlled** (supports 1-5, 1-10, etc.)
+- ✅ **Comment length limits from backend** - validation uses API values
+- ✅ **Future-ready for custom categories** and localization
+
+**Key Principle:** App loads configuration on startup. Admins can change rating behavior without app updates.
+
+**CRITICAL REQUIREMENT:** Must call `GET /api/settings/rating-config/` on app startup and store configuration globally.
 
 ---
 
@@ -28,17 +45,19 @@
 - Color-coded performance indicators
 - Dashboard widgets with key metrics
 
-### Rating System:
-- **Trip Rating:** 1-5 stars (trip experience quality)
-- **Leader Rating:** 1-5 stars (trip leader performance)
-- **Comment:** Optional text feedback for trip report
+### Rating System (Backend Configurable):
+- **Trip Rating:** Configurable range (default: 1-5 stars)
+- **Leader Rating:** Configurable range (default: 1-5 stars)
+- **Comment:** Optional text feedback (max length from backend)
 - **Overall Score:** Average of trip rating + leader rating (used for color coding)
 
-### Color Coding System:
-- 🟢 **Green (4.5-5.0):** Excellent performance
-- 🟡 **Yellow (3.5-4.4):** Good performance
-- 🔴 **Red (0-3.4):** Needs improvement
-- ⚪ **Gray (No ratings):** Insufficient data
+### Color Coding System (Backend Configurable):
+- 🟢 **Green (Excellent):** Default: 4.5-5.0 (threshold from backend)
+- 🟡 **Yellow (Good):** Default: 3.5-4.4 (threshold from backend)
+- 🔴 **Red (Needs Improvement):** Default: 0-3.4 (threshold from backend)
+- ⚪ **Gray (Insufficient Data):** No ratings available
+
+**⚠️ IMPORTANT:** All thresholds and colors must be loaded from backend API - never hardcode these values!
 
 ---
 
@@ -50,6 +69,7 @@ All new files will be created under the Flutter app structure:
 lib/
 ├── data/
 │   └── models/
+│       ├── rating_config_model.dart            # NEW - Backend configuration
 │       ├── trip_rating_model.dart              # NEW
 │       ├── trip_rating_summary_model.dart      # NEW
 │       ├── leader_performance_model.dart       # NEW
@@ -57,10 +77,12 @@ lib/
 │       └── top_reviewer_model.dart             # NEW
 │
 ├── core/
+│   ├── config/
+│   │   └── rating_config_provider.dart         # NEW - Global config state
 │   ├── network/
 │   │   └── main_api_endpoints.dart             # MODIFY (add rating endpoints)
 │   ├── utils/
-│   │   └── rating_helper.dart                  # NEW (color coding logic)
+│   │   └── rating_helper.dart                  # NEW (dynamic color coding)
 │   └── router/
 │       └── app_router.dart                     # MODIFY (add new routes)
 │
@@ -105,6 +127,185 @@ lib/
 ---
 
 ## 🗂️ Data Models
+
+### 0. RatingConfigModel (`lib/data/models/rating_config_model.dart`) - **NEW & CRITICAL**
+
+**Purpose:** Store rating system configuration loaded from backend. This model is loaded once on app startup and used throughout the app for validation and display.
+
+```dart
+import 'package:flutter/material.dart';
+
+class RatingConfigModel {
+  final RatingScale ratingScale;
+  final RatingThresholds thresholds;
+  final Map<String, Color> colors;
+  final Map<String, String> labels;
+  final int commentMaxLength;
+  final RatingFeatures features;
+  
+  RatingConfigModel({
+    required this.ratingScale,
+    required this.thresholds,
+    required this.colors,
+    required this.labels,
+    required this.commentMaxLength,
+    required this.features,
+  });
+  
+  /// Get color code for a given rating score
+  String getColorCode(double score, {bool hasRatings = true}) {
+    if (!hasRatings) return 'insufficientData';
+    if (score >= thresholds.excellent) return 'excellent';
+    if (score >= thresholds.good) return 'good';
+    return 'needsImprovement';
+  }
+  
+  /// Get color for a given rating score
+  Color getColor(double score, {bool hasRatings = true}) {
+    return colors[getColorCode(score, hasRatings: hasRatings)]!;
+  }
+  
+  /// Get label for a given rating score
+  String getLabel(double score, {bool hasRatings = true}) {
+    return labels[getColorCode(score, hasRatings: hasRatings)]!;
+  }
+  
+  /// Validate rating value against configured range
+  bool isValidRating(int rating) {
+    return rating >= ratingScale.min && rating <= ratingScale.max;
+  }
+  
+  /// Validate comment length
+  bool isValidComment(String? comment) {
+    if (comment == null) return true;
+    return comment.length <= commentMaxLength;
+  }
+  
+  // JSON serialization
+  factory RatingConfigModel.fromJson(Map<String, dynamic> json) {
+    return RatingConfigModel(
+      ratingScale: RatingScale.fromJson(json['ratingScale']),
+      thresholds: RatingThresholds.fromJson(json['thresholds']),
+      colors: (json['colors'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, _parseColor(value as String)),
+      ),
+      labels: Map<String, String>.from(json['labels']),
+      commentMaxLength: json['commentMaxLength'] as int,
+      features: RatingFeatures.fromJson(json['features']),
+    );
+  }
+  
+  static Color _parseColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'ratingScale': ratingScale.toJson(),
+      'thresholds': thresholds.toJson(),
+      'colors': colors.map((key, value) => MapEntry(key, '#${value.value.toRadixString(16).substring(2)}')),
+      'labels': labels,
+      'commentMaxLength': commentMaxLength,
+      'features': features.toJson(),
+    };
+  }
+}
+
+class RatingScale {
+  final int min;
+  final int max;
+  final double step;
+  final String displayType;
+  
+  RatingScale({
+    required this.min,
+    required this.max,
+    required this.step,
+    required this.displayType,
+  });
+  
+  factory RatingScale.fromJson(Map<String, dynamic> json) {
+    return RatingScale(
+      min: json['min'] as int,
+      max: json['max'] as int,
+      step: (json['step'] as num).toDouble(),
+      displayType: json['displayType'] as String,
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'min': min,
+      'max': max,
+      'step': step,
+      'displayType': displayType,
+    };
+  }
+}
+
+class RatingThresholds {
+  final double excellent;
+  final double good;
+  final double needsImprovement;
+  
+  RatingThresholds({
+    required this.excellent,
+    required this.good,
+    required this.needsImprovement,
+  });
+  
+  factory RatingThresholds.fromJson(Map<String, dynamic> json) {
+    return RatingThresholds(
+      excellent: (json['excellent'] as num).toDouble(),
+      good: (json['good'] as num).toDouble(),
+      needsImprovement: (json['needsImprovement'] as num).toDouble(),
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'excellent': excellent,
+      'good': good,
+      'needsImprovement': needsImprovement,
+    };
+  }
+}
+
+class RatingFeatures {
+  final bool allowComments;
+  final double? requireCommentsBelowThreshold;
+  final bool enableAnonymousRatings;
+  
+  RatingFeatures({
+    required this.allowComments,
+    this.requireCommentsBelowThreshold,
+    required this.enableAnonymousRatings,
+  });
+  
+  factory RatingFeatures.fromJson(Map<String, dynamic> json) {
+    return RatingFeatures(
+      allowComments: json['allowComments'] as bool,
+      requireCommentsBelowThreshold: json['requireCommentsBelowThreshold'] != null
+          ? (json['requireCommentsBelowThreshold'] as num).toDouble()
+          : null,
+      enableAnonymousRatings: json['enableAnonymousRatings'] as bool,
+    );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'allowComments': allowComments,
+      'requireCommentsBelowThreshold': requireCommentsBelowThreshold,
+      'enableAnonymousRatings': enableAnonymousRatings,
+    };
+  }
+}
+```
+
+---
 
 ### 1. TripRatingModel (`lib/data/models/trip_rating_model.dart`)
 

@@ -2,8 +2,27 @@
 
 **Project:** AD4x4 Mobile App - Gallery Feature Completion  
 **Date:** November 16, 2024  
+**Updated:** January 17, 2025 - Added flexible backend configuration  
 **Developer:** Flutter Team  
 **Status:** Ready to Start (Pending Backend Integration)
+
+---
+
+## 🎨 Design Philosophy
+
+**Backend-Driven Configuration**: Following the same flexible design philosophy as Vehicle Modifications and Rating Systems:
+
+- ✅ **Gallery API URL loaded from backend** - no hardcoded URLs
+- ✅ **Feature flags backend-controlled** (enable/disable gallery system)
+- ✅ **Upload limits configurable** (max photo size, supported formats)
+- ✅ **Auto-creation behavior from backend** - admins control when galleries are created
+- ✅ **Future-ready for multi-region support** and custom gallery servers
+
+**Key Principle:** App loads gallery configuration on startup. Admins can change gallery behavior without app updates.
+
+**🔴 CRITICAL REQUIREMENT:** Must call `GET /api/settings/gallery-config/` on app startup and store configuration globally.
+
+**📄 See Also:** `CRITICAL_FLUTTER_CHANGES_GALLERY.md` for detailed implementation requirements.
 
 ---
 
@@ -11,7 +30,7 @@
 
 This document outlines all Flutter development work required to complete the Gallery integration feature. The Gallery backend (Node.js at `https://media.ad4x4.com`) is fully operational and documented. We need to integrate it with the Trip management system and add user-facing features.
 
-**Total Estimated Time:** 12-16 hours
+**Total Estimated Time:** 14-18 hours (includes configuration system)
 
 ---
 

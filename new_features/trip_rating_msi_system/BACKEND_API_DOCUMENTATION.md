@@ -6,9 +6,23 @@
 
 **Purpose:** Enable members to rate completed trips and provide comprehensive analytics for admins to track member satisfaction and trip leader performance.
 
-**API Version:** 1.0
+**API Version:** 2.0
 
 **Created:** November 16, 2025
+**Updated:** January 17, 2025 - Added flexible backend configuration
+
+---
+
+## 🎨 Design Philosophy
+
+**Flexibility First**: This system is designed for maximum backend configurability:
+- ✅ **All rating thresholds configurable** via global settings
+- ✅ **Rating scale ranges backend-controlled** (supports 1-5, 1-10, etc.)
+- ✅ **Color coding thresholds dynamic** - no hardcoded values in Flutter
+- ✅ **Comment length limits configurable** without database migration
+- ✅ **Future-ready for custom rating categories** and localization
+
+**Key Principle:** Admins can adjust rating behavior without app updates or code changes.
 
 ---
 
@@ -23,40 +37,137 @@
 6. Automatic notification creation for pending ratings
 7. Admin analytics with color-coded performance indicators
 
-### Rating System:
-- **Trip Rating:** 1-5 stars (integer)
-- **Leader Rating:** 1-5 stars (integer)
-- **Comment:** Optional text (max 1000 characters)
+### Rating System (Backend Configurable):
+- **Trip Rating:** Configurable range (default: 1-5 stars, integer)
+- **Leader Rating:** Configurable range (default: 1-5 stars, integer)
+- **Comment:** Optional text (configurable max length, default: 1000 characters)
 - **Overall Score:** (tripRating + leaderRating) / 2
 
-### Color Coding:
-- 🟢 **Green:** 4.5 - 5.0 (Excellent)
-- 🟡 **Yellow:** 3.5 - 4.4 (Good)
-- 🔴 **Red:** 0 - 3.4 (Needs Improvement)
-- ⚪ **Gray:** No ratings (Insufficient data)
+### Color Coding (Backend Configurable):
+- 🟢 **Green (Excellent):** Default: 4.5 - 5.0 (configurable threshold)
+- 🟡 **Yellow (Good):** Default: 3.5 - 4.4 (configurable threshold)
+- 🔴 **Red (Needs Improvement):** Default: 0 - 3.4 (configurable threshold)
+- ⚪ **Gray (Insufficient Data):** No ratings available
+
+**Note:** All thresholds and colors loaded from `global_settings` table - no hardcoded values in client apps.
 
 ---
 
 ## 🗄️ Database Schema
 
-### TripRating Table
+### 1. Rating Configuration Table (NEW)
+
+**Purpose:** Store all configurable rating system parameters.
+
+```sql
+CREATE TABLE rating_configuration (
+    id SERIAL PRIMARY KEY,
+    config_key VARCHAR(50) UNIQUE NOT NULL,
+    config_value_json TEXT NOT NULL,
+    description TEXT,
+    updated_at TIMESTAMP DEFAULT NOW(),
+    updated_by INTEGER REFERENCES users(id)
+);
+
+-- Insert default configuration
+INSERT INTO rating_configuration (config_key, config_value_json, description) VALUES
+(
+    'rating_system_config',
+    '{
+        "rating_scale": {
+            "min": 1,
+            "max": 5,
+            "step": 1,
+            "display_type": "stars"
+        },
+        "thresholds": {
+            "excellent": 4.5,
+            "good": 3.5,
+            "needs_improvement": 0
+        },
+        "colors": {
+            "excellent": "#4CAF50",
+            "good": "#FFC107",
+            "needs_improvement": "#F44336",
+            "insufficient_data": "#9E9E9E"
+        },
+        "labels": {
+            "excellent": "Excellent",
+            "good": "Good",
+            "needs_improvement": "Needs Improvement",
+            "insufficient_data": "No Ratings"
+        },
+        "comment_max_length": 1000,
+        "features": {
+            "allow_comments": true,
+            "require_comments_below_threshold": 3.0,
+            "enable_anonymous_ratings": false
+        }
+    }',
+    'Main rating system configuration - thresholds, colors, and behavior'
+);
+
+-- Index for fast lookups
+CREATE INDEX idx_rating_config_key ON rating_configuration(config_key);
+```
+
+**Configuration Fields Explained:**
+
+| Field | Type | Purpose | Example |
+|-------|------|---------|----------|
+| `rating_scale.min` | Integer | Minimum rating value | 1 |
+| `rating_scale.max` | Integer | Maximum rating value | 5 |
+| `rating_scale.step` | Decimal | Rating increment | 1 (whole stars) or 0.5 (half stars) |
+| `thresholds.excellent` | Decimal | Minimum score for green | 4.5 |
+| `thresholds.good` | Decimal | Minimum score for yellow | 3.5 |
+| `colors.excellent` | Hex | Color for excellent ratings | #4CAF50 |
+| `comment_max_length` | Integer | Max comment characters | 1000 |
+| `features.allow_comments` | Boolean | Enable/disable comments | true |
+
+**Why JSON Storage?**
+- Flexible: Add new settings without ALTER TABLE
+- Versioned: Easy to track configuration history
+- Atomic: All settings load in one query
+- Frontend-friendly: Direct JSON serialization
+
+---
+
+### 2. Alternative: Global Settings Table Extension
+
+If you prefer extending existing `global_settings` table:
+
+```sql
+-- Add to existing global_settings table
+ALTER TABLE global_settings ADD COLUMN rating_config_json TEXT;
+
+-- Set default configuration
+UPDATE global_settings SET rating_config_json = '{
+    "rating_scale": {"min": 1, "max": 5, "step": 1},
+    "thresholds": {"excellent": 4.5, "good": 3.5},
+    "colors": {"excellent": "#4CAF50", "good": "#FFC107", "needs_improvement": "#F44336"},
+    "comment_max_length": 1000
+}' WHERE id = 1;
+```
+
+---
+
+### 3. TripRating Table
 
 ```sql
 CREATE TABLE trip_ratings (
     id SERIAL PRIMARY KEY,
     trip_id INTEGER NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    trip_rating INTEGER NOT NULL CHECK (trip_rating >= 1 AND trip_rating <= 5),
-    leader_rating INTEGER NOT NULL CHECK (leader_rating >= 1 AND leader_rating <= 5),
+    trip_rating INTEGER NOT NULL,
+    leader_rating INTEGER NOT NULL,
     comment TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
     
     -- Constraints
-    CONSTRAINT unique_user_trip_rating UNIQUE (trip_id, user_id),
-    CONSTRAINT valid_trip_rating CHECK (trip_rating BETWEEN 1 AND 5),
-    CONSTRAINT valid_leader_rating CHECK (leader_rating BETWEEN 1 AND 5),
-    CONSTRAINT comment_length CHECK (LENGTH(comment) <= 1000)
+    CONSTRAINT unique_user_trip_rating UNIQUE (trip_id, user_id)
+    -- Note: Rating value validation now handled by application layer using config
+    -- Comment length validation now handled by application layer using config
 );
 
 -- Indexes for performance
@@ -99,6 +210,125 @@ def validate_trip_rating(user_id, trip_id, trip_rating, leader_rating):
 ---
 
 ## 🔌 API Endpoints
+
+### 0. Get Rating Configuration (NEW - HIGH PRIORITY)
+
+**Endpoint:** `GET /api/settings/rating-config/`
+
+**Description:** Get current rating system configuration. This endpoint MUST be called by Flutter app on startup to load dynamic thresholds and colors.
+
+**Authentication:** Optional (public endpoint for transparency)
+
+**Permissions:** Public
+
+**Response (200 OK):**
+```json
+{
+  "ratingScale": {
+    "min": 1,
+    "max": 5,
+    "step": 1,
+    "displayType": "stars"
+  },
+  "thresholds": {
+    "excellent": 4.5,
+    "good": 3.5,
+    "needsImprovement": 0
+  },
+  "colors": {
+    "excellent": "#4CAF50",
+    "good": "#FFC107",
+    "needsImprovement": "#F44336",
+    "insufficientData": "#9E9E9E"
+  },
+  "labels": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "needsImprovement": "Needs Improvement",
+    "insufficientData": "No Ratings"
+  },
+  "commentMaxLength": 1000,
+  "features": {
+    "allowComments": true,
+    "requireCommentsBelowThreshold": 3.0,
+    "enableAnonymousRatings": false
+  }
+}
+```
+
+**Backend Implementation:**
+```python
+from django.http import JsonResponse
+from django.views.decorators.cache import cache_page
+import json
+
+@cache_page(60 * 15)  # Cache for 15 minutes
+def get_rating_configuration(request):
+    """
+    Get rating system configuration.
+    Cached for performance - invalidate cache when admin updates config.
+    """
+    try:
+        # Option 1: Dedicated configuration table
+        config_row = RatingConfiguration.objects.get(config_key='rating_system_config')
+        config = json.loads(config_row.config_value_json)
+        
+        # Option 2: Global settings table
+        # settings = GlobalSettings.objects.first()
+        # config = json.loads(settings.rating_config_json)
+        
+        return JsonResponse(config, safe=False)
+        
+    except RatingConfiguration.DoesNotExist:
+        # Return default configuration if not found
+        return JsonResponse({
+            'ratingScale': {'min': 1, 'max': 5, 'step': 1, 'displayType': 'stars'},
+            'thresholds': {'excellent': 4.5, 'good': 3.5, 'needsImprovement': 0},
+            'colors': {
+                'excellent': '#4CAF50',
+                'good': '#FFC107',
+                'needsImprovement': '#F44336',
+                'insufficientData': '#9E9E9E'
+            },
+            'commentMaxLength': 1000,
+            'features': {'allowComments': True}
+        })
+```
+
+**Flutter Integration Pattern:**
+```dart
+// Load on app startup (in main.dart)
+class RatingConfig {
+  final int minRating;
+  final int maxRating;
+  final double excellentThreshold;
+  final double goodThreshold;
+  final Map<String, Color> colors;
+  final int commentMaxLength;
+  
+  static Future<RatingConfig> loadFromBackend() async {
+    final response = await http.get('/api/settings/rating-config/');
+    return RatingConfig.fromJson(jsonDecode(response.body));
+  }
+  
+  String getColorCode(double score) {
+    if (score >= excellentThreshold) return 'excellent';
+    if (score >= goodThreshold) return 'good';
+    return 'needsImprovement';
+  }
+  
+  Color getColor(double score) {
+    return colors[getColorCode(score)]!;
+  }
+}
+```
+
+**Caching Strategy:**
+- Cache response for 15 minutes
+- Invalidate cache when admin updates configuration
+- Flutter app refreshes config daily or on app restart
+
+---
 
 ## 1. Check Pending Ratings
 
@@ -1216,14 +1446,167 @@ def invalidate_stats_cache(sender, instance, **kwargs):
 
 ---
 
+## 🔧 Admin: Update Rating Configuration (NEW)
+
+**Endpoint:** `PUT /api/admin/settings/rating-config/`
+
+**Description:** Update rating system configuration. Requires admin permissions.
+
+**Authentication:** Required (JWT token)
+
+**Permissions:** `ADMIN_ACCESS` or `MANAGE_SYSTEM_SETTINGS`
+
+**Request Body:**
+```json
+{
+  "ratingScale": {
+    "min": 1,
+    "max": 10,
+    "step": 0.5,
+    "displayType": "stars"
+  },
+  "thresholds": {
+    "excellent": 8.5,
+    "good": 6.5,
+    "needsImprovement": 0
+  },
+  "colors": {
+    "excellent": "#00C853",
+    "good": "#FFD600",
+    "needsImprovement": "#D50000",
+    "insufficientData": "#616161"
+  },
+  "commentMaxLength": 2000,
+  "features": {
+    "allowComments": true,
+    "requireCommentsBelowThreshold": 5.0,
+    "enableAnonymousRatings": false
+  }
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Rating configuration updated successfully",
+  "config": {
+    "ratingScale": {...},
+    "thresholds": {...},
+    "colors": {...},
+    "commentMaxLength": 2000,
+    "features": {...}
+  },
+  "updatedAt": "2025-01-17T10:30:00Z",
+  "updatedBy": {
+    "id": 1,
+    "username": "admin_user"
+  }
+}
+```
+
+**Backend Implementation:**
+```python
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+import json
+
+@require_http_methods(["PUT"])
+@login_required
+def update_rating_configuration(request):
+    """
+    Update rating system configuration.
+    Requires admin permissions.
+    """
+    # Check admin permission
+    if not request.user.has_permission('MANAGE_SYSTEM_SETTINGS'):
+        return JsonResponse({
+            'success': False,
+            'error': 'Permission denied',
+            'required': 'MANAGE_SYSTEM_SETTINGS'
+        }, status=403)
+    
+    try:
+        new_config = json.loads(request.body)
+        
+        # Validate configuration structure
+        validate_rating_config(new_config)
+        
+        # Update database
+        config_row, created = RatingConfiguration.objects.update_or_create(
+            config_key='rating_system_config',
+            defaults={
+                'config_value_json': json.dumps(new_config),
+                'updated_by': request.user,
+                'updated_at': timezone.now()
+            }
+        )
+        
+        # Invalidate cache to force reload
+        cache.delete('rating_configuration')
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Rating configuration updated successfully',
+            'config': new_config,
+            'updatedAt': config_row.updated_at.isoformat(),
+            'updatedBy': {
+                'id': request.user.id,
+                'username': request.user.username
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON in request body'
+        }, status=400)
+    except ValidationError as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+
+def validate_rating_config(config):
+    """Validate rating configuration structure"""
+    required_keys = ['ratingScale', 'thresholds', 'colors', 'commentMaxLength']
+    for key in required_keys:
+        if key not in config:
+            raise ValidationError(f"Missing required key: {key}")
+    
+    # Validate rating scale
+    scale = config['ratingScale']
+    if scale['min'] >= scale['max']:
+        raise ValidationError("Rating min must be less than max")
+    
+    # Validate thresholds
+    thresholds = config['thresholds']
+    if thresholds['excellent'] <= thresholds['good']:
+        raise ValidationError("Excellent threshold must be greater than good threshold")
+    
+    return True
+```
+
+**Admin UI Considerations:**
+- Provide form in admin panel to update these settings
+- Show preview of color coding changes
+- Warn about impact on existing ratings display
+- Include "Reset to Default" button
+
+---
+
 ## 🧪 Testing Requirements
 
 ### Unit Tests:
-- [ ] Rating validation logic
+- [ ] Rating validation logic with dynamic config
 - [ ] Average calculation
-- [ ] Color code determination
+- [ ] Color code determination using backend thresholds
 - [ ] Permission checks
 - [ ] Historic data handling (zero ratings)
+- [ ] **NEW**: Configuration endpoint validation
+- [ ] **NEW**: Config caching behavior
 
 ### Integration Tests:
 - [ ] Submit rating flow
@@ -1249,10 +1632,20 @@ def invalidate_stats_cache(sender, instance, **kwargs):
 
 ## 📅 Implementation Timeline
 
+### Phase 0: Configuration System (NEW - 2 hours)
+- **CRITICAL**: Must be completed before Phase 1
+- Create `rating_configuration` table (or extend `global_settings`)
+- Implement `GET /api/settings/rating-config/` endpoint
+- Implement `PUT /api/admin/settings/rating-config/` endpoint
+- Add caching layer (15-minute cache)
+- Insert default configuration values
+- Test configuration loading and updates
+
 ### Phase 1: Database & Core API (Week 1)
-- Day 1-2: Create database table and indexes
-- Day 3-4: Implement submit rating endpoint with validation
-- Day 5: Implement pending ratings endpoint
+- Day 1: Create `trip_ratings` table and indexes (remove hardcoded constraints)
+- Day 2-3: Implement submit rating endpoint with dynamic validation
+- Day 4: Implement pending ratings endpoint
+- Day 5: Update validation logic to use configuration
 
 ### Phase 2: Public & Admin List APIs (Week 2)
 - Day 1-2: Implement trip ratings summary endpoint (public)
@@ -1269,32 +1662,46 @@ def invalidate_stats_cache(sender, instance, **kwargs):
 - Day 3-4: Unit and integration testing
 - Day 5: Performance optimization and final review
 
+**⚠️ IMPORTANT:** Configuration system (Phase 0) must be deployed before Flutter app can load rating UI correctly.
+
 ---
 
 ## 📋 Deployment Checklist
 
 ### Pre-Deployment:
-- [ ] Database migration created and tested
+- [ ] **Configuration table migration** created and tested (CRITICAL)
+- [ ] **Default configuration** inserted into database
+- [ ] **GET /api/settings/rating-config/** endpoint deployed and tested
+- [ ] **PUT /api/admin/settings/rating-config/** endpoint deployed (admin only)
+- [ ] Database migration for `trip_ratings` table created (without hardcoded constraints)
 - [ ] All indexes created
-- [ ] Permissions added to permission system
-- [ ] Validation logic tested
+- [ ] Permissions added (`MANAGE_SYSTEM_SETTINGS`)
+- [ ] Validation logic updated to use dynamic config
 - [ ] Error handling verified
 - [ ] Historic data handling tested
+- [ ] Configuration caching tested (15-minute cache)
 - [ ] Performance benchmarks met
 
 ### Deployment:
-- [ ] Run database migration
-- [ ] Deploy API endpoints
+- [ ] **STEP 1**: Deploy configuration endpoints FIRST
+- [ ] **STEP 2**: Insert default configuration into production database
+- [ ] **STEP 3**: Verify configuration endpoint returns valid JSON
+- [ ] Run trip_ratings table migration
+- [ ] Deploy all rating API endpoints
 - [ ] Configure scheduled jobs
 - [ ] Set up monitoring and alerts
 - [ ] Verify permissions in admin panel
 
 ### Post-Deployment:
+- [ ] **Verify configuration API works**: `curl https://ap.ad4x4.com/api/settings/rating-config/`
+- [ ] Test admin configuration update endpoint
+- [ ] Verify cache invalidation works when config updated
 - [ ] Create initial test ratings
 - [ ] Verify notification creation
 - [ ] Test admin dashboards
 - [ ] Monitor error rates
 - [ ] Check query performance
+- [ ] **Document configuration changes** in admin guide
 
 ---
 
@@ -1316,6 +1723,33 @@ For questions or clarifications about this API specification, contact:
 
 ---
 
+## 📝 Version History & Changes
+
+### Version 2.0 (January 17, 2025) - **Flexible Configuration Update**
+
+**Major Changes:**
+- ✅ **NEW**: `rating_configuration` table for backend-controlled settings
+- ✅ **NEW**: `GET /api/settings/rating-config/` endpoint (public)
+- ✅ **NEW**: `PUT /api/admin/settings/rating-config/` endpoint (admin only)
+- ✅ **REMOVED**: Hardcoded CHECK constraints from `trip_ratings` table
+- ✅ **CHANGED**: Validation logic moved to application layer using dynamic config
+- ✅ **CHANGED**: Color thresholds now configurable (was hardcoded 4.5, 3.5)
+- ✅ **CHANGED**: Rating scale ranges now configurable (supports 1-5, 1-10, etc.)
+- ✅ **CHANGED**: Comment length limits now configurable (was hardcoded 1000)
+
+**Why These Changes?**
+Following the design philosophy of the Vehicle Modifications System, all rating behavior is now controlled by the backend. Admins can adjust thresholds, colors, and validation rules without requiring app updates or code changes.
+
+**Migration Impact:**
+- **Database**: ALTER TABLE to remove CHECK constraints, add configuration table
+- **Existing Data**: No changes to existing ratings - only validation rules change
+- **Client Apps**: Must call configuration endpoint on startup to load settings
+- **Backward Compatibility**: Default values match previous hardcoded values
+
+---
+
 **End of Backend API Documentation**
 
 *This specification should be used as the authoritative reference for backend implementation. All endpoints must be implemented exactly as documented to ensure proper frontend integration.*
+
+**🔴 CRITICAL FOR FLUTTER TEAM:** Configuration endpoint (`GET /api/settings/rating-config/`) must be called on app startup to load dynamic thresholds. Do not hardcode any rating values in Flutter code.

@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
 import 'core/config/brand_tokens.dart';
+import 'core/config/api_config.dart';
 import 'core/storage/local_storage.dart';
+import 'core/services/gallery_config_service.dart';
+import 'data/models/gallery_config_model.dart';
 import 'dart:developer' as developer;
 
 void main() async {
@@ -24,6 +27,18 @@ void main() async {
   // Load brand tokens from assets
   final brandTokens = await BrandTokens.load();
   
+  // Load gallery configuration from backend
+  // Falls back to defaults if backend not ready (graceful degradation)
+  GalleryConfigModel galleryConfig;
+  try {
+    galleryConfig = await GalleryConfigService.loadConfiguration();
+    ApiConfig.updateGalleryApiUrl(galleryConfig.apiUrl);
+    developer.log('✅ Gallery configuration loaded successfully', name: 'Main');
+  } catch (e) {
+    galleryConfig = GalleryConfigModel.defaultConfig();
+    developer.log('⚠️ Using default gallery config: $e', name: 'Main');
+  }
+  
   // Set system UI overlay style (status bar + navigation bar)
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -37,6 +52,10 @@ void main() async {
   // Run app with Riverpod
   runApp(
     ProviderScope(
+      overrides: [
+        // Provide gallery configuration globally
+        galleryConfigProvider.overrideWithValue(galleryConfig),
+      ],
       child: AD4x4App(brandTokens: brandTokens),
     ),
   );
