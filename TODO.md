@@ -16,9 +16,61 @@
 - ✅ GitHub issues created (14 issues, Nov 16)
 - 🔄 Awaiting backend team to begin implementation
 
+### Vehicle Modifications System
+- ✅ Documentation complete (Nov 16)
+- ✅ GitHub issues created (18 issues, Nov 16)
+- 🔄 Ready for implementation
+
 ---
 
 ## 📋 Planned Features - High Priority
+
+### 🚗 Vehicle Modifications System (v2.2)
+**Status:** Documentation complete, GitHub issues created  
+**Feature Request Date:** November 11, 2025  
+**Docs:** `/new_features/vehicle_modifications/`  
+**GitHub Issues:** [#15-#32](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues)  
+**Estimated:** 44-62 hours total (Backend: 26-36h, Flutter: 18-26h)
+
+#### Key Features
+- Dynamic modification choices (backend-driven, no app updates needed)
+- Member vehicle modification declarations
+- Permission-based verification workflow
+- Trip-level vehicle requirements
+- Registration validation against requirements
+- Level-flexible requirements system
+
+#### Backend Tasks (Django) - 🔴 CRITICAL
+- [ ] Create modification_choices table and seed data ([#15](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/15))
+- [ ] Add min_level_for_requirements to global_settings ([#16](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/16))
+- [ ] Create vehicle_modifications table ([#17](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/17))
+- [ ] Create trip_vehicle_requirements table ([#18](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/18))
+- [ ] Implement /api/choices/ endpoints (10 types) ([#19](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/19))
+- [ ] Implement vehicle modifications CRUD ([#20](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/20))
+- [ ] Implement verification queue endpoint ([#21](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/21))
+- [ ] Implement verification approve/reject ([#22](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/22))
+- [ ] Implement trip requirements CRUD ([#23](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/23))
+- [ ] Implement eligibility validation ([#24](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/24))
+- [ ] Create permissions setup ([#25](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/25))
+
+**Reference:** `BACKEND_API_DOCUMENTATION.md` (v2.0)  
+**Estimated:** 26-36 hours  
+**Blocks:** All Flutter vehicle modification features
+
+#### Flutter Tasks (Mobile App) - 🟡 HIGH
+- [ ] Create ModificationChoice model ([#26](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/26))
+- [ ] Update VehicleModifications model (enums → strings) ([#27](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/27))
+- [ ] Create VehicleModificationsApiRepository ([#28](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/28))
+- [ ] Create ModificationChoicesProvider (Riverpod) ([#29](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/29))
+- [ ] Update UI components to use dynamic choices ([#30](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/30))
+- [ ] Migrate from cache service to API ([#31](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/31))
+- [ ] Write comprehensive tests ([#32](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/32))
+
+**Reference:** `FLUTTER_IMPLEMENTATION_GUIDE.md` (v2.0)  
+**Estimated:** 18-26 hours  
+**Dependencies:** Backend tasks must complete first
+
+---
 
 ### 🎨 Gallery Integration (v2.0)
 **Status:** Documentation complete, ready for implementation  
@@ -121,6 +173,10 @@ To report a bug: https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues/new?templa
 ## ✅ Recently Completed
 
 ### November 2024
+- ✅ Vehicle Modifications System documentation and GitHub issues (18 issues) (Nov 16)
+  - Backend API documentation v2.0 with dynamic choices system
+  - Flutter implementation guide with migration strategy
+  - Complete issue tracking with dependencies
 - ✅ GitHub issues created for Gallery Integration and Trip Rating (14 issues) (Nov 16)
 - ✅ Complete issue tracking system setup (Nov 16)
   - Issue templates (bug, feature, backend)
@@ -169,7 +225,10 @@ Focus: Complete trip-gallery integration, enable photo sharing
 ### v2.1 - Trip Rating System (January 2025)
 Focus: Member ratings, MSI scoring, leaderboards
 
-### v2.2 - Performance & Polish (February 2025)
+### v2.2 - Vehicle Modifications System (February 2025)
+Focus: Dynamic modification choices, verification workflow, trip requirements
+
+### v2.3 - Performance & Polish (March 2025)
 Focus: Bug fixes, performance optimization, UX improvements
 
 ---

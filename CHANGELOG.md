@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added (In Development)
+- Vehicle Modifications System v2.0 (Feature Request: November 11, 2025)
+  - Backend API documentation with dynamic choices system (38.5 KB)
+  - Flutter implementation guide with migration strategy (31.5 KB)
+  - Complete GitHub issue tracking (18 issues: 11 backend, 7 Flutter)
+  - Dynamic modification choices via API (no app updates needed)
+  - Permission-based verification workflow
+  - Level-flexible trip requirements system
 - Gallery Integration feature documentation and specifications
 - Trip Rating MSI System feature documentation
 - Complete issue tracking system with GitHub integration
@@ -202,6 +209,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better member engagement tracking
 - Recognition of active members
 - Improved trip quality through feedback
+
+---
+
+### [2.2.0] - Planned February 2025
+**Theme:** Vehicle Modifications System (Feature Request: Nov 11, 2025)
+
+#### Planned Features
+- Dynamic modification choices (backend-driven)
+  - 10 modification types: lift kit, shocks, arms, tyre size, air intake, catback, horsepower, lights, winch, armor
+  - Admin can add/edit/remove options without app updates
+  - Supports future localization (Arabic, etc.)
+- Member vehicle modification declarations
+  - Declare modifications for up to 3 vehicles (configurable)
+  - Two verification methods: On-Trip (free) or Expedited (48hrs)
+  - Permission-based verification workflow
+- Trip vehicle requirements
+  - Trip leaders set minimum modification requirements
+  - Level-flexible system (configurable threshold)
+  - Registration validation against requirements
+- Verification queue for authorized users
+  - Approve/reject modifications with notes
+  - Filter by verification type
+  - Bulk processing support
+
+#### Expected Impact
+- Maximum backend flexibility (no hardcoded options)
+- Future-proof for level system changes
+- Better trip safety through requirement validation
+- Streamlined verification workflow
+- Reduced app update dependencies
+
+#### Technical Highlights
+- Extends existing `/api/choices/` API pattern
+- Backward compatible migration (enums → strings)
+- Permission-based access control (not role-based)
+- Comprehensive testing (unit, widget, integration)
+- 44-62 hours estimated implementation time
 
 ---
 
