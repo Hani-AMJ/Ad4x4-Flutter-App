@@ -8,14 +8,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/trips_provider.dart';
 import '../../../../core/utils/text_utils.dart';
-import '../../../../core/utils/status_helpers.dart';
 import '../../../../core/utils/level_display_helper.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/services/trip_export_service.dart';
 import '../../../../shared/widgets/admin/trip_admin_ribbon.dart';
-import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../features/admin/presentation/providers/logbook_provider.dart';
 
 /// Optimistic registration state provider
 /// Tracks local registration changes immediately without waiting for API
@@ -298,6 +297,9 @@ class TripDetailsScreen extends ConsumerWidget {
                     // Gallery Section (if trip has associated gallery)
                     if (trip.galleryId != null)
                       _buildGallerySection(context, trip, colors),
+
+                    // Trip Report Section (for completed trips)
+                    _buildTripReportSection(context, ref, trip, colors),
 
                     // Registered Members
                     if (trip.registered.isNotEmpty)
@@ -1038,6 +1040,225 @@ class TripDetailsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
+  /// This section is temporarily disabled until feature development is complete.
+  /// Uncomment the code below to re-enable trip report section on trip details page.
+  /*
+  Widget _buildTripReportSection(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic trip,
+    ColorScheme colors,
+  ) {
+    final authState = ref.watch(authProviderV2);
+    final currentUser = authState.user;
+    
+    // Check if trip is completed (approved + ended)
+    final now = DateTime.now();
+    final isCompleted = trip.approvalStatus == 'A' && now.isAfter(trip.endTime);
+    
+    // Check if user has permission to create trip reports
+    final canCreateReport = currentUser?.hasPermission('create_trip_report') ?? false;
+    
+    // Fetch existing trip reports
+    final reportsAsync = ref.watch(tripReportsByTripProvider(trip.id));
+    
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.description, color: colors.primary),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Trip Report',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Show report content or creation button
+              reportsAsync.when(
+                data: (reports) {
+                  if (reports.isEmpty) {
+                    // No reports yet
+                    if (isCompleted && canCreateReport) {
+                      // Show create button for eligible users
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'No trip report has been created yet.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colors.onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: () {
+                                // Navigate to admin trip reports screen with trip ID pre-selected
+                                context.push('/admin/trip-reports?tripId=${trip.id}');
+                              },
+                              icon: const Icon(Icons.add),
+                              label: const Text('Create Trip Report'),
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    } else if (!isCompleted) {
+                      // Trip not completed yet
+                      return Text(
+                        'Trip report will be available after the trip is completed.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colors.onSurface.withValues(alpha: 0.6),
+                        ),
+                      );
+                    } else {
+                      // User doesn't have permission
+                      return Text(
+                        'No trip report available yet.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colors.onSurface.withValues(alpha: 0.6),
+                        ),
+                      );
+                    }
+                  } else {
+                    // Show existing report preview
+                    final report = reports.first; // Show most recent report
+                    final parsed = report.parseStructuredReport();
+                    final mainReport = parsed['mainReport'] as String? ?? '';
+                    final preview = mainReport.length > 150
+                        ? '${mainReport.substring(0, 150)}...'
+                        : mainReport;
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Marshal info
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundImage: report.createdBy.profilePicture != null
+                                  ? NetworkImage(report.createdBy.profilePicture!)
+                                  : null,
+                              child: report.createdBy.profilePicture == null
+                                  ? Text(
+                                      '${report.createdBy.firstName[0]}${report.createdBy.lastName[0]}',
+                                      style: const TextStyle(fontSize: 12),
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    report.createdBy.displayName,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    DateFormat('MMM d, yyyy').format(report.createdAt),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: colors.onSurface.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // Report preview
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerHighest.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            preview,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              color: colors.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // View full report button
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              // Navigate to admin trip reports screen
+                              context.push('/admin/trip-reports');
+                            },
+                            icon: const Icon(Icons.arrow_forward),
+                            label: const Text('View Full Report'),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (error, stack) => Text(
+                  'Failed to load trip reports',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colors.error,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  */
+  
+  /// Placeholder method while trip reports feature is under development
+  Widget _buildTripReportSection(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic trip,
+    ColorScheme colors,
+  ) {
+    // Return empty widget - trip reports feature is hidden
+    return const SizedBox.shrink();
   }
 
   Widget _buildActionButtons(

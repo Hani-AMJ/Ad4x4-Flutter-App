@@ -69,7 +69,9 @@ import '../../features/admin/presentation/screens/admin_feedback_screen.dart';
 import '../../features/admin/presentation/screens/admin_logbook_entries_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_logbook_entry_screen.dart';
 import '../../features/admin/presentation/screens/admin_sign_off_skills_screen.dart';
-import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart';
+// TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT - Imports commented out
+// import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart';
+// import '../../features/admin/presentation/screens/quick_trip_report_screen.dart';
 // Phase 3B - Enhanced Trip Management Screens
 import '../../features/admin/presentation/screens/admin_trip_media_screen.dart';
 import '../../features/admin/presentation/screens/admin_comments_moderation_screen.dart';
@@ -633,15 +635,36 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
+          // TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
+          // These routes are temporarily commented out until feature development is complete.
+          // Will be re-enabled once all functionality is fully tested and ready for rollout.
+          // Uncomment the routes below to restore trip reports functionality.
+          /*
           GoRoute(
             path: '/admin/trip-reports',
             name: 'admin-trip-reports',
             pageBuilder: (context, state) {
+              // Get tripId from query parameters
+              final tripIdStr = state.uri.queryParameters['tripId'];
+              final tripId = tripIdStr != null ? int.tryParse(tripIdStr) : null;
+              
               return NoTransitionPage(
-                child: const AdminTripReportsScreen(),
+                child: AdminTripReportsScreen(preSelectedTripId: tripId),
               );
             },
           ),
+          // Quick Trip Report (Enhanced version with participant management)
+          GoRoute(
+            path: '/admin/quick-trip-report/:tripId',
+            name: 'quick-trip-report',
+            pageBuilder: (context, state) {
+              final tripId = int.parse(state.pathParameters['tripId']!);
+              return NoTransitionPage(
+                child: QuickTripReportScreen(tripId: tripId),
+              );
+            },
+          ),
+          */
           // Phase 3B - Content Moderation Routes
           GoRoute(
             path: '/admin/trip-media',

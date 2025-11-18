@@ -136,7 +136,7 @@ Comprehensive administrative dashboard with 29 screens covering:
 - Upgrade request review and approval
 
 **Content Management:**
-- Trip reports moderation
+- Trip reports moderation *(under development - temporarily hidden from UI)*
 - Comments moderation
 - Feedback management
 - Meeting points management
@@ -363,7 +363,7 @@ lib/
 - POST `/api/feedback/` - Submit feedback
 - GET/PATCH `/api/feedback/{id}/` - View/update feedback
 
-**Trip Reports:**
+**Trip Reports:** *(Feature under development - UI temporarily hidden)*
 - GET `/api/tripreports/`
 - GET/PATCH `/api/tripreports/{id}/`
 

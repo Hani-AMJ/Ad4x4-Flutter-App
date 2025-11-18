@@ -2,6 +2,75 @@
 /// 
 /// Models for logbook entries, skills, and skill references
 
+import 'package:flutter/foundation.dart';
+
+// ============================================================================
+// TRIP REPORT SERIALIZATION HELPERS
+// ============================================================================
+
+/// Helper class for serializing trip report data into structured reportText
+class TripReportSerializer {
+  /// Serialize structured trip report data into formatted reportText
+  static String serialize({
+    required String mainReport,
+    String? safetyNotes,
+    String? weatherConditions,
+    String? terrainNotes,
+    int? participantCount,
+    List<String>? issues,
+  }) {
+    final buffer = StringBuffer();
+    
+    buffer.writeln('=== TRIP REPORT ===');
+    buffer.writeln();
+    buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    buffer.writeln();
+    
+    // Main report section
+    buffer.writeln('MAIN REPORT:');
+    buffer.writeln(mainReport.trim());
+    buffer.writeln();
+    
+    // Participant count
+    if (participantCount != null && participantCount > 0) {
+      buffer.writeln('PARTICIPANT COUNT: $participantCount');
+      buffer.writeln();
+    }
+    
+    // Safety notes
+    if (safetyNotes != null && safetyNotes.trim().isNotEmpty) {
+      buffer.writeln('SAFETY NOTES:');
+      buffer.writeln(safetyNotes.trim());
+      buffer.writeln();
+    }
+    
+    // Weather conditions
+    if (weatherConditions != null && weatherConditions.trim().isNotEmpty) {
+      buffer.writeln('WEATHER CONDITIONS:');
+      buffer.writeln(weatherConditions.trim());
+      buffer.writeln();
+    }
+    
+    // Terrain notes
+    if (terrainNotes != null && terrainNotes.trim().isNotEmpty) {
+      buffer.writeln('TERRAIN NOTES:');
+      buffer.writeln(terrainNotes.trim());
+      buffer.writeln();
+    }
+    
+    // Issues/problems
+    if (issues != null && issues.isNotEmpty) {
+      buffer.writeln('ISSUES/PROBLEMS:');
+      for (final issue in issues) {
+        buffer.writeln('• ${issue.trim()}');
+      }
+      buffer.writeln();
+    }
+    
+    return buffer.toString().trim();
+  }
+}
+
 // ============================================================================
 // LOGBOOK ENTRY
 // ============================================================================
@@ -232,16 +301,23 @@ class LogbookSkillReference {
 
 /// Trip Report Model
 /// Detailed post-trip report created by marshals
+/// 
+/// ⚠️ IMPORTANT: Backend API uses 'reportText' field, not 'report'
+/// We serialize structured data into reportText for backend compatibility
 class TripReport {
   final int id;
   final TripBasicInfo trip;
   final MemberBasicInfo createdBy;
-  final String report;
-  final String? safetyNotes;
-  final String? weatherConditions;
-  final String? terrainNotes;
-  final int participantCount;
-  final List<String>? issues;
+  
+  // Main report text (matches API field name)
+  final String reportText;
+  
+  // Optional tracking info (parsed from reportText or stored separately)
+  final String? title;
+  final String? trackFile;
+  final String? trackImage;
+  final List<String>? imageFiles;
+  
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -249,32 +325,94 @@ class TripReport {
     required this.id,
     required this.trip,
     required this.createdBy,
-    required this.report,
-    this.safetyNotes,
-    this.weatherConditions,
-    this.terrainNotes,
-    required this.participantCount,
-    this.issues,
+    required this.reportText,
+    this.title,
+    this.trackFile,
+    this.trackImage,
+    this.imageFiles,
     required this.createdAt,
     this.updatedAt,
   });
 
   factory TripReport.fromJson(Map<String, dynamic> json) {
+    // 🔍 DEBUG: Log raw JSON to identify type mismatches
+    if (kDebugMode) {
+      debugPrint('🔍 TripReport.fromJson - Raw JSON: $json');
+      debugPrint('🔍 trip type: ${json['trip']?.runtimeType ?? 'null'}');
+      debugPrint('🔍 createdBy type: ${json['createdBy']?.runtimeType ?? 'null'}');
+    }
+    
+    // Handle trip field - can be null, int (trip ID), or full object
+    final tripData = json['trip'];
+    final TripBasicInfo trip;
+    
+    if (tripData == null) {
+      // API returned null - create placeholder
+      trip = TripBasicInfo(
+        id: 0,
+        title: 'Unknown Trip',
+        startTime: DateTime.now(),
+      );
+    } else if (tripData is int) {
+      // API returned just trip ID - create minimal TripBasicInfo
+      trip = TripBasicInfo(
+        id: tripData,
+        title: 'Trip #$tripData',
+        startTime: DateTime.now(),
+      );
+    } else if (tripData is Map<String, dynamic>) {
+      // API returned full trip object
+      trip = TripBasicInfo.fromJson(tripData);
+    } else {
+      throw ArgumentError('Invalid trip data type: ${tripData.runtimeType}');
+    }
+    
+    // Handle createdBy/member field - API uses 'member' in detail, 'createdBy' in list
+    // Can be null, int (member ID), or full object
+    final createdByData = json['createdBy'] ?? json['member'];
+    final MemberBasicInfo createdBy;
+    
+    if (createdByData == null) {
+      // API returned null - create placeholder
+      createdBy = MemberBasicInfo(
+        id: 0,
+        firstName: 'Unknown',
+        lastName: 'User',
+      );
+    } else if (createdByData is int) {
+      // API returned just member ID - create minimal MemberBasicInfo
+      createdBy = MemberBasicInfo(
+        id: createdByData,
+        firstName: 'Member',
+        lastName: '#$createdByData',
+      );
+    } else if (createdByData is Map<String, dynamic>) {
+      // API returned full member object
+      createdBy = MemberBasicInfo.fromJson(createdByData);
+    } else {
+      throw ArgumentError('Invalid createdBy data type: ${createdByData.runtimeType}');
+    }
+    
     return TripReport(
       id: json['id'] as int,
-      trip: TripBasicInfo.fromJson(json['trip'] as Map<String, dynamic>),
-      createdBy: MemberBasicInfo.fromJson(json['createdBy'] as Map<String, dynamic>),
-      report: json['report'] as String,
-      safetyNotes: json['safetyNotes'] as String?,
-      weatherConditions: json['weatherConditions'] as String?,
-      terrainNotes: json['terrainNotes'] as String?,
-      participantCount: json['participantCount'] as int? ?? 0,
-      issues: (json['issues'] as List<dynamic>?)
+      trip: trip,
+      createdBy: createdBy,
+      
+      // ✅ FIXED: Use 'reportText' to match API response
+      reportText: json['reportText'] as String? ?? json['report_text'] as String? ?? json['report'] as String? ?? '',
+      
+      title: json['title'] as String?,
+      trackFile: json['trackFile'] as String? ?? json['track_file'] as String?,
+      trackImage: json['trackImage'] as String? ?? json['track_image'] as String?,
+      imageFiles: (json['imageFiles'] as List<dynamic>?)
+          ?.map((i) => i as String)
+          .toList() ?? (json['image_files'] as List<dynamic>?)
           ?.map((i) => i as String)
           .toList(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
+      
+      createdAt: DateTime.parse(json['createdAt'] as String? ?? json['created_at'] as String? ?? DateTime.now().toIso8601String()),
+      updatedAt: json['updatedAt'] != null || json['updated_at'] != null
+          ? DateTime.parse((json['updatedAt'] as String?) ?? (json['updated_at'] as String?) ?? '')
           : null,
     );
   }
@@ -284,15 +422,93 @@ class TripReport {
       'id': id,
       'trip': trip.toJson(),
       'createdBy': createdBy.toJson(),
-      'report': report,
-      if (safetyNotes != null) 'safetyNotes': safetyNotes,
-      if (weatherConditions != null) 'weatherConditions': weatherConditions,
-      if (terrainNotes != null) 'terrainNotes': terrainNotes,
-      'participantCount': participantCount,
-      if (issues != null) 'issues': issues,
+      
+      // ✅ FIXED: Use 'reportText' to match API schema
+      'reportText': reportText,
+      
+      if (title != null) 'title': title,
+      if (trackFile != null) 'trackFile': trackFile,
+      if (trackImage != null) 'trackImage': trackImage,
+      if (imageFiles != null) 'imageFiles': imageFiles,
+      
       'createdAt': createdAt.toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     };
+  }
+  
+  /// Parse structured report data from reportText
+  /// Returns a map with parsed sections: mainReport, safetyNotes, weather, terrain, participantCount, issues
+  Map<String, dynamic> parseStructuredReport() {
+    final result = <String, dynamic>{
+      'mainReport': '',
+      'safetyNotes': null,
+      'weatherConditions': null,
+      'terrainNotes': null,
+      'participantCount': null,
+      'issues': <String>[],
+    };
+    
+    if (reportText.isEmpty) return result;
+    
+    // Try to parse structured format
+    final lines = reportText.split('\n');
+    String? currentSection;
+    final sectionContent = <String, StringBuffer>{};
+    
+    for (final line in lines) {
+      final trimmed = line.trim();
+      
+      // Check for section headers
+      if (trimmed.toUpperCase().contains('MAIN REPORT:')) {
+        currentSection = 'mainReport';
+        sectionContent[currentSection] = StringBuffer();
+      } else if (trimmed.toUpperCase().contains('SAFETY NOTES:')) {
+        currentSection = 'safetyNotes';
+        sectionContent[currentSection] = StringBuffer();
+      } else if (trimmed.toUpperCase().contains('WEATHER CONDITIONS:') || 
+                 trimmed.toUpperCase().contains('WEATHER:')) {
+        currentSection = 'weatherConditions';
+        sectionContent[currentSection] = StringBuffer();
+      } else if (trimmed.toUpperCase().contains('TERRAIN NOTES:') ||
+                 trimmed.toUpperCase().contains('TERRAIN:')) {
+        currentSection = 'terrainNotes';
+        sectionContent[currentSection] = StringBuffer();
+      } else if (trimmed.toUpperCase().contains('PARTICIPANT COUNT:')) {
+        // Extract number from line
+        final match = RegExp(r'(\d+)').firstMatch(trimmed);
+        if (match != null) {
+          result['participantCount'] = int.tryParse(match.group(1)!);
+        }
+        currentSection = null;
+      } else if (trimmed.toUpperCase().contains('ISSUES/PROBLEMS:') ||
+                 trimmed.toUpperCase().contains('ISSUES:')) {
+        currentSection = 'issues';
+        sectionContent[currentSection] = StringBuffer();
+      } else if (currentSection != null && trimmed.isNotEmpty && 
+                 !trimmed.startsWith('===') && !trimmed.startsWith('━')) {
+        // Add content to current section
+        if (currentSection == 'issues' && trimmed.startsWith('-') || trimmed.startsWith('•')) {
+          (result['issues'] as List<String>).add(trimmed.replaceFirst(RegExp(r'^[\-•]\s*'), ''));
+        } else if (sectionContent[currentSection]!.isNotEmpty) {
+          sectionContent[currentSection]!.write('\n');
+        }
+        sectionContent[currentSection]!.write(trimmed);
+      }
+    }
+    
+    // Populate result from section content
+    sectionContent.forEach((key, buffer) {
+      if (key != 'issues' && buffer.isNotEmpty) {
+        result[key] = buffer.toString().trim();
+      }
+    });
+    
+    // If no structured format found, put everything in mainReport
+    if (result['mainReport'].isEmpty && sectionContent.isEmpty) {
+      result['mainReport'] = reportText.trim();
+    }
+    
+    return result;
   }
 }
 

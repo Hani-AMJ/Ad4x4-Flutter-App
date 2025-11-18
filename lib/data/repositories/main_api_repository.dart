@@ -1714,7 +1714,7 @@ class MainApiRepository {
     int? memberId,
     String? ordering,
     int page = 1,
-    int pageSize = 20,  // ✅ FIXED: Changed from 'limit' to 'pageSize'
+    int pageSize = 20,
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,

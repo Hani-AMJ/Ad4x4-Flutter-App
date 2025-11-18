@@ -14,6 +14,9 @@ class TripCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isJoined;
   final bool isWaitlisted;
+  final bool hasReport; // ✅ NEW: Trip has at least one report
+  final bool canCreateReport; // ✅ NEW: User can create report for this trip
+  final bool isCompleted; // ✅ NEW: Trip is completed (for report eligibility)
 
   const TripCard({
     super.key,
@@ -28,6 +31,9 @@ class TripCard extends StatelessWidget {
     this.onTap,
     this.isJoined = false,
     this.isWaitlisted = false,
+    this.hasReport = false, // ✅ NEW: Default no report
+    this.canCreateReport = false, // ✅ NEW: Default no permission
+    this.isCompleted = false, // ✅ NEW: Default not completed
   });
 
   // Get icon and color using LevelDisplayHelper
@@ -60,19 +66,32 @@ class TripCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image or placeholder
-            if (imageUrl != null)
-              Image.network(
-                imageUrl!,
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return _buildImagePlaceholder(colors);
-                },
-              )
-            else
-              _buildImagePlaceholder(colors),
+            // Image or placeholder with report badge overlay
+            Stack(
+              children: [
+                // Image or placeholder
+                if (imageUrl != null)
+                  Image.network(
+                    imageUrl!,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildImagePlaceholder(colors);
+                    },
+                  )
+                else
+                  _buildImagePlaceholder(colors),
+                
+                // Report badge overlay (top-right corner)
+                if (isCompleted && (hasReport || canCreateReport))
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: _buildReportBadge(context, hasReport, canCreateReport),
+                  ),
+              ],
+            ),
 
             // Content
             Padding(
@@ -269,5 +288,84 @@ class TripCard extends StatelessWidget {
         color: colors.onSurface.withValues(alpha: 0.3),
       ),
     );
+  }
+
+  /// Build report badge for completed trips
+  Widget _buildReportBadge(BuildContext context, bool hasReport, bool canCreate) {
+    final theme = Theme.of(context);
+    
+    if (hasReport) {
+      // Green badge: Report available
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.green.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.description,
+              size: 14,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Report',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (canCreate) {
+      // Blue badge: Can create report
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.blue.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.add_circle_outline,
+              size: 14,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Create Report',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink();
   }
 }

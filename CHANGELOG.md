@@ -23,8 +23,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project management workflow (TODO.md, issue templates)
 
 ### Changed
+- **Trip Reports feature temporarily hidden from UI** (under development)
+  - Admin menu items and navigation routes commented out with TODO markers
+  - Trip details page report section disabled
+  - Admin trips list report badges/buttons hidden
+  - All code preserved for easy restoration when ready
+  - Feature will be rolled out once end-to-end testing is complete
 - Improved documentation structure with `/new_features/` directory
 - Enhanced GitHub collaboration setup
+
+### Fixed
+- **Trip Reports data loading improvements**
+  - Enhanced TripReport model with field name flexibility (supports both `createdBy` and `member` field names)
+  - Improved type safety for nested API responses (handles int, Map, and null values correctly)
+  - Implemented detail endpoint fetching for complete trip report data
+  - Added trip data enrichment in logbook provider for admin list view
+  - Fixed "Unknown User" display issue by handling multiple field name formats
+  - Fixed empty report content by fetching from detail endpoint
+  - Resolved type casting errors with defensive null checking
 
 ---
 

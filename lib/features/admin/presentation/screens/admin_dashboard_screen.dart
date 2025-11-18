@@ -349,6 +349,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 onTap: () => context.go('/admin/comments-moderation'),
               ),
             
+            // TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
+            // This feature is temporarily hidden until development is complete.
+            // Will be rolled out once all functionality is fully tested and ready.
+            // Uncomment the code below to re-enable the Trip Reports menu item.
+            /*
             // Trip Reports (moved here for better organization)
             if (user.hasPermission('create_trip_report'))
               _NavItem(
@@ -359,6 +364,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/trip-reports'),
               ),
+            */
             
             const SizedBox(height: 8),
           ],

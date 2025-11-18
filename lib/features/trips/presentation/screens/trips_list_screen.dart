@@ -271,7 +271,20 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
           // Fallback: Check if user is the trip lead
           final authState = ref.watch(authProviderV2);
           final currentUserId = authState.user?.id ?? 0;
+          final currentUserObject = authState.user;
           final isJoined = trip.isRegistered || trip.lead.id == currentUserId;
+          
+          // ✅ Check trip completion status (approved + ended)
+          final now = DateTime.now();
+          final isCompleted = trip.approvalStatus == 'A' && now.isAfter(trip.endTime);
+          
+          // ✅ Check if user has permission to create trip reports
+          final canCreateReport = currentUserObject?.hasPermission('create_trip_report') ?? false;
+          
+          // ✅ For Phase 4, we'll show the badge optimistically without fetching
+          // The badge indicates potential report availability, not actual data
+          // Actual report data is fetched when user opens trip details
+          final showReportBadge = isCompleted && canCreateReport;
           
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -286,6 +299,9 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
               imageUrl: trip.imageUrl,
               isJoined: isJoined,
               isWaitlisted: trip.isWaitlisted,
+              isCompleted: isCompleted, // ✅ NEW: Trip completion status
+              hasReport: false, // ✅ Phase 4: Optimistic - assume no report, actual check in detail view
+              canCreateReport: showReportBadge, // ✅ NEW: Show "Create Report" badge for eligible trips
               onTap: () => context.push('/trips/${trip.id}'),
             ),
           );

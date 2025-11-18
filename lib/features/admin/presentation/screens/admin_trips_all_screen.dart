@@ -7,6 +7,7 @@ import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/utils/status_helpers.dart';
 import '../../../../core/utils/level_display_helper.dart';
 import '../widgets/admin_trip_filters_bar.dart';
+import '../providers/logbook_provider.dart';
 import 'package:go_router/go_router.dart';
 
 /// Admin Trip List Screen
@@ -314,10 +315,17 @@ class _TripAdminCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final dateFormat = DateFormat('MMM dd, yyyy • h:mm a');
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    final timeFormat = DateFormat('h:mm a');
+    final colors = theme.colorScheme;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.5)),
+      ),
       child: InkWell(
         onTap: () => context.push('/trips/${trip.id}'),
         borderRadius: BorderRadius.circular(12),
@@ -326,7 +334,7 @@ class _TripAdminCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Title and status badge
+              // Header: Title + Status Badge
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -335,6 +343,7 @@ class _TripAdminCard extends ConsumerWidget {
                       trip.title,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -342,88 +351,129 @@ class _TripAdminCard extends ConsumerWidget {
                   _StatusBadge(status: trip.approvalStatus),
                 ],
               ),
-              const SizedBox(height: 8),
-
-              // Organizer
+              
+              const SizedBox(height: 12),
+              
+              // Metadata Row: Organizer + Date/Time
               Row(
                 children: [
-                  Icon(Icons.person, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                  // Organizer
+                  Icon(Icons.person_outline, size: 14, color: colors.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
                     trip.lead.displayName,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 4),
-
-              // Date
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                  
+                  const SizedBox(width: 16),
+                  
+                  // Date
+                  Icon(Icons.calendar_today, size: 14, color: colors.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(
                     dateFormat.format(trip.startTime),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 12),
+                  
+                  // Time
+                  Icon(Icons.access_time, size: 14, color: colors.onSurfaceVariant),
+                  const SizedBox(width: 4),
+                  Text(
+                    timeFormat.format(trip.startTime),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
+              
               const SizedBox(height: 12),
-
-              // Info badges: Level, Status, and other info
+              
+              // Info Badges Row
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 6,
+                runSpacing: 6,
                 children: [
-                  // Level badge (using consistent helper)
                   LevelDisplayHelper.buildCompactBadge(trip.level),
-                  // Trip status badge (Upcoming/Ongoing/Completed)
-                  _buildTripStatusBadge(trip, theme.colorScheme),
+                  _buildTripStatusBadge(trip, colors),
                   _InfoChip(
                     icon: Icons.people,
                     label: '${trip.registeredCount}/${trip.capacity}',
-                    color: theme.colorScheme.primary,
+                    color: colors.primary,
                   ),
                   if (trip.meetingPoint != null)
                     _InfoChip(
                       icon: Icons.location_on,
                       label: trip.meetingPoint!.name,
-                      color: theme.colorScheme.tertiary,
+                      color: colors.tertiary,
                     ),
                 ],
               ),
               
-              // Action buttons (wrapped to prevent overflow)
+              // Action Buttons
               Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                child: Row(
                   children: [
-                    // Registrants button (always visible)
-                    TextButton.icon(
-                      onPressed: () => context.push('/admin/trips/${trip.id}/registrants'),
-                      icon: const Icon(Icons.people, size: 18),
-                      label: Text('Registrants (${trip.registeredCount})'),
+                    // Registrants
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push('/admin/trips/${trip.id}/registrants'),
+                        icon: const Icon(Icons.people, size: 16),
+                        label: Text(
+                          'Registrants (${trip.registeredCount})',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ),
                     ),
+                    
+                    const SizedBox(width: 6),
+                    
+                    // Edit
                     if (canEdit)
-                      TextButton.icon(
+                      IconButton(
                         onPressed: () => context.push('/trips/${trip.id}/edit'),
                         icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Edit'),
+                        tooltip: 'Edit',
+                        visualDensity: VisualDensity.compact,
                       ),
+                    
+                    // Report Button
+                    _buildReportButton(context, ref, trip),
+                    
+                    // More Menu
                     if (canDelete)
-                      TextButton.icon(
-                        onPressed: () => _showDeleteDialog(context, ref),
-                        icon: const Icon(Icons.delete, size: 18),
-                        label: const Text('Delete'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.red,
-                        ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert, size: 18),
+                        tooltip: 'More',
+                        padding: EdgeInsets.zero,
+                        onSelected: (value) {
+                          if (value == 'delete') {
+                            _showDeleteDialog(context, ref);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, size: 16, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('Delete', style: TextStyle(color: Colors.red)),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 ),
@@ -433,6 +483,152 @@ class _TripAdminCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
+  /// This method is temporarily disabled until feature development is complete.
+  /// Uncomment the code below to re-enable trip report badges in the admin trips list.
+  /*
+  /// Build trip report badge (if eligible)
+  Widget _buildReportBadge(BuildContext context, WidgetRef ref, TripListItem trip, ColorScheme colors) {
+    final authState = ref.watch(authProviderV2);
+    final currentUser = authState.user;
+    
+    // Check trip completion status (approved + ended)
+    final now = DateTime.now();
+    final isCompleted = trip.approvalStatus == 'A' && now.isAfter(trip.endTime);
+    
+    // Check if user has permission to create trip reports
+    final canCreateReport = currentUser?.hasPermission('create_trip_report') ?? false;
+    
+    // Only show badge for completed trips with permission
+    if (!isCompleted || !canCreateReport) {
+      return const SizedBox.shrink();
+    }
+    
+    // Fetch trip reports for this trip
+    final reportsAsync = ref.watch(tripReportsByTripProvider(trip.id));
+    
+    return reportsAsync.when(
+      data: (reports) {
+        if (reports.isNotEmpty) {
+          // Green badge: Report exists
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green, width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.description, size: 14, color: Colors.green),
+                const SizedBox(width: 4),
+                Text(
+                  'Report',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Blue badge: Can create report
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue, width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_circle_outline, size: 14, color: Colors.blue),
+                const SizedBox(width: 4),
+                Text(
+                  'Create Report',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+  */
+  
+  /// Placeholder method while trip reports feature is under development
+  Widget _buildReportBadge(BuildContext context, WidgetRef ref, TripListItem trip, ColorScheme colors) {
+    return const SizedBox.shrink();
+  }
+
+  /// TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
+  /// This method is temporarily disabled until feature development is complete.
+  /// Uncomment the code below to re-enable trip report action buttons.
+  /*
+  /// Build clickable report button for action buttons section
+  Widget _buildReportButton(BuildContext context, WidgetRef ref, TripListItem trip) {
+    final authState = ref.watch(authProviderV2);
+    final currentUser = authState.user;
+    
+    // Check trip completion status (approved + ended)
+    final now = DateTime.now();
+    final isCompleted = trip.approvalStatus == 'A' && now.isAfter(trip.endTime);
+    
+    // Check if user has permission to create trip reports
+    final canCreateReport = currentUser?.hasPermission('create_trip_report') ?? false;
+    
+    // Only show button for completed trips with permission
+    if (!isCompleted || !canCreateReport) {
+      return const SizedBox.shrink();
+    }
+    
+    // Fetch trip reports for this trip
+    final reportsAsync = ref.watch(tripReportsByTripProvider(trip.id));
+    
+    return reportsAsync.when(
+      data: (reports) {
+        if (reports.isNotEmpty) {
+          // View Report icon button
+          return IconButton(
+            onPressed: () => context.push('/admin/trip-reports'),
+            icon: const Icon(Icons.description, size: 18),
+            tooltip: 'View Report',
+            color: Colors.green,
+            visualDensity: VisualDensity.compact,
+          );
+        } else {
+          // Create Report icon button - Use Quick Report screen
+          return IconButton(
+            onPressed: () => context.push('/admin/quick-trip-report/${trip.id}'),
+            icon: const Icon(Icons.add_circle_outline, size: 18),
+            tooltip: 'Create Report',
+            color: Colors.blue,
+            visualDensity: VisualDensity.compact,
+          );
+        }
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+  */
+  
+  /// Placeholder method while trip reports feature is under development
+  Widget _buildReportButton(BuildContext context, WidgetRef ref, TripListItem trip) {
+    return const SizedBox.shrink();
   }
 
   /// Build trip status badge (Upcoming/Ongoing/Completed)
@@ -562,18 +758,28 @@ class _StatusBadge extends StatelessWidget {
     Color color;
     String label;
 
+    // Map status codes to readable labels
     switch (status) {
+      case 'P': // Pending
       case 'pending':
         color = Colors.orange;
         label = 'Pending';
         break;
+      case 'A': // Approved
       case 'approved':
         color = Colors.green;
         label = 'Approved';
         break;
-      case 'declined':
+      case 'R': // Rejected
+      case 'rejected':
         color = Colors.red;
-        label = 'Declined';
+        label = 'Rejected';
+        break;
+      case 'D': // Deleted
+      case 'declined':
+      case 'deleted':
+        color = Colors.grey;
+        label = 'Deleted';
         break;
       default:
         color = Colors.grey;
