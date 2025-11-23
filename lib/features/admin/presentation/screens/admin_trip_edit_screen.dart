@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';  // ✅ NEW: Image cropper for mobile
 import '../../../../data/models/trip_model.dart';
 import '../../../../data/models/meeting_point_model.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -229,13 +230,34 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
         if (_selectedAreaValue != null) 'area': _selectedAreaValue,  // NEW: Trip area field
         'allow_waitlist': _allowWaitlist,
         'requirements': requirements,
-        // Include image if changed
-        if (_imageChanged && (_newImage != null || _newImageBytes != null))
-          'image': await _encodeImage(),
       };
 
+      // ✅ FIXED: Pass File object directly instead of base64 encoding
+      dynamic imageFileToUpload;
+      if (_imageChanged && (_newImage != null || _newImageBytes != null)) {
+        if (kIsWeb && _newImageBytes != null) {
+          // Web: Convert Uint8List to XFile
+          imageFileToUpload = XFile.fromData(
+            _newImageBytes!,
+            name: 'trip_image_${widget.tripId}.jpg',
+            mimeType: 'image/jpeg',
+          );
+        } else if (!kIsWeb && _newImage != null) {
+          // Mobile: Use cropped File directly
+          imageFileToUpload = _newImage;
+        }
+      }
+
       // Use PATCH for partial update
-      await repository.patchTrip(widget.tripId, updateData);
+      // ✅ FIXED: Pass imageFile parameter for multipart/form-data upload
+      final response = await repository.patchTrip(
+        widget.tripId,
+        updateData,
+        imageFile: imageFileToUpload,
+      );
+      if (kDebugMode) {
+        debugPrint('✅ Trip updated successfully: ${response['id']}');
+      }
 
       // Save vehicle requirements (separate cache operation)
       await _saveVehicleRequirements();
@@ -278,6 +300,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
 
   Future<void> _pickImage() async {
     try {
+      // Step 1: Pick image from gallery
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
@@ -287,25 +310,74 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
 
       if (pickedFile == null) return;
 
-      // For web platform
+      // For web platform - skip cropping (web cropper has issues)
       if (kIsWeb) {
         final bytes = await pickedFile.readAsBytes();
         setState(() {
           _newImageBytes = bytes;
           _imageChanged = true;
         });
-      } else {
-        // For mobile platforms
-        setState(() {
-          _newImage = File(pickedFile.path);
-          _imageChanged = true;
-        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Image selected (web - no crop)'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
       }
+
+      // For mobile platforms - Step 2: Crop image
+      // Import image_cropper at the top of the file if not already
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
+        compressQuality: 85,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        compressFormat: ImageCompressFormat.jpg,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Trip Image',
+            toolbarColor: Colors.blue,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.ratio16x9,
+            lockAspectRatio: true,
+            hideBottomControls: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Trip Image',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+
+      // If cropping was cancelled
+      if (croppedFile == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image cropping cancelled'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Use cropped image
+      setState(() {
+        _newImage = File(croppedFile.path);
+        _imageChanged = true;
+      });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Image selected'),
+            content: Text('✅ Image selected and cropped'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
@@ -315,7 +387,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick image: $e'),
+            content: Text('Failed to pick/crop image: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -323,26 +395,9 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
     }
   }
 
-  Future<String?> _encodeImage() async {
-    try {
-      Uint8List bytes;
-      
-      if (kIsWeb) {
-        if (_newImageBytes == null) return null;
-        bytes = _newImageBytes!;
-      } else {
-        if (_newImage == null) return null;
-        bytes = await _newImage!.readAsBytes();
-      }
-      
-      return 'data:image/jpeg;base64,${base64Encode(bytes)}';
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Failed to encode image: $e');
-      }
-      return null;
-    }
-  }
+  // ❌ REMOVED: _encodeImage() method no longer needed
+  // The backend expects multipart/form-data file upload, not base64-encoded JSON
+  // File objects are now passed directly to repository.patchTrip()
 
   @override
   Widget build(BuildContext context) {

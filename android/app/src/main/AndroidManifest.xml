@@ -3,6 +3,19 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
+    <!-- ✅ NEW: Image picker and cropper permissions -->
+    <!-- For Android 13+ (API 33+): Granular media permissions -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    
+    <!-- For Android 12 and below (API 32 and below): Legacy storage permissions -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
+                     android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+                     android:maxSdkVersion="32" />
+    
+    <!-- Camera permission for taking photos (optional, if camera feature added) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    
     <application
         android:usesCleartextTraffic="false"
         android:label="ad4x4_mobile"
@@ -35,6 +48,26 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        
+        <!-- ✅ NEW: FileProvider for image_cropper package -->
+        <!-- Required for sharing files between app and cropper -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+        
+        <!-- ✅ NEW: UCrop Activity for image_cropper -->
+        <!-- Required for Android image cropping UI -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:exported="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

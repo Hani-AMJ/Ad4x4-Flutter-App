@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
-import '../../../../core/utils/image_proxy.dart';
 import '../../../../data/models/upgrade_request_model.dart';
 import '../providers/upgrade_requests_provider.dart';
 
@@ -190,7 +189,7 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
           CircleAvatar(
             radius: 48,
             backgroundImage: request.member.profileImage != null
-                ? NetworkImage(ImageProxy.getProxiedUrl(request.member.profileImage))
+                ? NetworkImage(request.member.profileImage!)
                 : null,
             child: request.member.profileImage == null
                 ? Text(
@@ -653,7 +652,7 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
           CircleAvatar(
             radius: 20,
             backgroundImage: vote.voter.profileImage != null
-                ? NetworkImage(ImageProxy.getProxiedUrl(vote.voter.profileImage))
+                ? NetworkImage(vote.voter.profileImage!)
                 : null,
             child: vote.voter.profileImage == null
                 ? Text(vote.voter.displayName[0].toUpperCase())
@@ -806,7 +805,7 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
                 CircleAvatar(
                   radius: 16,
                   backgroundImage: comment.author.profileImage != null
-                      ? NetworkImage(ImageProxy.getProxiedUrl(comment.author.profileImage))
+                      ? NetworkImage(comment.author.profileImage!)
                       : null,
                   child: comment.author.profileImage == null
                       ? Text(

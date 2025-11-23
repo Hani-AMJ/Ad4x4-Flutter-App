@@ -99,21 +99,107 @@ class LogbookEntry {
   });
 
   factory LogbookEntry.fromJson(Map<String, dynamic> json) {
+    // Handle member field - can be int (ID only) or Map (full object)
+    final memberData = json['member'];
+    final MemberBasicInfo member;
+    
+    if (memberData is int) {
+      // API returned just member ID - create minimal MemberBasicInfo
+      member = MemberBasicInfo(
+        id: memberData,
+        firstName: 'Member',
+        lastName: '#$memberData',
+      );
+    } else if (memberData is Map<String, dynamic>) {
+      // API returned full member object
+      member = MemberBasicInfo.fromJson(memberData);
+    } else {
+      throw ArgumentError('Invalid member data type: ${memberData.runtimeType}');
+    }
+    
+    // Handle signedBy field - can be int (ID only) or Map (full object)
+    final signedByData = json['signedBy'];
+    final MemberBasicInfo signedBy;
+    
+    if (signedByData is int) {
+      // API returned just signedBy ID - create minimal MemberBasicInfo
+      signedBy = MemberBasicInfo(
+        id: signedByData,
+        firstName: 'Marshal',
+        lastName: '#$signedByData',
+      );
+    } else if (signedByData is Map<String, dynamic>) {
+      // API returned full signedBy object
+      signedBy = MemberBasicInfo.fromJson(signedByData);
+    } else {
+      throw ArgumentError('Invalid signedBy data type: ${signedByData.runtimeType}');
+    }
+    
+    // Handle trip field - can be null, int (ID only), or Map (full object)
+    final tripData = json['trip'];
+    final TripBasicInfo? trip;
+    
+    if (tripData == null) {
+      trip = null;
+    } else if (tripData is int) {
+      // API returned just trip ID - create minimal TripBasicInfo
+      trip = TripBasicInfo(
+        id: tripData,
+        title: 'Trip #$tripData',
+        startTime: DateTime.now(),
+      );
+    } else if (tripData is Map<String, dynamic>) {
+      // API returned full trip object
+      trip = TripBasicInfo.fromJson(tripData);
+    } else {
+      throw ArgumentError('Invalid trip data type: ${tripData.runtimeType}');
+    }
+    
+    // Handle skillsVerified field - can be List<int> (IDs only) or List<Map> (full objects)
+    final skillsData = json['skillsVerified'] as List<dynamic>? ?? [];
+    final List<LogbookSkillBasicInfo> skillsVerified;
+    
+    if (skillsData.isEmpty) {
+      skillsVerified = [];
+    } else if (skillsData.first is int) {
+      // API returned list of skill IDs only - create minimal skill objects
+      skillsVerified = skillsData.map((id) => LogbookSkillBasicInfo(
+        id: id as int,
+        name: 'Skill #$id',
+        description: '',
+        level: const LevelBasicInfo(id: 1, name: 'Beginner', numericLevel: 1),
+      )).toList();
+    } else if (skillsData.first is Map<String, dynamic>) {
+      // API returned full skill objects
+      skillsVerified = skillsData
+          .map((s) => LogbookSkillBasicInfo.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw ArgumentError('Invalid skillsVerified data type: ${skillsData.first.runtimeType}');
+    }
+    
+    // Safely parse dates with fallback
+    DateTime? parseDateTimeNullable(dynamic value) {
+      if (value == null) return null;
+      if (value is String && value.isNotEmpty) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+    
     return LogbookEntry(
       id: json['id'] as int,
-      member: MemberBasicInfo.fromJson(json['member'] as Map<String, dynamic>),
-      trip: json['trip'] != null 
-          ? TripBasicInfo.fromJson(json['trip'] as Map<String, dynamic>)
-          : null,
-      signedBy: MemberBasicInfo.fromJson(json['signedBy'] as Map<String, dynamic>),
-      skillsVerified: (json['skillsVerified'] as List<dynamic>?)
-          ?.map((s) => LogbookSkillBasicInfo.fromJson(s as Map<String, dynamic>))
-          .toList() ?? [],
+      member: member,
+      trip: trip,
+      signedBy: signedBy,
+      skillsVerified: skillsVerified,
       comment: json['comment'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt'] as String)
-          : null,
+      createdAt: parseDateTimeNullable(json['createdAt']) ?? DateTime.now(),
+      updatedAt: parseDateTimeNullable(json['updatedAt']),
     );
   }
 
@@ -159,18 +245,65 @@ class LogbookSkill {
   });
 
   factory LogbookSkill.fromJson(Map<String, dynamic> json) {
+    // Handle both API response formats:
+    // 1. New format: { "levelRequirement": 2 }
+    // 2. Old format: { "level": { "id": 2, "name": "Intermediate" } }
+    LevelBasicInfo level;
+    if (json.containsKey('levelRequirement')) {
+      final levelId = json['levelRequirement'] as int;
+      level = LevelBasicInfo(
+        id: levelId,
+        name: _getLevelNameFromId(levelId),
+        numericLevel: levelId,
+      );
+    } else if (json.containsKey('level') && json['level'] is Map<String, dynamic>) {
+      level = LevelBasicInfo.fromJson(json['level'] as Map<String, dynamic>);
+    } else {
+      // Default to Level 1 if no level info
+      level = const LevelBasicInfo(id: 1, name: 'Beginner', numericLevel: 1);
+    }
+    
+    // Safely parse dates
+    DateTime? parseDateTimeNullable(dynamic value) {
+      if (value == null) return null;
+      if (value is String && value.isNotEmpty) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+    
     return LogbookSkill(
       id: json['id'] as int,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      level: LevelBasicInfo.fromJson(json['level'] as Map<String, dynamic>),
+      name: (json['name'] as String?) ?? 'Skill #${json['id']}',
+      description: (json['description'] as String?) ?? '',
+      level: level,
       order: json['order'] as int? ?? 0,
       active: json['active'] as bool? ?? true,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt'] as String)
-          : null,
+      createdAt: parseDateTimeNullable(json['createdAt']) ?? DateTime.now(),
+      updatedAt: parseDateTimeNullable(json['updatedAt']),
     );
+  }
+  
+  /// Helper to convert level ID to level name
+  static String _getLevelNameFromId(int levelId) {
+    switch (levelId) {
+      case 1:
+        return 'Beginner';
+      case 2:
+        return 'Intermediate';
+      case 3:
+        return 'Advanced';
+      case 4:
+        return 'Expert';
+      case 5:
+        return 'Master';
+      default:
+        return 'Unknown';
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -269,15 +402,80 @@ class LogbookSkillReference {
   });
 
   factory LogbookSkillReference.fromJson(Map<String, dynamic> json) {
+    // Handle member field - can be int (ID only) or Map (full object)
+    final memberData = json['member'];
+    final MemberBasicInfo member;
+    if (memberData is int) {
+      member = MemberBasicInfo(id: memberData, firstName: 'Member', lastName: '#$memberData');
+    } else if (memberData is Map<String, dynamic>) {
+      member = MemberBasicInfo.fromJson(memberData);
+    } else {
+      throw ArgumentError('Invalid member data type: ${memberData.runtimeType}');
+    }
+    
+    // Handle verifiedBy field - can be missing, null, int (ID only), or Map (full object)
+    final verifiedByData = json['verifiedBy'];
+    final MemberBasicInfo verifiedBy;
+    if (verifiedByData == null) {
+      // Field is missing or null - use member as fallback (self-verified or unknown marshal)
+      verifiedBy = MemberBasicInfo(id: 0, firstName: 'Marshal', lastName: 'Unknown');
+    } else if (verifiedByData is int) {
+      verifiedBy = MemberBasicInfo(id: verifiedByData, firstName: 'Marshal', lastName: '#$verifiedByData');
+    } else if (verifiedByData is Map<String, dynamic>) {
+      verifiedBy = MemberBasicInfo.fromJson(verifiedByData);
+    } else {
+      throw ArgumentError('Invalid verifiedBy data type: ${verifiedByData.runtimeType}');
+    }
+    
+    // Handle logbookSkill field - can be int (ID only) or Map (full object)
+    final skillData = json['logbookSkill'];
+    final LogbookSkillBasicInfo logbookSkill;
+    if (skillData is int) {
+      logbookSkill = LogbookSkillBasicInfo(
+        id: skillData,
+        name: 'Skill #$skillData',
+        description: '',
+        level: const LevelBasicInfo(id: 1, name: 'Beginner', numericLevel: 1),
+      );
+    } else if (skillData is Map<String, dynamic>) {
+      logbookSkill = LogbookSkillBasicInfo.fromJson(skillData);
+    } else {
+      throw ArgumentError('Invalid logbookSkill data type: ${skillData.runtimeType}');
+    }
+    
+    // Handle trip field - can be null, int (ID only), or Map (full object)
+    final tripData = json['trip'];
+    final TripBasicInfo? trip;
+    if (tripData == null) {
+      trip = null;
+    } else if (tripData is int) {
+      trip = TripBasicInfo(id: tripData, title: 'Trip #$tripData', startTime: DateTime.now());
+    } else if (tripData is Map<String, dynamic>) {
+      trip = TripBasicInfo.fromJson(tripData);
+    } else {
+      throw ArgumentError('Invalid trip data type: ${tripData.runtimeType}');
+    }
+    
+    // Safely parse verifiedAt date
+    DateTime? parseDateTimeNullable(dynamic value) {
+      if (value == null) return null;
+      if (value is String && value.isNotEmpty) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+    
     return LogbookSkillReference(
       id: json['id'] as int,
-      member: MemberBasicInfo.fromJson(json['member'] as Map<String, dynamic>),
-      logbookSkill: LogbookSkillBasicInfo.fromJson(json['logbookSkill'] as Map<String, dynamic>),
-      trip: json['trip'] != null
-          ? TripBasicInfo.fromJson(json['trip'] as Map<String, dynamic>)
-          : null,
-      verifiedBy: MemberBasicInfo.fromJson(json['verifiedBy'] as Map<String, dynamic>),
-      verifiedAt: DateTime.parse(json['verifiedAt'] as String),
+      member: member,
+      logbookSkill: logbookSkill,
+      trip: trip,
+      verifiedBy: verifiedBy,
+      verifiedAt: parseDateTimeNullable(json['verifiedAt']) ?? DateTime.now(),
       comment: json['comment'] as String?,
     );
   }
@@ -538,12 +736,28 @@ class MemberBasicInfo {
   }
 
   factory MemberBasicInfo.fromJson(Map<String, dynamic> json) {
+    // Handle firstName/first_name with proper null checks
+    String firstName = '';
+    if (json['firstName'] != null && json['firstName'] is String) {
+      firstName = json['firstName'] as String;
+    } else if (json['first_name'] != null && json['first_name'] is String) {
+      firstName = json['first_name'] as String;
+    }
+    
+    // Handle lastName/last_name with proper null checks
+    String lastName = '';
+    if (json['lastName'] != null && json['lastName'] is String) {
+      lastName = json['lastName'] as String;
+    } else if (json['last_name'] != null && json['last_name'] is String) {
+      lastName = json['last_name'] as String;
+    }
+    
     return MemberBasicInfo(
       id: json['id'] as int,
-      firstName: json['firstName'] as String? ?? json['first_name'] as String? ?? '',
-      lastName: json['lastName'] as String? ?? json['last_name'] as String? ?? '',
+      firstName: firstName,
+      lastName: lastName,
       profilePicture: json['profilePicture'] as String? ?? json['profile_picture'] as String?,
-      level: json['level'] != null
+      level: json['level'] != null && json['level'] is Map<String, dynamic>
           ? LevelBasicInfo.fromJson(json['level'] as Map<String, dynamic>)
           : null,
     );
@@ -575,11 +789,20 @@ class TripBasicInfo {
   });
 
   factory TripBasicInfo.fromJson(Map<String, dynamic> json) {
+    // Safely parse startTime
+    DateTime startTime;
+    try {
+      final timeStr = json['startTime'] as String? ?? json['start_time'] as String?;
+      startTime = timeStr != null ? DateTime.parse(timeStr) : DateTime.now();
+    } catch (e) {
+      startTime = DateTime.now();
+    }
+    
     return TripBasicInfo(
       id: json['id'] as int,
-      title: json['title'] as String,
-      startTime: DateTime.parse(json['startTime'] as String? ?? json['start_time'] as String),
-      level: json['level'] != null
+      title: (json['title'] as String?) ?? 'Trip #${json['id']}',
+      startTime: startTime,
+      level: json['level'] != null && json['level'] is Map<String, dynamic>
           ? LevelBasicInfo.fromJson(json['level'] as Map<String, dynamic>)
           : null,
     );
@@ -610,7 +833,7 @@ class LevelBasicInfo {
   factory LevelBasicInfo.fromJson(Map<String, dynamic> json) {
     return LevelBasicInfo(
       id: json['id'] as int,
-      name: json['name'] as String,
+      name: (json['name'] as String?) ?? 'Unknown Level',
       numericLevel: json['numericLevel'] as int? ?? json['numeric_level'] as int? ?? 0,
     );
   }
@@ -629,19 +852,55 @@ class LogbookSkillBasicInfo {
   final int id;
   final String name;
   final String description;
+  final LevelBasicInfo level;
 
   const LogbookSkillBasicInfo({
     required this.id,
     required this.name,
     required this.description,
+    required this.level,
   });
 
   factory LogbookSkillBasicInfo.fromJson(Map<String, dynamic> json) {
+    // Handle both API response formats (same as LogbookSkill)
+    LevelBasicInfo level;
+    if (json.containsKey('levelRequirement')) {
+      final levelId = json['levelRequirement'] as int;
+      level = LevelBasicInfo(
+        id: levelId,
+        name: _getLevelNameFromId(levelId),
+        numericLevel: levelId,
+      );
+    } else if (json.containsKey('level')) {
+      level = LevelBasicInfo.fromJson(json['level'] as Map<String, dynamic>);
+    } else {
+      // Default to Level 1 if no level info
+      level = const LevelBasicInfo(id: 1, name: 'Beginner', numericLevel: 1);
+    }
+    
     return LogbookSkillBasicInfo(
       id: json['id'] as int,
-      name: json['name'] as String,
-      description: json['description'] as String? ?? '',
+      name: (json['name'] as String?) ?? 'Skill #${json['id']}',
+      description: (json['description'] as String?) ?? '',
+      level: level,
     );
+  }
+
+  static String _getLevelNameFromId(int levelId) {
+    switch (levelId) {
+      case 1:
+        return 'Beginner';
+      case 2:
+        return 'Intermediate';
+      case 3:
+        return 'Advanced';
+      case 4:
+        return 'Expert';
+      case 5:
+        return 'Master';
+      default:
+        return 'Unknown';
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -649,6 +908,7 @@ class LogbookSkillBasicInfo {
       'id': id,
       'name': name,
       'description': description,
+      'level': level.toJson(),
     };
   }
 }

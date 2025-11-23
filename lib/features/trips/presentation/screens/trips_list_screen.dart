@@ -205,7 +205,20 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
     final currentUser = authState.user;
     final canCreateTrip = currentUser?.hasPermission('create_trip') ?? false;
 
-    if (trips.isEmpty && !tripsState.isLoading) {
+    // ✅ NEW: Filter trips by eligibility if showEligibleOnly is enabled
+    List<TripListItem> displayTrips = trips;
+    if (filters.showEligibleOnly && currentUser != null) {
+      final userLevel = currentUser.level?.numericLevel ?? 0;
+      displayTrips = trips.where((trip) {
+        final requiredLevel = trip.level.numericLevel ?? 0;
+        final isEligible = userLevel >= requiredLevel;
+        final isAlreadyJoined = trip.isRegistered || trip.lead.id == currentUser.id;
+        // Show trip if user is eligible OR already registered
+        return isEligible || isAlreadyJoined;
+      }).toList();
+    }
+
+    if (displayTrips.isEmpty && !tripsState.isLoading) {
       return EmptyStateWidget(
         icon: Icons.explore_off,
         title: 'No Trips Found',
@@ -224,10 +237,10 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
       color: colors.primary,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: trips.length + (showLoadMore && tripsState.hasMore ? 1 : 0), // +1 for Load More button only in All Trips tab
+        itemCount: displayTrips.length + (showLoadMore && tripsState.hasMore ? 1 : 0), // +1 for Load More button only in All Trips tab
         itemBuilder: (context, index) {
           // Load More button at the end (only for All Trips tab)
-          if (showLoadMore && index == trips.length) {
+          if (showLoadMore && index == displayTrips.length) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
@@ -266,7 +279,7 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
             );
           }
 
-          final trip = trips[index];
+          final trip = displayTrips[index];
           // Use trip.isRegistered and trip.isWaitlisted fields from API (backend provides these)
           // Fallback: Check if user is the trip lead
           final authState = ref.watch(authProviderV2);
@@ -286,6 +299,15 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
           // Actual report data is fetched when user opens trip details
           final showReportBadge = isCompleted && canCreateReport;
           
+          // ✅ NEW: Check user eligibility based on level
+          final userLevel = currentUserObject?.level?.numericLevel ?? 0;
+          final requiredLevel = trip.level.numericLevel ?? 0;
+          final isEligible = userLevel >= requiredLevel;
+          final isLocked = !isEligible && !isJoined; // Show lock badge if not eligible and not already registered
+          
+          // ✅ NEW: Check if current user is the trip lead
+          final isLead = trip.lead.id == currentUserId;
+          
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: TripCard(
@@ -302,6 +324,9 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
               isCompleted: isCompleted, // ✅ NEW: Trip completion status
               hasReport: false, // ✅ Phase 4: Optimistic - assume no report, actual check in detail view
               canCreateReport: showReportBadge, // ✅ NEW: Show "Create Report" badge for eligible trips
+              isEligible: isEligible, // ✅ NEW: User eligibility status
+              isLocked: isLocked, // ✅ NEW: Show lock badge for ineligible trips
+              isLead: isLead, // ✅ NEW: User is the trip lead
               onTap: () => context.push('/trips/${trip.id}'),
             ),
           );

@@ -452,6 +452,97 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               isExpanded: expanded,
             ),
             
+            // ✅ NEW: Logbook Analytics
+            if (user.hasPermission('create_logbook_entries'))
+              _NavItem(
+                icon: Icons.analytics_outlined,
+                selectedIcon: Icons.analytics,
+                label: 'Logbook Analytics',
+                isSelected: currentPath == '/admin/logbook/analytics',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/logbook/analytics'),
+              ),
+            
+            // ✅ NEW: Member Skills Report
+            if (user.hasPermission('create_logbook_entries'))
+              _NavItem(
+                icon: Icons.assessment_outlined,
+                selectedIcon: Icons.assessment,
+                label: 'Member Skills Report',
+                isSelected: currentPath == '/admin/logbook/member-skills',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/logbook/member-skills'),
+              ),
+            
+            // ✅ NEW: Marshal Activity Report
+            if (user.hasPermission('create_logbook_entries'))
+              _NavItem(
+                icon: Icons.people_outline,
+                selectedIcon: Icons.people,
+                label: 'Marshal Activity',
+                isSelected: currentPath == '/admin/logbook/marshal-activity',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/logbook/marshal-activity'),
+              ),
+            
+            // ✅ NEW: Quick Sign-Off
+            if (user.hasPermission('sign_logbook_skills'))
+              _NavItem(
+                icon: Icons.flash_on_outlined,
+                selectedIcon: Icons.flash_on,
+                label: 'Quick Sign-Off',
+                isSelected: currentPath == '/admin/logbook/quick-signoff',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/logbook/quick-signoff'),
+              ),
+            
+            // ✅ NEW: Bulk Operations
+            if (user.hasPermission('sign_logbook_skills'))
+              _NavItem(
+                icon: Icons.library_add_check_outlined,
+                selectedIcon: Icons.library_add_check,
+                label: 'Bulk Operations',
+                isSelected: currentPath == '/admin/logbook/bulk-operations',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/logbook/bulk-operations'),
+              ),
+            
+            // ✅ NEW: Export Data
+            if (user.hasPermission('create_logbook_entries'))
+              _NavItem(
+                icon: Icons.download_outlined,
+                selectedIcon: Icons.download,
+                label: 'Export Data',
+                isSelected: currentPath == '/admin/logbook/export',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/logbook/export'),
+              ),
+            
+            // ✅ NEW: Logbook History
+            if (user.hasPermission('create_logbook_entries'))
+              _NavItem(
+                icon: Icons.history_outlined,
+                selectedIcon: Icons.history,
+                label: 'Logbook History',
+                isSelected: currentPath == '/admin/logbook/audit-log',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/logbook/audit-log'),
+              ),
+            
+            // ✅ NEW: Trip Reports
+            if (user.hasPermission('create_trip_report'))
+              _NavItem(
+                icon: Icons.description_outlined,
+                selectedIcon: Icons.description,
+                label: 'Trip Reports',
+                isSelected: currentPath == '/admin/trip-reports',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/trip-reports'),
+              ),
+            
+            // ⚠️ HIDDEN FOR TESTING: Old logbook entries and sign-off pages
+            // These are commented out but code remains for potential deletion later
+            /*
             if (user.hasPermission('create_logbook_entries'))
               _NavItem(
                 icon: Icons.book_outlined,
@@ -471,8 +562,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/sign-off'),
               ),
-            
-            // Trip Reports moved to Trip Management section
+            */
             
             const SizedBox(height: 8),
           ],

@@ -27,6 +27,7 @@ dependencies:
   shared_preferences: ^2.2.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  path_provider: ^2.1.5  # For temporary directory (web image upload)
 
   # Media
   image_picker: ^1.0.7

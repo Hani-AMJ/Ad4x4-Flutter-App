@@ -17,6 +17,9 @@ class TripCard extends StatelessWidget {
   final bool hasReport; // ✅ NEW: Trip has at least one report
   final bool canCreateReport; // ✅ NEW: User can create report for this trip
   final bool isCompleted; // ✅ NEW: Trip is completed (for report eligibility)
+  final bool isEligible; // ✅ NEW: User meets level requirement
+  final bool isLocked; // ✅ NEW: User doesn't meet level requirement
+  final bool isLead; // ✅ NEW: User is the trip lead
 
   const TripCard({
     super.key,
@@ -34,6 +37,9 @@ class TripCard extends StatelessWidget {
     this.hasReport = false, // ✅ NEW: Default no report
     this.canCreateReport = false, // ✅ NEW: Default no permission
     this.isCompleted = false, // ✅ NEW: Default not completed
+    this.isEligible = true, // ✅ NEW: Default eligible
+    this.isLocked = false, // ✅ NEW: Default not locked
+    this.isLead = false, // ✅ NEW: Default not lead
   });
 
   // Get icon and color using LevelDisplayHelper
@@ -89,6 +95,22 @@ class TripCard extends StatelessWidget {
                     top: 8,
                     right: 8,
                     child: _buildReportBadge(context, hasReport, canCreateReport),
+                  ),
+                
+                // ✅ NEW: Eligibility badge overlay (top-left corner)
+                if (isLocked)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: _buildEligibilityBadge(context),
+                  ),
+                
+                // ✅ NEW: Lead badge overlay (bottom-right corner)
+                if (isLead)
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: _buildLeadBadge(context),
                   ),
               ],
             ),
@@ -367,5 +389,83 @@ class TripCard extends StatelessWidget {
     }
     
     return const SizedBox.shrink();
+  }
+  
+  /// ✅ NEW: Build eligibility badge for locked trips
+  Widget _buildEligibilityBadge(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.lock,
+            size: 14,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'Level Required',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// ✅ NEW: Build lead badge for trips where user is the lead
+  Widget _buildLeadBadge(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.amber.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.star,
+            size: 14,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'Lead',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

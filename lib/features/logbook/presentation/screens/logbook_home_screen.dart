@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../widgets/skills_progress_dashboard.dart';
 
 /// Logbook Home Screen - Dashboard for all logbook functionality
 /// 
@@ -74,6 +75,10 @@ class LogbookHomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             
+            // Skills Progress Dashboard
+            const SkillsProgressDashboard(),
+            const SizedBox(height: 24),
+            
             // Quick Actions
             Text(
               'Quick Actions',
@@ -143,9 +148,44 @@ class LogbookHomeScreen extends ConsumerWidget {
       _QuickActionData(
         icon: Icons.directions_car,
         title: 'Trip History',
-        subtitle: 'Skills per trip',
+        subtitle: 'Filter & search trips',
         color: const Color(0xFF64B5F6),
-        onTap: () => context.push('/logbook/trip-history'),
+        onTap: () => context.push('/logbook/trip-history-enhanced'),
+      ),
+      _QuickActionData(
+        icon: Icons.history,
+        title: 'Verification History',
+        subtitle: 'View all sign-offs',
+        color: const Color(0xFF7E57C2),
+        onTap: () => context.push('/logbook/verification-history'),
+      ),
+      _QuickActionData(
+        icon: Icons.calendar_today,
+        title: 'Trip Planning',
+        subtitle: 'Plan skill goals',
+        color: const Color(0xFF26A69A),
+        onTap: () => context.push('/logbook/trip-planning'),
+      ),
+      _QuickActionData(
+        icon: Icons.timeline,
+        title: 'Timeline View',
+        subtitle: 'Visual journey',
+        color: const Color(0xFFEC407A),
+        onTap: () => context.push('/logbook/timeline-visualization'),
+      ),
+      _QuickActionData(
+        icon: Icons.recommend,
+        title: 'Recommendations',
+        subtitle: 'Smart suggestions',
+        color: const Color(0xFF5E35B1),
+        onTap: () => context.push('/logbook/skill-recommendations'),
+      ),
+      _QuickActionData(
+        icon: Icons.card_membership,
+        title: 'Certificates',
+        subtitle: 'View & share',
+        color: const Color(0xFFE91E63),
+        onTap: () => context.push('/logbook/certificates'),
       ),
       _QuickActionData(
         icon: Icons.trending_up,
@@ -156,9 +196,17 @@ class LogbookHomeScreen extends ConsumerWidget {
       ),
       if (isMarshal)
         _QuickActionData(
+          icon: Icons.flash_on,
+          title: 'Quick Sign-Off',
+          subtitle: 'Fast skill verification',
+          color: const Color(0xFF4CAF50),
+          onTap: () => context.push('/admin/logbook/quick-signoff'),
+        ),
+      if (isMarshal)
+        _QuickActionData(
           icon: Icons.admin_panel_settings,
           title: 'Marshal Tools',
-          subtitle: 'Create & approve',
+          subtitle: 'Manage entries',
           color: const Color(0xFF9C27B0),
           onTap: () => context.push('/admin/logbook/entries'),
         ),

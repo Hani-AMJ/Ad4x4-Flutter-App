@@ -75,7 +75,7 @@ class MainApiEndpoints {
   // Logbook endpoints
   static const String logbookEntries = '/api/logbookentries/';
   static const String logbookSkills = '/api/logbookskills/';
-  static const String logbookSkillReferences = '/api/logbookskillreferences';
+  static const String logbookSkillReferences = '/api/logbookskillreferences/';  // ✅ FIXED: Added trailing slash for consistency
 
   // Trip reports - ✅ FIXED: Correct endpoint
   static const String tripReports = '/api/tripreports/';

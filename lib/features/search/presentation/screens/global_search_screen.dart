@@ -204,7 +204,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> with Si
           title: fullName.isNotEmpty ? fullName : (item['username'] ?? 'Unknown'),
           subtitle: item['email'] ?? 'Member #${item['id']}',
           description: item['level']?['display_name'] ?? item['level']?['displayName'] ?? 'Member',
-          metadata: '${item['trip_count'] ?? item['tripCount'] ?? 0} trips',
+          metadata: '${item['trip_count'] ?? item['tripCount'] ?? 0} trips', // ✅ NOTE: Shows total count (backend provides mixed count)
         );
 
       case SearchResultType.photo:

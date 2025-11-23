@@ -5,8 +5,14 @@ import '../../../../data/models/user_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../providers/logbook_provider.dart';
+import '../widgets/member_search_dialog.dart';
+import '../widgets/trip_search_dialog.dart';
 
 /// Admin Sign Off Skills Screen
+/// 
+/// ✅ REDESIGNED: Uses autocomplete search dialogs instead of dropdowns
+/// ✅ FIXED: Proper pagination and search in member/trip selection
+/// ✅ IMPROVED: Better UX with search-based selection
 /// 
 /// Dedicated interface for marshals to sign off skills for members
 /// Shows member's current skill status and allows batch sign-off
@@ -23,27 +29,17 @@ class _AdminSignOffSkillsScreenState
     extends ConsumerState<AdminSignOffSkillsScreen> {
   int? _selectedMemberId;
   String? _selectedMemberName;
+  String? _selectedMemberUsername;
   int? _selectedTripId;
   String? _selectedTripTitle;
   
-  List<Map<String, dynamic>> _members = [];
-  List<Map<String, dynamic>> _trips = [];
   List<MemberSkillStatus>? _memberSkills;
   
   Set<int> _skillsToSignOff = {};
   final Map<int, TextEditingController> _commentControllers = {};
   
-  bool _isLoadingMembers = true;
   bool _isLoadingSkills = false;
   bool _isSubmitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
-  }
 
   @override
   void dispose() {
@@ -51,39 +47,6 @@ class _AdminSignOffSkillsScreenState
       controller.dispose();
     }
     super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    setState(() => _isLoadingMembers = true);
-    
-    try {
-      final repository = ref.read(mainApiRepositoryProvider);
-      
-      // Load members
-      final membersResponse = await repository.getMembers(page: 1, pageSize: 100);
-      final membersList = (membersResponse['results'] as List<dynamic>?)
-          ?.map((m) => m as Map<String, dynamic>)
-          .toList() ?? [];
-      
-      // Load recent trips
-      final tripsResponse = await repository.getTrips(page: 1, pageSize: 50);
-      final tripsList = (tripsResponse['results'] as List<dynamic>?)
-          ?.map((t) => t as Map<String, dynamic>)
-          .toList() ?? [];
-      
-      setState(() {
-        _members = membersList;
-        _trips = tripsList;
-        _isLoadingMembers = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingMembers = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load data: $e')),
-        );
-      }
-    }
   }
 
   Future<void> _loadMemberSkills(int memberId) async {
@@ -183,6 +146,60 @@ class _AdminSignOffSkillsScreenState
     }
   }
 
+  Future<void> _showMemberSearch() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const MemberSearchDialog(
+        title: 'Select Member to Sign Off Skills',
+        searchHint: 'Search by username or name...',
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _selectedMemberId = result['id'] as int;
+        _selectedMemberName = result['displayName'] as String;
+        _selectedMemberUsername = result['username'] as String?;
+      });
+      
+      _loadMemberSkills(_selectedMemberId!);
+    }
+  }
+
+  Future<void> _showTripSearch() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const TripSearchDialog(
+        title: 'Associate with Trip (Optional)',
+        searchHint: 'Search by trip title...',
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _selectedTripId = result['id'] as int;
+        _selectedTripTitle = result['title'] as String;
+      });
+    }
+  }
+
+  void _clearMemberSelection() {
+    setState(() {
+      _selectedMemberId = null;
+      _selectedMemberName = null;
+      _selectedMemberUsername = null;
+      _memberSkills = null;
+      _skillsToSignOff.clear();
+    });
+  }
+
+  void _clearTripSelection() {
+    setState(() {
+      _selectedTripId = null;
+      _selectedTripTitle = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProviderV2).user;
@@ -222,19 +239,17 @@ class _AdminSignOffSkillsScreenState
             ),
         ],
       ),
-      body: _isLoadingMembers
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // Selection section
-                _buildSelectionSection(theme, colors),
-                
-                // Skills matrix
-                Expanded(
-                  child: _buildSkillsMatrix(theme, colors),
-                ),
-              ],
-            ),
+      body: Column(
+        children: [
+          // Selection section
+          _buildSelectionSection(theme, colors),
+          
+          // Skills matrix
+          Expanded(
+            child: _buildSkillsMatrix(theme, colors),
+          ),
+        ],
+      ),
     );
   }
 
@@ -245,7 +260,7 @@ class _AdminSignOffSkillsScreenState
         color: colors.surface,
         border: Border(
           bottom: BorderSide(
-            color: colors.outline.withOpacity(0.2),
+            color: colors.outline.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -253,80 +268,88 @@ class _AdminSignOffSkillsScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Member selection
-          DropdownButtonFormField<int>(
-            value: _selectedMemberId,
-            decoration: InputDecoration(
-              labelText: 'Select Member',
-              prefixIcon: const Icon(Icons.person),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+          InkWell(
+            onTap: _showMemberSearch,
+            borderRadius: BorderRadius.circular(12),
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: 'Select Member *',
+                prefixIcon: const Icon(Icons.person_search),
+                suffixIcon: _selectedMemberId != null
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: _clearMemberSelection,
+                      )
+                    : const Icon(Icons.arrow_drop_down),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
+              child: _selectedMemberId != null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _selectedMemberName ?? 'Unknown',
+                          style: theme.textTheme.bodyLarge,
+                        ),
+                        if (_selectedMemberUsername != null)
+                          Text(
+                            '@$_selectedMemberUsername',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                      ],
+                    )
+                  : Text(
+                      'Tap to search members...',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
             ),
-            items: _members.map((member) {
-              final firstName = member['first_name'] as String? ?? member['firstName'] as String? ?? '';
-              final lastName = member['last_name'] as String? ?? member['lastName'] as String? ?? '';
-              final displayName = '$firstName $lastName'.trim();
-              final id = member['id'] as int;
-              
-              return DropdownMenuItem<int>(
-                value: id,
-                child: Text(displayName.isNotEmpty ? displayName : 'Unknown'),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                final member = _members.firstWhere((m) => m['id'] == value);
-                final firstName = member['first_name'] as String? ?? member['firstName'] as String? ?? '';
-                final lastName = member['last_name'] as String? ?? member['lastName'] as String? ?? '';
-                
-                setState(() {
-                  _selectedMemberId = value;
-                  _selectedMemberName = '$firstName $lastName'.trim();
-                });
-                
-                _loadMemberSkills(value);
-              }
-            },
           ),
           
           const SizedBox(height: 12),
           
           // Trip selection (optional)
-          DropdownButtonFormField<int>(
-            value: _selectedTripId,
-            decoration: InputDecoration(
-              labelText: 'Associate with Trip (Optional)',
-              prefixIcon: const Icon(Icons.directions_car),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+          InkWell(
+            onTap: _showTripSearch,
+            borderRadius: BorderRadius.circular(12),
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: 'Associate with Trip (Optional)',
+                prefixIcon: const Icon(Icons.directions_car),
+                suffixIcon: _selectedTripId != null
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: _clearTripSelection,
+                      )
+                    : const Icon(Icons.arrow_drop_down),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                _selectedTripTitle ?? 'Tap to search trips...',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: _selectedTripId != null
+                      ? colors.onSurface
+                      : colors.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ),
-            items: [
-              const DropdownMenuItem<int>(
-                value: null,
-                child: Text('No trip association'),
-              ),
-              ..._trips.map((trip) {
-                final title = trip['title'] as String? ?? 'Unknown Trip';
-                final id = trip['id'] as int;
-                
-                return DropdownMenuItem<int>(
-                  value: id,
-                  child: Text(title),
-                );
-              }),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _selectedTripId = value;
-                if (value != null) {
-                  final trip = _trips.firstWhere((t) => t['id'] == value);
-                  _selectedTripTitle = trip['title'] as String?;
-                } else {
-                  _selectedTripTitle = null;
-                }
-              });
-            },
+          ),
+          
+          const SizedBox(height: 8),
+          Text(
+            'Tip: Use search to find members or trips by typing username, name, or trip title',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colors.onSurface.withValues(alpha: 0.6),
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
       ),
@@ -347,10 +370,17 @@ class _AdminSignOffSkillsScreenState
             ),
             const SizedBox(height: 8),
             Text(
-              'Choose a member to view and sign off their skills',
+              'Tap the member field above to search and select a member',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withOpacity(0.6),
+                color: colors.onSurface.withValues(alpha: 0.6),
               ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _showMemberSearch,
+              icon: const Icon(Icons.search),
+              label: const Text('Search Members'),
             ),
           ],
         ),
@@ -376,7 +406,7 @@ class _AdminSignOffSkillsScreenState
             Text(
               'No skills available for this member',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurface.withOpacity(0.6),
+                color: colors.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -384,13 +414,60 @@ class _AdminSignOffSkillsScreenState
       );
     }
 
-    // Group skills by level (assuming skills have level info)
+    // Group skills by verification status
     final unverifiedSkills = _memberSkills!.where((s) => !s.verified).toList();
     final verifiedSkills = _memberSkills!.where((s) => s.verified).toList();
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Summary card
+        Card(
+          color: colors.primaryContainer,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _selectedMemberName ?? 'Unknown',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (_selectedMemberUsername != null)
+                        Text(
+                          '@$_selectedMemberUsername',
+                          style: theme.textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${unverifiedSkills.length} unverified',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    Text(
+                      '${verifiedSkills.length} verified',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
         // Unverified skills section
         if (unverifiedSkills.isNotEmpty) ...[
           Text(
@@ -438,7 +515,7 @@ class _AdminSignOffSkillsScreenState
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: isVerified
-          ? colors.primaryContainer.withOpacity(0.3)
+          ? colors.primaryContainer.withValues(alpha: 0.3)
           : null,
       child: ExpansionTile(
         leading: isVerified
@@ -494,7 +571,7 @@ class _AdminSignOffSkillsScreenState
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: colors.surfaceVariant,
+                        color: colors.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(skillStatus.comment!),

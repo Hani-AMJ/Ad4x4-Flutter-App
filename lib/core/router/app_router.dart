@@ -30,12 +30,21 @@ import '../../features/gallery/presentation/screens/photo_upload_screen.dart';
 import '../../features/gallery/presentation/screens/favorites_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
+import '../../features/profile/presentation/screens/member_logbook_screen.dart';
 import '../../features/logbook/presentation/screens/logbook_home_screen.dart';
 import '../../features/logbook/presentation/screens/logbook_timeline_screen.dart';
 import '../../features/logbook/presentation/screens/skills_matrix_screen.dart';
 import '../../features/logbook/presentation/screens/trip_history_with_logbook_screen.dart';
 import '../../features/logbook/presentation/screens/member_upgrade_requests_screen.dart';
 import '../../features/logbook/presentation/screens/create_upgrade_request_screen.dart';
+import '../../features/logbook/presentation/screens/marshal_quick_signoff_screen.dart';
+import '../../features/logbook/presentation/screens/skill_verification_history_screen.dart';
+import '../../features/logbook/presentation/screens/trip_skill_planning_screen.dart';
+import '../../features/logbook/presentation/screens/logbook_timeline_visualization_screen.dart';
+import '../../features/logbook/presentation/screens/skill_recommendations_screen.dart';
+import '../../features/logbook/presentation/screens/skills_comparison_screen.dart';
+import '../../features/logbook/presentation/screens/trip_history_enhanced_screen.dart';
+import '../../features/logbook/presentation/screens/skill_certificates_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/help_support_screen.dart';
 import '../../features/settings/presentation/screens/terms_conditions_screen.dart';
@@ -68,7 +77,13 @@ import '../../features/admin/presentation/screens/admin_trip_requests_screen.dar
 import '../../features/admin/presentation/screens/admin_feedback_screen.dart';
 import '../../features/admin/presentation/screens/admin_logbook_entries_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_logbook_entry_screen.dart';
+import '../../features/admin/presentation/screens/admin_logbook_analytics_screen.dart';
+import '../../features/admin/presentation/screens/admin_member_skills_report_screen.dart';
+import '../../features/admin/presentation/screens/admin_marshal_activity_report_screen.dart';
 import '../../features/admin/presentation/screens/admin_sign_off_skills_screen.dart';
+import '../../features/admin/presentation/screens/admin_bulk_operations_screen.dart';
+import '../../features/admin/presentation/screens/admin_export_data_screen.dart';
+import '../../features/admin/presentation/screens/admin_audit_log_screen.dart';
 // TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT - Imports commented out
 // import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart';
 // import '../../features/admin/presentation/screens/quick_trip_report_screen.dart';
@@ -148,6 +163,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (!isAuthenticated && !isAuthPage) {
         print('↪️ [Router] Not authenticated, redirect to login');
         return '/login';
+      }
+      
+      // Check profile completion after login (only for authenticated users)
+      if (isAuthenticated && !isAuthPage) {
+        final user = authState?.user;
+        final isEditProfilePage = currentLocation == '/profile/edit';
+        
+        // If user exists and profile is incomplete, redirect to edit profile
+        if (user != null && !user.isProfileComplete && !isEditProfilePage) {
+          print('⚠️ [Router] Profile incomplete, redirect to edit profile');
+          print('   Missing fields: ${user.missingFields.join(", ")}');
+          return '/profile/edit';
+        }
       }
       
       return null;
@@ -327,6 +355,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'edit-profile',
         builder: (context, state) => const EditProfileScreen(),
       ),
+      GoRoute(
+        path: '/profile/logbook/:memberId',
+        name: 'member-logbook',
+        builder: (context, state) {
+          final memberId = int.parse(state.pathParameters['memberId']!);
+          final memberName = state.uri.queryParameters['name'] ?? 'Member';
+          return MemberLogbookScreen(
+            memberId: memberId,
+            memberName: memberName,
+          );
+        },
+      ),
 
       // Logbook Routes
       GoRoute(
@@ -366,6 +406,65 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/logbook/upgrade-requests/create',
         name: 'create-upgrade-request',
         builder: (context, state) => const CreateUpgradeRequestScreen(),
+      ),
+      GoRoute(
+        path: '/logbook/verification-history',
+        name: 'skill-verification-history',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['memberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return SkillVerificationHistoryScreen(memberId: memberId);
+        },
+      ),
+      GoRoute(
+        path: '/logbook/trip-planning',
+        name: 'trip-skill-planning',
+        builder: (context, state) => const TripSkillPlanningScreen(),
+      ),
+      GoRoute(
+        path: '/logbook/timeline-visualization',
+        name: 'timeline-visualization',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['memberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return LogbookTimelineVisualizationScreen(memberId: memberId);
+        },
+      ),
+      GoRoute(
+        path: '/logbook/skill-recommendations',
+        name: 'skill-recommendations',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['memberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return SkillRecommendationsScreen(memberId: memberId);
+        },
+      ),
+      GoRoute(
+        path: '/logbook/skills-comparison',
+        name: 'skills-comparison',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['comparisonMemberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return SkillsComparisonScreen(comparisonMemberId: memberId);
+        },
+      ),
+      GoRoute(
+        path: '/logbook/trip-history-enhanced',
+        name: 'trip-history-enhanced',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['memberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return TripHistoryEnhancedScreen(memberId: memberId);
+        },
+      ),
+      GoRoute(
+        path: '/logbook/certificates',
+        name: 'skill-certificates',
+        builder: (context, state) {
+          final memberIdStr = state.uri.queryParameters['memberId'];
+          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          return SkillCertificatesScreen(memberId: memberId);
+        },
       ),
       // ❌ REMOVED: Members now view request details in popup dialog
       // No separate detail screen needed for member view
@@ -609,6 +708,33 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
           // Marshal Panel Routes
           GoRoute(
+            path: '/admin/logbook/analytics',
+            name: 'admin-logbook-analytics',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminLogbookAnalyticsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/member-skills',
+            name: 'admin-member-skills-report',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminMemberSkillsReportScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/marshal-activity',
+            name: 'admin-marshal-activity-report',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminMarshalActivityReportScreen(),
+              );
+            },
+          ),
+          GoRoute(
             path: '/admin/logbook/entries',
             name: 'admin-logbook-entries',
             pageBuilder: (context, state) {
@@ -632,6 +758,42 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) {
               return NoTransitionPage(
                 child: const AdminSignOffSkillsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/quick-signoff',
+            name: 'marshal-quick-signoff',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const MarshalQuickSignoffScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/bulk-operations',
+            name: 'admin-bulk-operations',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminBulkOperationsScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/export',
+            name: 'admin-export-data',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminExportDataScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: '/admin/logbook/audit-log',
+            name: 'admin-audit-log',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                child: const AdminAuditLogScreen(),
               );
             },
           ),

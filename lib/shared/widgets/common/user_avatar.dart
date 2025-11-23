@@ -30,30 +30,64 @@ class UserAvatar extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
+    // Display user avatar image with fallback to initials
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return ClipOval(
+        child: SizedBox(
+          width: radius * 2,
+          height: radius * 2,
+          child: Image.network(
+            imageUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              // Network error - show initials fallback
+              if (kDebugMode) {
+                debugPrint('Avatar load error: $error');
+              }
+              return CircleAvatar(
+                radius: radius,
+                backgroundColor: colors.primary,
+                foregroundColor: colors.onPrimary,
+                child: Text(
+                  _getInitials(),
+                  style: TextStyle(
+                    fontSize: radius * 0.6,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return CircleAvatar(
+                radius: radius,
+                backgroundColor: colors.surfaceContainerHighest,
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                  strokeWidth: 2,
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    // No image URL - show initials
     final avatar = CircleAvatar(
       radius: radius,
       backgroundColor: colors.primary,
       foregroundColor: colors.onPrimary,
-      backgroundImage: imageUrl != null && imageUrl!.isNotEmpty 
-          ? NetworkImage(imageUrl!) 
-          : null,
-      onBackgroundImageError: imageUrl != null 
-          ? (exception, stackTrace) {
-              // Image failed to load - fallback to initials (handled by child)
-              if (kDebugMode) {
-                debugPrint('Failed to load avatar image: $exception');
-              }
-            }
-          : null,
-      child: imageUrl == null || imageUrl!.isEmpty
-          ? Text(
-              _getInitials(),
-              style: TextStyle(
-                fontSize: radius * 0.6,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : null,
+      child: Text(
+        _getInitials(),
+        style: TextStyle(
+          fontSize: radius * 0.6,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
 
     if (onTap != null) {

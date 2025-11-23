@@ -6,6 +6,7 @@ import '../../../../core/providers/repository_providers.dart';
 import '../widgets/trip_requests_summary_widget.dart';
 import '../widgets/upgrade_requests_summary_widget.dart';
 import '../widgets/performance_metrics_widget.dart';
+// Trip leadership leaderboard removed
 import 'package:flutter/foundation.dart';
 
 /// Admin Dashboard Home Screen
@@ -480,6 +481,15 @@ class _QuickActionsSection extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
+            // Logbook Analytics
+            if (user?.hasPermission('sign_logbook_skills') ?? false)
+              _QuickActionButton(
+                icon: Icons.analytics,
+                label: 'Logbook Analytics',
+                onTap: () => context.go('/admin/logbook/analytics'),
+                color: const Color(0xFF9C27B0),
+              ),
+            
             // Phase B Features (Priority)
             if (user?.hasPermission('approve_trip') ?? false)
               _QuickActionButton(

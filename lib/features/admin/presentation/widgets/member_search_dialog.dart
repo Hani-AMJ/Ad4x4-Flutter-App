@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -22,23 +23,43 @@ class MemberSearchDialog extends ConsumerStatefulWidget {
 
 class _MemberSearchDialogState extends ConsumerState<MemberSearchDialog> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> _members = [];
-  List<Map<String, dynamic>> _filteredMembers = [];
   bool _isLoading = false;
   bool _hasSearched = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  /// Search members by name
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent * 0.8) {
+      if (!_isLoading && _hasMore) {
+        _loadMoreMembers();
+      }
+    }
+  }
+
+  /// Search members by username, first name, or last name
   Future<void> _searchMembers(String query) async {
     if (query.trim().isEmpty) {
       setState(() {
-        _filteredMembers = [];
+        _members = [];
         _hasSearched = false;
+        _hasMore = true;
+        _currentPage = 1;
       });
       return;
     }
@@ -46,22 +67,36 @@ class _MemberSearchDialogState extends ConsumerState<MemberSearchDialog> {
     setState(() {
       _isLoading = true;
       _hasSearched = true;
+      _members = [];
+      _currentPage = 1;
+      _hasMore = true;
     });
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       
-      // Search by first name or last name
+      // ✅ Use 'search' parameter (searches username, firstName, lastName)
+      // ✅ Order by username for consistent results
       final response = await repository.getMembers(
-        firstNameContains: query,
+        search: query,
+        ordering: 'username',
+        page: 1,
         pageSize: 50,
       );
 
       final results = response['results'] as List<dynamic>? ?? [];
+      final count = response['count'] as int? ?? 0;
+      
+      // Debug: Log first member structure
+      if (results.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('👤 [MemberSearch] First member keys: ${(results.first as Map).keys.toList()}');
+        }
+      }
       
       setState(() {
         _members = results.cast<Map<String, dynamic>>();
-        _filteredMembers = _members;
+        _hasMore = _members.length < count;
         _isLoading = false;
       });
     } catch (e) {
@@ -77,6 +112,43 @@ class _MemberSearchDialogState extends ConsumerState<MemberSearchDialog> {
           ),
         );
       }
+    }
+  }
+
+  /// Load more members (pagination)
+  Future<void> _loadMoreMembers() async {
+    if (_isLoading || !_hasMore || _searchController.text.trim().isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _currentPage++;
+    });
+
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      
+      final response = await repository.getMembers(
+        search: _searchController.text.trim(),
+        ordering: 'username',
+        page: _currentPage,
+        pageSize: 50,
+      );
+
+      final results = response['results'] as List<dynamic>? ?? [];
+      final count = response['count'] as int? ?? 0;
+      
+      setState(() {
+        _members.addAll(results.cast<Map<String, dynamic>>());
+        _hasMore = _members.length < count;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _currentPage--; // Revert page increment on error
+      });
     }
   }
 
@@ -178,7 +250,7 @@ class _MemberSearchDialogState extends ConsumerState<MemberSearchDialog> {
                   );
                 }
 
-                if (_filteredMembers.isEmpty) {
+                if (_members.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -208,35 +280,64 @@ class _MemberSearchDialogState extends ConsumerState<MemberSearchDialog> {
                 }
 
                 return ListView.builder(
-                  itemCount: _filteredMembers.length,
+                  controller: _scrollController,
+                  itemCount: _members.length + (_hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    final member = _filteredMembers[index];
-                    final firstName = member['firstName'] as String? ?? '';
-                    final lastName = member['lastName'] as String? ?? '';
+                    // Show loading indicator at the end
+                    if (index >= _members.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    
+                    final member = _members[index];
+                    
+                    // Safely extract member data with multiple fallbacks
+                    final username = (member['username'] ?? member['user'] ?? '') as String;
+                    final firstName = (member['firstName'] ?? member['first_name'] ?? '') as String;
+                    final lastName = (member['lastName'] ?? member['last_name'] ?? '') as String;
                     final displayName = '$firstName $lastName'.trim();
-                    final level = member['level'] as Map<String, dynamic>?;
-                    final levelName = level?['name'] as String? ?? 'No Level';
+                    
+                    // Handle level - can be either a string or an object
+                    String levelName;
+                    final levelData = member['level'];
+                    if (levelData is String) {
+                      levelName = levelData;
+                    } else if (levelData is Map<String, dynamic>) {
+                      levelName = levelData['name'] as String? ?? 'No Level';
+                    } else {
+                      levelName = 'No Level';
+                    }
 
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: colors.primaryContainer,
                         child: Text(
-                          firstName.isNotEmpty ? firstName[0].toUpperCase() : '?',
+                          username.isNotEmpty ? username[0].toUpperCase() : '?',
                           style: TextStyle(
                             color: colors.onPrimaryContainer,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      title: Text(displayName),
-                      subtitle: Text(levelName),
+                      title: Text(displayName.isNotEmpty ? displayName : username),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('@$username', style: TextStyle(fontSize: 12, color: colors.onSurface.withValues(alpha: 0.6))),
+                          Text(levelName),
+                        ],
+                      ),
+                      isThreeLine: true,
                       trailing: const Icon(Icons.arrow_forward),
                       onTap: () {
                         Navigator.of(context).pop({
                           'id': member['id'],
+                          'username': username,
                           'firstName': firstName,
                           'lastName': lastName,
-                          'displayName': displayName,
+                          'displayName': displayName.isNotEmpty ? displayName : username,
                           'level': levelName,
                         });
                       },

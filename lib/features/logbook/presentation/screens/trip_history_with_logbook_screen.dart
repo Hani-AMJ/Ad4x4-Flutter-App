@@ -180,6 +180,7 @@ class _TripHistoryWithLogbookScreenState
       'skillsVerified': _tripLogbookEntries.values
           .expand((entries) => entries)
           .expand((entry) => entry.skillsVerified)
+          .toSet()
           .length,
     };
   }

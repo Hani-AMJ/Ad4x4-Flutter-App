@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/providers/level_configuration_provider.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Skills Matrix Screen
@@ -30,6 +32,7 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
   List<MemberSkillStatus> _memberSkills = [];
   bool _isLoading = true;
   String? _errorMessage;
+  int? _userProfileLevelId; // User's profile level from database
   
   // Filter states
   int? _selectedLevelId;
@@ -51,15 +54,25 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
     });
 
     try {
-      // Get target member ID (current user or specified)
+      // Get target member ID and user profile level (source of truth)
       final user = ref.read(currentUserProviderV2);
       final targetMemberId = widget.memberId ?? user?.id ?? 0;
+      final userProfileLevelId = user?.level?.id; // Profile level from database
 
-      // Load all skills and member's skill status in parallel
+      if (kDebugMode) {
+        debugPrint('🔍 [SkillsMatrix] Loading data for member $targetMemberId');
+        debugPrint('👤 [SkillsMatrix] User profile level ID: $userProfileLevelId');
+      }
+
+      // Load all skills and member's skill references in parallel
       final results = await Future.wait([
         _repository.getLogbookSkills(pageSize: 200),
-        _repository.getMemberLogbookSkills(memberId: targetMemberId),
+        _repository.getMemberLogbookSkills(memberId: targetMemberId, pageSize: 200),
       ]);
+      
+      if (kDebugMode) {
+        debugPrint('📊 [SkillsMatrix] API responses received');
+      }
 
       // Parse all skills
       final skillsData = results[0]['results'] ?? results[0]['data'] ?? results[0];
@@ -78,26 +91,59 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
         }
       }
 
-      // Parse member skills
-      final memberSkillsData = results[1]['results'] ?? results[1]['data'] ?? results[1];
-      final List<MemberSkillStatus> memberSkills = [];
-      if (memberSkillsData is List) {
-        for (var item in memberSkillsData) {
+      // Parse skill references (sign-offs)
+      final skillReferencesData = results[1]['results'] ?? results[1]['data'] ?? results[1];
+      final List<LogbookSkillReference> skillReferences = [];
+      
+      // ALWAYS log in release mode by using print instead of debugPrint
+      print('🔍 [SkillsMatrix] Member skills response type: ${skillReferencesData.runtimeType}');
+      print('🔍 [SkillsMatrix] Count: ${skillReferencesData is List ? skillReferencesData.length : 'N/A'}');
+      
+      if (skillReferencesData is List) {
+        print('🔍 [SkillsMatrix] Processing ${skillReferencesData.length} items...');
+        if (skillReferencesData.isNotEmpty) {
+          print('🔍 [SkillsMatrix] First item: ${skillReferencesData.first}');
+        }
+        
+        for (var item in skillReferencesData) {
           if (item != null && item is Map<String, dynamic>) {
             try {
-              memberSkills.add(MemberSkillStatus.fromJson(item));
-            } catch (e) {
-              if (kDebugMode) {
-                debugPrint('Failed to parse member skill: $e');
-              }
+              final ref = LogbookSkillReference.fromJson(item);
+              skillReferences.add(ref);
+              print('   ✅ Skill ${ref.logbookSkill.id}: ${ref.logbookSkill.name}');
+            } catch (e, stackTrace) {
+              print('   ❌ Parse error: $e');
+              print('   Item: $item');
+              print('   Stack: $stackTrace');
             }
+          } else {
+            print('   ⚠️ Skipping non-map item: $item');
           }
         }
+      } else {
+        print('⚠️ [SkillsMatrix] Response is not a List!');
       }
+      
+      // Convert skill references to member skill status objects
+      final List<MemberSkillStatus> memberSkills = skillReferences.map((ref) {
+        return MemberSkillStatus(
+          id: ref.id,
+          skill: ref.logbookSkill,
+          verified: true, // All skill references are verified skills
+          verifiedBy: ref.verifiedBy,
+          verifiedAt: ref.verifiedAt,
+          verifiedOnTrip: ref.trip,
+          comment: ref.comment,
+        );
+      }).toList();
+      
+      print('📊 [SkillsMatrix] Final result: ${memberSkills.length} verified skills');
+      print('   Skill IDs: ${memberSkills.map((ms) => ms.skill.id).toList()}');
 
       setState(() {
         _allSkills = skills;
         _memberSkills = memberSkills;
+        _userProfileLevelId = userProfileLevelId;
         _isLoading = false;
       });
     } catch (e) {
@@ -168,6 +214,8 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
     return filtered;
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -177,6 +225,13 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
       appBar: AppBar(
         title: const Text('Skills Matrix'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.compare_arrows),
+            tooltip: 'Compare Skills',
+            onPressed: () {
+              context.push('/logbook/skills-comparison');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: _showFilterDialog,
@@ -361,12 +416,23 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
         final skills = skillsByLevel[levelName]!;
         final verifiedCount = skills.where((s) => _isSkillVerified(s.id)).length;
         final levelProgress = skills.isEmpty ? 0.0 : verifiedCount / skills.length;
+        final levelId = skills.first.level.id;
+        final isCurrentLevel = levelId == _userProfileLevelId;
+        
+        // Use LevelConfigurationService for dynamic level display
+        final levelConfig = ref.read(levelConfigurationProvider);
+        final cleanName = levelConfig.getCleanLevelName(levelName);
+        final levelColor = levelConfig.getLevelColor(levelId);
+        final levelEmoji = levelConfig.getLevelEmoji(levelId);
         
         return _LevelSection(
-          levelName: levelName,
+          levelName: cleanName,
+          levelColor: levelColor,
+          levelEmoji: levelEmoji,
           skills: skills,
           verifiedCount: verifiedCount,
           levelProgress: levelProgress,
+          isCurrentLevel: isCurrentLevel,
           isSkillVerified: _isSkillVerified,
           getMemberSkillStatus: _getMemberSkillStatus,
           onSkillTap: _showSkillDetails,
@@ -488,18 +554,24 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
 /// Level Section Widget
 class _LevelSection extends StatelessWidget {
   final String levelName;
+  final Color levelColor;
+  final String levelEmoji;
   final List<LogbookSkill> skills;
   final int verifiedCount;
   final double levelProgress;
+  final bool isCurrentLevel;
   final bool Function(int) isSkillVerified;
   final MemberSkillStatus? Function(int) getMemberSkillStatus;
   final void Function(LogbookSkill, MemberSkillStatus?) onSkillTap;
 
   const _LevelSection({
     required this.levelName,
+    required this.levelColor,
+    required this.levelEmoji,
     required this.skills,
     required this.verifiedCount,
     required this.levelProgress,
+    required this.isCurrentLevel,
     required this.isSkillVerified,
     required this.getMemberSkillStatus,
     required this.onSkillTap,
@@ -512,6 +584,13 @@ class _LevelSection extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      elevation: isCurrentLevel ? 4 : 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: isCurrentLevel
+            ? BorderSide(color: levelColor, width: 2)
+            : BorderSide.none,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -520,23 +599,53 @@ class _LevelSection extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.3),
+              color: isCurrentLevel
+                  ? levelColor.withValues(alpha: 0.15)
+                  : levelColor.withValues(alpha: 0.08),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             ),
             child: Row(
               children: [
-                Icon(Icons.military_tech, color: colors.primary),
+                Text(
+                  levelEmoji,
+                  style: const TextStyle(fontSize: 28),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        levelName,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colors.onSurface,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            levelName,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: levelColor,
+                            ),
+                          ),
+                          if (isCurrentLevel) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: levelColor,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'CURRENT',
+                                style: TextStyle(
+                                  color: colors.onPrimary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -551,14 +660,14 @@ class _LevelSection extends StatelessWidget {
                 CircularProgressIndicator(
                   value: levelProgress,
                   backgroundColor: colors.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(levelColor),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '${(levelProgress * 100).toStringAsFixed(0)}%',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: colors.primary,
+                    color: levelColor,
                   ),
                 ),
               ],

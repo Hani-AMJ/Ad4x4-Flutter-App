@@ -122,6 +122,17 @@ class TripFiltersBar extends ConsumerWidget {
                         ),
                       const SizedBox(width: 8),
 
+                      // ✅ NEW: Eligible Only filter toggle
+                      _FilterChip(
+                        label: 'Eligible Only',
+                        icon: filters.showEligibleOnly ? Icons.check_circle : Icons.lock_open,
+                        isActive: filters.showEligibleOnly,
+                        onTap: () => onFiltersChanged(
+                          filters.copyWith(showEligibleOnly: !filters.showEligibleOnly),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
                       // ✅ NEW: More Filters button
                       _FilterChip(
                         label: 'More',

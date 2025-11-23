@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/trip_model.dart';
+import '../../../../data/models/trip_statistics.dart'; // ✅ NEW: Import TripStatistics
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 
@@ -35,6 +36,7 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
   String? _errorMessage;
   BasicMember? _member;
   List<TripListItem> _tripHistory = [];
+  TripStatistics? _tripStats; // ✅ NEW: Store trip statistics
 
   @override
   void initState() {
@@ -60,24 +62,31 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       
-      // Load member details and trip history in parallel
+      // ✅ Load member details, trip history, and trip statistics in parallel
       final results = await Future.wait([
         repository.getMemberDetail(widget.memberId),
         repository.getMemberTripHistory(memberId: widget.memberId, pageSize: 50),
+        repository.getMemberTripCounts(widget.memberId), // ✅ NEW: Load trip statistics
       ]);
 
       final memberJson = results[0] as Map<String, dynamic>;
       final tripHistoryJson = results[1] as Map<String, dynamic>;
+      final tripStatsJson = results[2] as Map<String, dynamic>; // ✅ NEW
 
       final member = BasicMember.fromJson(memberJson);
       final tripsData = tripHistoryJson['results'] as List<dynamic>? ?? [];
       final trips = tripsData
           .map((json) => TripListItem.fromJson(json as Map<String, dynamic>))
           .toList();
+      
+      // ✅ NEW: Parse trip statistics
+      final statsData = tripStatsJson['data'] ?? tripStatsJson['results'] ?? tripStatsJson;
+      final tripStats = TripStatistics.fromJson(statsData is Map<String, dynamic> ? statsData : {});
 
       setState(() {
         _member = member;
         _tripHistory = trips;
+        _tripStats = tripStats; // ✅ NEW: Store trip statistics
         _isLoading = false;
       });
     } catch (e) {
@@ -353,10 +362,17 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                // ✅ NEW: Show segregated trip counts
+                _StatItem(
+                  icon: Icons.star,
+                  label: 'Trips Lead',
+                  value: '${_tripStats?.asLeadTrips ?? 0}',
+                  iconColor: Colors.amber,
+                ),
                 _StatItem(
                   icon: Icons.directions_car,
-                  label: 'Total Trips',
-                  value: '${member.tripCount ?? 0}',
+                  label: 'Trips Joined',
+                  value: '${(_tripStats?.totalTrips ?? member.tripCount ?? 0) - (_tripStats?.asLeadTrips ?? 0)}',
                 ),
                 _StatItem(
                   icon: Icons.check_circle,
@@ -367,6 +383,12 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
             ),
           ),
         ),
+        
+        // ✅ NEW: Leadership Statistics Section (if member has leadership experience)
+        if (_tripStats != null && _tripStats!.hasLeadershipExperience) ...[
+          const SizedBox(height: 16),
+          _buildLeadershipStatsSection(),
+        ],
       ],
     );
   }
@@ -406,6 +428,94 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
         final trip = _tripHistory[index];
         return _TripHistoryCard(trip: trip);
       },
+    );
+  }
+  
+  /// ✅ NEW: Build leadership statistics section
+  Widget _buildLeadershipStatsSection() {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    
+    if (_tripStats == null) return const SizedBox.shrink();
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Leadership Statistics',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Leadership Stats Grid
+            Row(
+              children: [
+                Expanded(
+                  child: _LeadershipStatCard(
+                    icon: Icons.star,
+                    label: 'As Lead',
+                    value: _tripStats!.asLeadTrips.toString(),
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _LeadershipStatCard(
+                    icon: Icons.shield,
+                    label: 'As Marshal',
+                    value: _tripStats!.asMarshalTrips.toString(),
+                    color: Colors.purple,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _LeadershipStatCard(
+                    icon: Icons.check_circle,
+                    label: 'Completed',
+                    value: _tripStats!.completedTrips.toString(),
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _LeadershipStatCard(
+                    icon: Icons.upcoming,
+                    label: 'Upcoming',
+                    value: _tripStats!.upcomingTrips.toString(),
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -457,26 +567,29 @@ class _StatItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Color? iconColor; // ✅ NEW: Optional icon color
 
   const _StatItem({
     required this.icon,
     required this.label,
     required this.value,
+    this.iconColor, // ✅ NEW: Optional parameter
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final color = iconColor ?? theme.colorScheme.primary; // ✅ Use iconColor if provided
 
     return Column(
       children: [
-        Icon(icon, size: 32, color: theme.colorScheme.primary),
+        Icon(icon, size: 32, color: color), // ✅ Use custom color
         const SizedBox(height: 8),
         Text(
           value,
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: theme.colorScheme.primary,
+            color: color, // ✅ Use custom color
           ),
         ),
         Text(
@@ -486,6 +599,56 @@ class _StatItem extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// ✅ NEW: Leadership stat card widget for member details
+class _LeadershipStatCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _LeadershipStatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

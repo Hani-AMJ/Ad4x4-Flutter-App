@@ -16,6 +16,9 @@ class TripFilters {
   final int? leadId;
   final DateTime? endTimeAfter;
   final DateTime? endTimeBefore;
+  
+  // ✅ NEW: Eligibility filter
+  final bool showEligibleOnly;
 
   const TripFilters({
     this.view = TripViewMode.list,
@@ -27,6 +30,7 @@ class TripFilters {
     this.leadId,
     this.endTimeAfter,
     this.endTimeBefore,
+    this.showEligibleOnly = false, // ✅ Default: show all trips
   });
 
   TripFilters copyWith({
@@ -39,6 +43,7 @@ class TripFilters {
     int? leadId,
     DateTime? endTimeAfter,
     DateTime? endTimeBefore,
+    bool? showEligibleOnly,
   }) {
     return TripFilters(
       view: view ?? this.view,
@@ -50,6 +55,7 @@ class TripFilters {
       leadId: leadId ?? this.leadId,
       endTimeAfter: endTimeAfter ?? this.endTimeAfter,
       endTimeBefore: endTimeBefore ?? this.endTimeBefore,
+      showEligibleOnly: showEligibleOnly ?? this.showEligibleOnly,
     );
   }
 
@@ -115,6 +121,7 @@ class TripFilters {
         leadId == null &&
         endTimeAfter == null &&
         endTimeBefore == null &&
+        !showEligibleOnly &&
         ordering == 'start_time';
   }
 
@@ -127,6 +134,7 @@ class TripFilters {
     if (meetingPointId != null) count++;
     if (leadId != null) count++;
     if (endTimeAfter != null || endTimeBefore != null) count++;
+    if (showEligibleOnly) count++;
     return count;
   }
 
@@ -141,6 +149,7 @@ class TripFilters {
       'leadId': leadId,
       'endTimeAfter': endTimeAfter?.toIso8601String(),
       'endTimeBefore': endTimeBefore?.toIso8601String(),
+      'showEligibleOnly': showEligibleOnly,
     };
   }
 }

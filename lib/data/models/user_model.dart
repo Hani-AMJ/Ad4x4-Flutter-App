@@ -73,6 +73,43 @@ class UserModel {
     return permissions.any((p) => p.action == permissionAction);
   }
 
+  /// Check if mandatory profile fields are complete
+  /// Mandatory fields: firstName, lastName, phone, dob, gender, nationality
+  /// Emergency contact: iceName, icePhone
+  /// Vehicle: carBrand, carModel
+  bool get isProfileComplete {
+    return firstName.isNotEmpty &&
+        lastName.isNotEmpty &&
+        (phone?.isNotEmpty ?? phoneNumber?.isNotEmpty ?? false) &&
+        dob != null && dob!.isNotEmpty &&
+        gender != null && gender!.isNotEmpty &&
+        nationality != null && nationality!.isNotEmpty &&
+        iceName != null && iceName!.isNotEmpty &&
+        icePhone != null && icePhone!.isNotEmpty &&
+        carBrand != null && carBrand!.isNotEmpty &&
+        carModel != null && carModel!.isNotEmpty;
+  }
+
+  /// Get list of missing mandatory fields
+  List<String> get missingFields {
+    final missing = <String>[];
+    
+    if (firstName.isEmpty) missing.add('First Name');
+    if (lastName.isEmpty) missing.add('Last Name');
+    if (!(phone?.isNotEmpty ?? phoneNumber?.isNotEmpty ?? false)) {
+      missing.add('Phone Number');
+    }
+    if (dob == null || dob!.isEmpty) missing.add('Date of Birth');
+    if (gender == null || gender!.isEmpty) missing.add('Gender');
+    if (nationality == null || nationality!.isEmpty) missing.add('Nationality');
+    if (iceName == null || iceName!.isEmpty) missing.add('Emergency Contact Name');
+    if (icePhone == null || icePhone!.isEmpty) missing.add('Emergency Contact Phone');
+    if (carBrand == null || carBrand!.isEmpty) missing.add('Car Brand');
+    if (carModel == null || carModel!.isEmpty) missing.add('Car Model');
+    
+    return missing;
+  }
+
   /// Factory constructor from JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -107,8 +144,12 @@ class UserModel {
       iceName: json['ice_name'] as String? ?? json['iceName'] as String?,
       icePhone: json['ice_phone'] as String? ?? json['icePhone'] as String?,
       city: json['city'] as String?,
-      gender: json['gender'] is Map? ? json['gender']['name'] : json['gender'] as String?,
-      nationality: json['nationality'] is Map? ? json['nationality']['name'] : json['nationality'] as String?,
+      gender: json['gender'] != null
+          ? (json['gender'] is Map ? json['gender']['name'] as String? : json['gender'] as String?)
+          : null,
+      nationality: json['nationality'] != null
+          ? (json['nationality'] is Map ? json['nationality']['name'] as String? : json['nationality'] as String?)
+          : null,
       title: json['title'] as String?,
     );
   }

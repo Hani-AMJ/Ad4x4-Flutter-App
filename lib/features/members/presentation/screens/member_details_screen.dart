@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -177,29 +178,34 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      if (member.level != null)
-                        LevelDisplayHelper.buildCompactBadgeFromString(
-                          levelName: member.level!.displayName ?? member.level!.name,
-                          numericLevel: member.level!.numericLevel,
+                      // ✅ FIXED: Wrap level badge in proper constraints to prevent cropping
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Center(
+                          child: member.level != null
+                              ? LevelDisplayHelper.buildCompactBadgeFromString(
+                                  levelName: member.level!.displayName ?? member.level!.name,
+                                  numericLevel: member.level!.numericLevel,
+                                )
+                              : Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Text(
+                                    'Member',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                         ),
-                      if (member.level == null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Member',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -368,9 +374,38 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final trip = _tripHistory[index];
+                  // ✅ FIXED: Add error boundary for trip card rendering
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: _TripHistoryCard(trip: trip),
+                    child: Builder(
+                      builder: (context) {
+                        try {
+                          return _TripHistoryCard(trip: trip);
+                        } catch (e) {
+                          if (kDebugMode) {
+                            debugPrint('❌ Error rendering trip card: $e');
+                          }
+                          // Fallback: Show error message
+                          return Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error, color: colors.error),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Error loading trip details',
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   );
                 },
                 childCount: _tripHistory.length,

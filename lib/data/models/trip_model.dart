@@ -166,11 +166,26 @@ class TripRegistration {
     // Handle registration_date field safely
     final dateStr = json['registration_date'] as String? ?? json['registrationDate'] as String? ?? DateTime.now().toIso8601String();
     
+    // Map checkedIn boolean to status string
+    String determineStatus() {
+      // If API provides explicit status field, use it
+      if (json['status'] != null) {
+        return json['status'] as String;
+      }
+      // Otherwise, derive from checkedIn boolean
+      final checkedIn = json['checkedIn'] as bool? ?? json['checked_in'] as bool?;
+      if (checkedIn == true) {
+        return 'confirmed';  // Checked in = confirmed status
+      } else {
+        return 'registered';  // Not checked in = registered status
+      }
+    }
+    
     return TripRegistration(
       id: json['id'] as int? ?? 0,  // Handle null id
       member: BasicMember.fromJson(json['member'] as Map<String, dynamic>),
       registrationDate: DateTime.parse(dateStr),
-      status: json['status'] as String? ?? 'confirmed',  // Default to 'confirmed' if null
+      status: determineStatus(),
       hasVehicle: json['has_vehicle'] as bool? ?? json['hasVehicle'] as bool?,
       vehicleCapacity: json['vehicle_capacity'] as int? ?? json['vehicleCapacity'] as int?,
       notes: json['notes'] as String?,
@@ -532,6 +547,31 @@ class TripListItem {
     final endTimeStr = json['end_time'] as String? ?? json['endTime'] as String? ?? DateTime.now().add(const Duration(hours: 4)).toIso8601String();
     final createdStr = json['created'] as String? ?? DateTime.now().toIso8601String();
     
+    // ✅ FIXED: Handle level as both String and Map
+    TripLevel parseTripLevel(dynamic levelData) {
+      if (levelData == null) {
+        return TripLevel(id: 0, name: 'Unknown', numericLevel: 0);
+      }
+      
+      if (levelData is String) {
+        // Level is just a string name - create a TripLevel from it
+        return TripLevel(
+          id: 0,
+          name: levelData,
+          numericLevel: _getLevelNumericValue(levelData),
+          displayName: levelData,
+        );
+      }
+      
+      if (levelData is Map<String, dynamic>) {
+        // Level is a full object
+        return TripLevel.fromJson(levelData);
+      }
+      
+      // Fallback
+      return TripLevel(id: 0, name: 'Unknown', numericLevel: 0);
+    }
+    
     return TripListItem(
       id: json['id'] as int? ?? 0,  // Handle null id
       title: json['title'] as String? ?? 'Untitled Trip',
@@ -545,7 +585,7 @@ class TripListItem {
                 (json['meetingPoint'] != null ? (json['meetingPoint'] as Map<String, dynamic>)['name'] as String? : null) ?? 
                 (json['meeting_point'] != null ? (json['meeting_point'] as Map<String, dynamic>)['name'] as String? : null) ?? 
                 'TBA',
-      level: TripLevel.fromJson(json['level'] as Map<String, dynamic>),
+      level: parseTripLevel(json['level']),
       capacity: json['capacity'] as int? ?? 0,  // Handle null capacity
       registeredCount: json['registered_count'] as int? ?? json['registeredCount'] as int? ?? 0,
       waitlistCount: json['waitlist_count'] as int? ?? json['waitlistCount'] as int? ?? 0,
@@ -586,5 +626,29 @@ class TripListItem {
       'is_waitlisted': isWaitlisted,
       if (galleryId != null) 'gallery_id': galleryId,
     };
+  }
+  
+  // Helper to convert level name strings to numeric values
+  static int _getLevelNumericValue(String levelName) {
+    final normalized = levelName.toLowerCase().trim();
+    switch (normalized) {
+      case 'newbie':
+      case 'beginner':
+        return 1;
+      case 'member':
+      case 'intermediate':
+        return 2;
+      case 'anit':
+      case 'advanced':
+        return 3;
+      case 'expert':
+      case 'explorer':
+        return 4;
+      case 'master':
+      case 'marshal':
+        return 5;
+      default:
+        return 0;
+    }
   }
 }

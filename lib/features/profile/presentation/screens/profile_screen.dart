@@ -412,6 +412,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
         title: const Text('Profile'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.book_outlined),
+            onPressed: () => context.push('/profile/logbook/${user.id}?name=${Uri.encodeComponent(user.displayName)}'),
+            tooltip: 'My Logbook',
+          ),
+          IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => context.push('/profile/edit'),
           ),
@@ -500,10 +505,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _StatItem(
-                      icon: Icons.directions_car,
-                      label: 'Trips',
-                      value: user.tripCount?.toString() ?? '0',
+                      icon: Icons.star,  // ✅ Star icon for leadership
+                      label: 'Trips Lead',  // ✅ NEW: Clear leadership label
+                      value: _tripStats?.asLeadTrips.toString() ?? user.tripCount?.toString() ?? '0',  // ✅ Use TripStatistics if available
                       colors: colors,
+                      iconColor: Colors.amber,  // ✅ Gold color for leadership
                     ),
                     Container(
                       width: 1,
@@ -663,6 +669,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       subtitle: 'Your photo albums',
                       iconColor: const Color(0xFFE53935),
                       onTap: () => context.push('/gallery'),
+                    ),
+                    const SizedBox(height: 12),
+                    InfoCard(
+                      icon: Icons.book,
+                      title: 'My Logbook',
+                      subtitle: 'View your skills and logbook entries',
+                      iconColor: const Color(0xFF9C27B0),
+                      onTap: () => context.push('/profile/logbook/${user.id}?name=${Uri.encodeComponent(user.displayName)}'),
                     ),
                   ],
                 ),

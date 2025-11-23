@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -415,11 +416,31 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
                           }
 
                           final member = _members[index];
+                          // ✅ FIXED: Add error boundary for member card rendering
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
-                            child: _MemberCard(
-                              member: member,
-                              onTap: () => context.push('/members/${member.id}'),
+                            child: Builder(
+                              builder: (context) {
+                                try {
+                                  return _MemberCard(
+                                    member: member,
+                                    onTap: () => context.push('/members/${member.id}'),
+                                  );
+                                } catch (e) {
+                                  if (kDebugMode) {
+                                    debugPrint('❌ Error rendering member card: $e');
+                                  }
+                                  // Fallback: Show error card instead of crashing
+                                  return Card(
+                                    child: ListTile(
+                                      leading: Icon(Icons.error, color: colors.error),
+                                      title: Text('Error loading member #${member.id}'),
+                                      subtitle: const Text('Tap to view details'),
+                                      onTap: () => context.push('/members/${member.id}'),
+                                    ),
+                                  );
+                                }
+                              },
                             ),
                           );
                         },
@@ -508,7 +529,7 @@ class _MemberCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${member.tripCount ?? 0} trips',
+                          '${member.tripCount ?? 0} trips', // ✅ NOTE: Shows total count (upgrade to show segregated counts requires TripStatistics API)
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colors.onSurface.withValues(alpha: 0.6),
                           ),

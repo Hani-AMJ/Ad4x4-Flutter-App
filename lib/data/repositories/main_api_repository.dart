@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -164,11 +165,55 @@ class MainApiRepository {
 
   /// Update user profile
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
-    final response = await _apiClient.patch(
-      MainApiEndpoints.profile,
-      data: data,
-    );
-    return response.data;
+    // Check if avatar file needs to be uploaded
+    if (data.containsKey('avatar') && data['avatar'] is String) {
+      final avatarPath = data['avatar'] as String;
+      
+      // Create FormData for multipart upload
+      final formData = FormData();
+      
+      // Add avatar file
+      if (kIsWeb) {
+        // For web, use XFile bytes
+        final bytes = await XFile(avatarPath).readAsBytes();
+        formData.files.add(MapEntry(
+          'avatar',
+          MultipartFile.fromBytes(
+            bytes,
+            filename: 'avatar.jpg',
+          ),
+        ));
+      } else {
+        // For mobile, use file path
+        formData.files.add(MapEntry(
+          'avatar',
+          await MultipartFile.fromFile(
+            avatarPath,
+            filename: 'avatar.jpg',
+          ),
+        ));
+      }
+      
+      // Add other fields
+      data.forEach((key, value) {
+        if (key != 'avatar' && value != null) {
+          formData.fields.add(MapEntry(key, value.toString()));
+        }
+      });
+      
+      final response = await _apiClient.patch(
+        MainApiEndpoints.profile,
+        data: formData,
+      );
+      return response.data;
+    } else {
+      // Regular JSON update without file
+      final response = await _apiClient.patch(
+        MainApiEndpoints.profile,
+        data: data,
+      );
+      return response.data;
+    }
   }
 
   /// Change password
@@ -254,7 +299,8 @@ class MainApiRepository {
     int? lead,                  // ✅ ADDED: Filter by lead member ID
     List<int>? deputyLeads,     // ✅ ADDED: Filter by deputy leads
     
-    // Pagination and ordering
+    // Search and pagination
+    String? search,             // ✅ NEW: Search title, description, location
     String? ordering,
     int page = 1,
     int pageSize = 20,
@@ -264,6 +310,7 @@ class MainApiRepository {
       'pageSize': pageSize,
     };
     
+    if (search != null) queryParams['search'] = search;
     if (ordering != null) queryParams['ordering'] = ordering;
 
     // Time filters
@@ -336,12 +383,81 @@ class MainApiRepository {
   }
 
   /// Partial update trip
-  Future<Map<String, dynamic>> patchTrip(int id, Map<String, dynamic> data) async {
-    final response = await _apiClient.patch(
-      MainApiEndpoints.tripUpdate(id),  // ✅ FIXED: Use tripUpdate (no trailing slash) for PATCH
-      data: data,
-    );
-    return response.data;
+  /// 
+  /// [id] - Trip ID
+  /// [data] - Map of fields to update
+  /// [imageFile] - Optional image file for multipart/form-data upload
+  /// 
+  /// ✅ FIXED: Supports both JSON (text-only) and multipart/form-data (with image) updates
+  /// When imageFile is provided, automatically switches to multipart/form-data format
+  Future<Map<String, dynamic>> patchTrip(
+    int id,
+    Map<String, dynamic> data, {
+    dynamic imageFile,  // Can be File (mobile) or XFile (web)
+  }) async {
+    // If image file is provided, use multipart/form-data
+    if (imageFile != null) {
+      final formData = FormData();
+      
+      // Add image file
+      if (imageFile is XFile) {
+        // XFile from image_picker (web & mobile compatible)
+        final bytes = await imageFile.readAsBytes();
+        formData.files.add(
+          MapEntry(
+            'image',
+            MultipartFile.fromBytes(
+              bytes,
+              filename: imageFile.name,
+            ),
+          ),
+        );
+      } else {
+        // Regular File object (mobile)
+        formData.files.add(
+          MapEntry(
+            'image',
+            await MultipartFile.fromFile(
+              imageFile.path,
+              filename: 'trip_image.jpg',
+            ),
+          ),
+        );
+      }
+      
+      // Add other fields as form fields (not JSON)
+      data.forEach((key, value) {
+        if (value != null) {
+          // Convert lists to JSON string for form data
+          if (value is List) {
+            formData.fields.add(MapEntry(key, jsonEncode(value)));
+          } else {
+            formData.fields.add(MapEntry(key, value.toString()));
+          }
+        }
+      });
+      
+      if (kDebugMode) {
+        debugPrint('🖼️ [patchTrip] Using multipart/form-data for trip $id with image');
+      }
+      
+      final response = await _apiClient.patch(
+        MainApiEndpoints.tripUpdate(id),
+        data: formData,
+      );
+      return response.data;
+    } else {
+      // No image - use regular JSON
+      if (kDebugMode) {
+        debugPrint('📝 [patchTrip] Using JSON for trip $id (no image)');
+      }
+      
+      final response = await _apiClient.patch(
+        MainApiEndpoints.tripUpdate(id),
+        data: data,
+      );
+      return response.data;
+    }
   }
 
   /// Delete trip
@@ -615,6 +731,12 @@ class MainApiRepository {
     int page = 1,
     int pageSize = 20,
     
+    // Search (searches username, firstName, lastName)
+    String? search,
+    
+    // Ordering (e.g., 'username', '-username', 'firstName', '-createdAt')
+    String? ordering,
+    
     // Name filters
     String? firstName,
     String? firstNameContains,
@@ -651,6 +773,10 @@ class MainApiRepository {
       'page': page,
       'pageSize': pageSize,
     };
+
+    // Search and ordering
+    if (search != null) queryParams['search'] = search;
+    if (ordering != null) queryParams['ordering'] = ordering;
 
     // Name filters
     if (firstName != null) queryParams['firstName'] = firstName;
@@ -1465,7 +1591,7 @@ class MainApiRepository {
   // ============================================================================
 
   /// Get logbook entries
-  /// Returns paginated list of logbook entries
+  /// Returns paginated list of logbook entries with full nested objects
   /// Optional filters: member (member ID), trip (trip ID)
   Future<Map<String, dynamic>> getLogbookEntries({
     int? memberId,
@@ -1476,6 +1602,7 @@ class MainApiRepository {
     final queryParams = <String, dynamic>{
       'page': page,
       'pageSize': pageSize,
+      'expand': 'member,trip,signedBy,skillsVerified',  // ✅ Request full nested objects
     };
     if (memberId != null) queryParams['member'] = memberId;
     if (tripId != null) queryParams['trip'] = tripId;
@@ -1611,7 +1738,7 @@ class MainApiRepository {
     if (tripId != null) queryParams['trip'] = tripId;
 
     final response = await _apiClient.get(
-      '${MainApiEndpoints.logbookSkillReferences}/',  // Add trailing slash
+      MainApiEndpoints.logbookSkillReferences,
       queryParameters: queryParams,
     );
     return response.data;
@@ -1620,7 +1747,7 @@ class MainApiRepository {
   /// Get skill reference detail
   Future<Map<String, dynamic>> getLogbookSkillReferenceDetail(int id) async {
     final response = await _apiClient.get(
-      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+      '${MainApiEndpoints.logbookSkillReferences}$id/',
     );
     return response.data;
   }
@@ -1633,7 +1760,7 @@ class MainApiRepository {
     required int tripId,  // ✅ FIXED: Made required as per API
   }) async {
     final response = await _apiClient.post(
-      '${MainApiEndpoints.logbookSkillReferences}/',
+      MainApiEndpoints.logbookSkillReferences,
       data: {
         'member': memberId,
         'logbookSkill': skillId,
@@ -1651,7 +1778,7 @@ class MainApiRepository {
     required int trip,
   }) async {
     final response = await _apiClient.put(
-      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+      '${MainApiEndpoints.logbookSkillReferences}$id/',
       data: {
         'logbookSkill': logbookSkill,
         'member': member,
@@ -1667,7 +1794,7 @@ class MainApiRepository {
     Map<String, dynamic>? updates,
   }) async {
     final response = await _apiClient.patch(
-      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+      '${MainApiEndpoints.logbookSkillReferences}$id/',
       data: updates ?? {},
     );
     return response.data;
@@ -1676,7 +1803,7 @@ class MainApiRepository {
   /// Delete skill reference
   Future<void> deleteLogbookSkillReference(int id) async {
     await _apiClient.delete(
-      '${MainApiEndpoints.logbookSkillReferences}/$id/',
+      '${MainApiEndpoints.logbookSkillReferences}$id/',
     );
   }
 
@@ -2166,71 +2293,121 @@ class MainApiRepository {
 
   /// Get approval status choices
   /// Returns list of available trip approval statuses for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getApprovalStatusChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesApprovalStatus);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get car brand choices
   /// Returns list of available car brands for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getCarBrandChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesCarBrand);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get country choices
   /// Returns list of available countries for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getCountryChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesCountries);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get Emirates choices
   /// Returns list of available Emirates for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getEmiratesChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesEmirates);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get gender choices
   /// Returns list of available gender options for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getGenderChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesGender);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get permission matrix action choices
   /// Returns list of available permission actions for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getPermissionMatrixActionChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesPermissionMatrixAction);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get time of day choices
   /// Returns list of available time of day options for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getTimeOfDayChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesTimeOfDay);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get trip request area choices
   /// Returns list of available areas for trip requests dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getTripRequestAreaChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesTripRequestArea);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get upgrade request status choices
   /// Returns list of available upgrade request statuses for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getUpgradeRequestStatusChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesUpgradeRequestStatus);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 
   /// Get upgrade request vote choices
   /// Returns list of available upgrade request vote options for dropdowns
+  /// API returns paginated response: {count, next, previous, results}
   Future<List<dynamic>> getUpgradeRequestVoteChoices() async {
     final response = await _apiClient.get(MainApiEndpoints.choicesUpgradeRequestVote);
+    // Extract 'results' array from paginated response
+    if (response.data is Map && response.data['results'] is List) {
+      return response.data['results'];
+    }
     return response.data is List ? response.data : [];
   }
 }

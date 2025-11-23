@@ -23,22 +23,43 @@ class TripSearchDialog extends ConsumerStatefulWidget {
 
 class _TripSearchDialogState extends ConsumerState<TripSearchDialog> {
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, dynamic>> _filteredTrips = [];
+  final ScrollController _scrollController = ScrollController();
+  List<Map<String, dynamic>> _trips = [];
   bool _isLoading = false;
   bool _hasSearched = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  /// Search trips by title
+  void _onScroll() {
+    if (_scrollController.position.pixels >= 
+        _scrollController.position.maxScrollExtent * 0.8) {
+      if (!_isLoading && _hasMore) {
+        _loadMoreTrips();
+      }
+    }
+  }
+
+  /// Search trips by title, description, or location
   Future<void> _searchTrips(String query) async {
     if (query.trim().isEmpty) {
       setState(() {
-        _filteredTrips = [];
+        _trips = [];
         _hasSearched = false;
+        _hasMore = true;
+        _currentPage = 1;
       });
       return;
     }
@@ -46,31 +67,40 @@ class _TripSearchDialogState extends ConsumerState<TripSearchDialog> {
     setState(() {
       _isLoading = true;
       _hasSearched = true;
+      _trips = [];
+      _currentPage = 1;
+      _hasMore = true;
     });
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       
-      // Search approved trips only
+      // ⚠️ Backend does NOT support 'search' parameter for trips
+      // ✅ Order by start time (newest first) for better UX
+      // ✅ Get ALL trips initially, then filter client-side by title
+      // ⚠️ CRITICAL: API uses snake_case 'start_time' NOT camelCase 'startTime'
       final response = await repository.getTrips(
-        approvalStatus: 'A',
-        pageSize: 50,
+        ordering: '-start_time',  // Backend expects snake_case!
+        page: 1,
+        pageSize: 100, // Get more results since we're filtering client-side
       );
 
       final results = response['results'] as List<dynamic>? ?? [];
       
-      // Filter by title client-side (backend doesn't support title search)
+      // Filter by title client-side (backend doesn't support search for trips)
       final queryLower = query.toLowerCase();
       final filtered = results
           .cast<Map<String, dynamic>>()
           .where((trip) {
             final title = (trip['title'] as String? ?? '').toLowerCase();
-            return title.contains(queryLower);
+            final description = (trip['description'] as String? ?? '').toLowerCase();
+            return title.contains(queryLower) || description.contains(queryLower);
           })
           .toList();
       
       setState(() {
-        _filteredTrips = filtered;
+        _trips = filtered;
+        _hasMore = false; // No pagination with client-side filtering
         _isLoading = false;
       });
     } catch (e) {
@@ -86,6 +116,32 @@ class _TripSearchDialogState extends ConsumerState<TripSearchDialog> {
           ),
         );
       }
+    }
+  }
+
+  /// Load more trips (pagination)
+  Future<void> _loadMoreTrips() async {
+    if (_isLoading || !_hasMore || _searchController.text.trim().isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _currentPage++;
+    });
+
+    try {
+      // Note: Pagination disabled for trip search due to client-side filtering
+      // Backend doesn't support 'search' parameter for trips endpoint
+      setState(() {
+        _isLoading = false;
+        _currentPage--; // Revert page increment
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _currentPage--; // Revert page increment on error
+      });
     }
   }
 
@@ -188,7 +244,7 @@ class _TripSearchDialogState extends ConsumerState<TripSearchDialog> {
                   );
                 }
 
-                if (_filteredTrips.isEmpty) {
+                if (_trips.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -218,14 +274,22 @@ class _TripSearchDialogState extends ConsumerState<TripSearchDialog> {
                 }
 
                 return ListView.builder(
-                  itemCount: _filteredTrips.length,
+                  controller: _scrollController,
+                  itemCount: _trips.length + (_hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    final trip = _filteredTrips[index];
+                    // Show loading indicator at the end
+                    if (index >= _trips.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    
+                    final trip = _trips[index];
                     final tripId = trip['id'] as int;
                     final title = trip['title'] as String? ?? 'Untitled Trip';
                     final startTimeStr = trip['startTime'] as String?;
                     final lead = trip['lead'] as Map<String, dynamic>?;
-                    final level = trip['level'] as Map<String, dynamic>?;
                     
                     DateTime? startTime;
                     if (startTimeStr != null) {
@@ -239,7 +303,17 @@ class _TripSearchDialogState extends ConsumerState<TripSearchDialog> {
                     final leadName = lead != null
                         ? '${lead['firstName'] ?? ''} ${lead['lastName'] ?? ''}'.trim()
                         : 'Unknown Lead';
-                    final levelName = level?['name'] as String? ?? 'Unknown Level';
+                    
+                    // Handle level - can be either a string or an object
+                    String levelName;
+                    final levelData = trip['level'];
+                    if (levelData is String) {
+                      levelName = levelData;
+                    } else if (levelData is Map<String, dynamic>) {
+                      levelName = levelData['name'] as String? ?? 'Unknown Level';
+                    } else {
+                      levelName = 'Unknown Level';
+                    }
 
                     return Card(
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
