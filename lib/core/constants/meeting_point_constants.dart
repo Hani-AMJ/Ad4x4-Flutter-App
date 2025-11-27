@@ -92,11 +92,12 @@ class MeetingPointConstants {
   /// detectAreaCode('Al Ain', 'Al Jimi')       // Returns: 'AAN'
   /// detectAreaCode('Muscat', '')              // Returns: null (not UAE)
   /// ```
-  static String? detectAreaCode(String city, [String? district]) {
+  static String? detectAreaCode(String city, [String? district, String? area]) {
     final cityLower = city.toLowerCase().trim();
     final districtLower = (district ?? '').toLowerCase().trim();
+    final areaLower = (area ?? '').toLowerCase().trim();
 
-    // Strategy 1: Exact and partial city name matching
+    // Strategy 1: Exact and partial matching across ALL fields
     final cityMapping = {
       'dubai': 'DXB',
       'abu dhabi': 'AUH',
@@ -112,40 +113,63 @@ class MeetingPointConstants {
       'liwa': 'LIW',
     };
 
-    // Check for exact matches first
+    // Check city field first (highest priority)
     for (var entry in cityMapping.entries) {
       if (cityLower == entry.key || cityLower.contains(entry.key)) {
         return entry.value;
       }
     }
 
-    // Strategy 2: District-based detection for ambiguous cases
+    // Strategy 2: Check district field
     if (districtLower.isNotEmpty) {
+      for (var entry in cityMapping.entries) {
+        if (districtLower.contains(entry.key)) {
+          return entry.value;
+        }
+      }
+      
       // Al Ain specific districts
-      if (districtLower.contains('al ain') || 
-          districtLower.contains('al jimi') ||
-          districtLower.contains('tawam')) {
+      if (districtLower.contains('al jimi') ||
+          districtLower.contains('tawam') ||
+          districtLower.contains('buraimi')) {
         return 'AAN';
       }
 
       // Liwa specific districts
-      if (districtLower.contains('liwa') || 
-          districtLower.contains('madinat zayed')) {
+      if (districtLower.contains('madinat zayed') ||
+          districtLower.contains('ghayathi')) {
         return 'LIW';
-      }
-
-      // Northern Emirates districts (if city detection failed)
-      if (districtLower.contains('sharjah') ||
-          districtLower.contains('ajman') ||
-          districtLower.contains('fujairah') ||
-          districtLower.contains('rak') ||
-          districtLower.contains('umm')) {
-        return 'NOR';
       }
     }
 
-    // Strategy 3: Fallback - check if any area name appears in the full string
-    final fullText = '$cityLower $districtLower';
+    // Strategy 3: Check area (full location text) - IMPORTANT for places like "Al Madam"
+    if (areaLower.isNotEmpty) {
+      for (var entry in cityMapping.entries) {
+        if (areaLower.contains(entry.key)) {
+          return entry.value;
+        }
+      }
+      
+      // Northern Emirates specific locations
+      // Al Madam, Hatta, Kalba, Dibba, Masafi are all in Northern Emirates
+      if (areaLower.contains('al madam') ||
+          areaLower.contains('hatta') ||
+          areaLower.contains('kalba') ||
+          areaLower.contains('dibba') ||
+          areaLower.contains('masafi') ||
+          areaLower.contains('khor fakkan') ||
+          areaLower.contains('khorfakkan')) {
+        return 'NOR';
+      }
+      
+      // Al Ain region locations
+      if (areaLower.contains('buraimi')) {
+        return 'AAN';
+      }
+    }
+
+    // Strategy 4: Combined text search (last resort)
+    final fullText = '$cityLower $districtLower $areaLower';
     for (var entry in cityMapping.entries) {
       if (fullText.contains(entry.key)) {
         return entry.value;
@@ -175,8 +199,9 @@ class MeetingPointConstants {
   static Map<String, String?> validateAreaCodeDetection(
     String city, [
     String? district,
+    String? area,
   ]) {
-    final detectedCode = detectAreaCode(city, district);
+    final detectedCode = detectAreaCode(city, district, area);
     
     if (detectedCode == null) {
       return {
@@ -188,9 +213,13 @@ class MeetingPointConstants {
 
     // Check confidence based on match quality
     final cityLower = city.toLowerCase().trim();
+    final districtLower = (district ?? '').toLowerCase().trim();
+    final areaLower = (area ?? '').toLowerCase().trim();
+    
     final exactMatches = ['dubai', 'abu dhabi', 'sharjah', 'ajman', 
                           'fujairah', 'al ain', 'liwa'];
     
+    // High confidence: Exact city name match
     if (exactMatches.any((name) => cityLower == name || cityLower.contains(name))) {
       return {
         'code': detectedCode,
@@ -199,11 +228,22 @@ class MeetingPointConstants {
       };
     }
 
-    if (district != null && district.isNotEmpty) {
+    // High confidence: Known specific locations in area field
+    final knownLocations = ['al madam', 'hatta', 'kalba', 'dibba', 'masafi', 'khor fakkan'];
+    if (knownLocations.any((loc) => areaLower.contains(loc) || districtLower.contains(loc))) {
+      return {
+        'code': detectedCode,
+        'confidence': 'high',
+        'reason': 'Known specific location',
+      };
+    }
+
+    // Medium confidence: District or area field match
+    if (districtLower.isNotEmpty || areaLower.isNotEmpty) {
       return {
         'code': detectedCode,
         'confidence': 'medium',
-        'reason': 'Detected from district name',
+        'reason': 'Detected from district/area name',
       };
     }
 

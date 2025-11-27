@@ -151,16 +151,18 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
         return;
       }
 
-      // Smart area code detection
+      // Smart area code detection - check ALL fields (city, district, area)
       final detectedCode = MeetingPointConstants.detectAreaCode(
         result.city,
         result.district,
+        result.area,  // Include area field for better detection
       );
 
       // Validate detection
       final validation = MeetingPointConstants.validateAreaCodeDetection(
         result.city,
         result.district,
+        result.area,  // Include area field for confidence scoring
       );
 
       setState(() {
