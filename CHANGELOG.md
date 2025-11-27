@@ -24,6 +24,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.2] - 2025-11-27
+
+### ✨ Added - Smart Area Code Auto-Detection
+
+**Meeting Points Enhancement**: Intelligent area code detection from HERE Maps geocoding data.
+
+#### NEW FEATURES
+- **Smart Detection Algorithm**: Automatically detects area code (DXB, AUH, NOR, AAN, LIW) from HERE Maps city/district
+- **Dual-Field Approach**:
+  - Area dropdown (saved to database) - Required field with validation
+  - Location context (display only) - Shows HERE Maps descriptive text
+- **Multi-Strategy Detection**:
+  - Exact city name matching (Dubai → DXB)
+  - Partial text matching (contains "Abu Dhabi" → AUH)
+  - District-based fallback (Al Ain districts → AAN)
+- **Confidence Validation**: Detection results marked as high/medium/low confidence
+- **Manual Override**: Admins can change auto-detected area if needed
+
+#### ARCHITECTURE IMPROVEMENTS
+- Created `GeocodingResult` model for structured HERE Maps API responses
+- Extended `HereMapsService` with `reverseGeocodeWithFields()` method
+- Added detection logic to `MeetingPointConstants`:
+  - `detectAreaCode()` - Maps city names to area codes
+  - `validateAreaCodeDetection()` - Provides confidence scoring
+- Separated concerns: Area codes stored in DB, descriptive location shown in UI only
+
+#### UI ENHANCEMENTS
+- Required area dropdown with color-coded options (matches existing area colors)
+- HERE Maps location display card (blue info box, read-only)
+- "Fetch Location & Auto-Detect Area" button with loading state
+- Detection status indicators: ✅ (high), ⚠️ (medium), ❓ (low confidence)
+- Helper text showing auto-detection status
+
+#### DATA FLOW
+1. User enters lat/lon coordinates
+2. Click "Fetch Location & Auto-Detect Area"
+3. HERE Maps returns city, district, and formatted area text
+4. Smart detection maps city name to area code
+5. Area dropdown auto-selects detected code
+6. Only area code (DXB, AUH, etc.) saved to database
+7. Descriptive location (e.g., "Dubai, Business Bay") shown for context only
+
+#### TECHNICAL DETAILS
+- **City-to-Area Mapping**:
+  - Dubai → DXB
+  - Abu Dhabi / Abudhabi → AUH
+  - Sharjah, Ajman, RAK, Fujairah, UAQ → NOR (Northern Emirates)
+  - Al Ain → AAN
+  - Liwa → LIW
+- **Northern Emirates Grouping**: All NE cities map to single "NOR" code
+- **District Fallback**: Uses district names when city detection ambiguous
+- **Case-Insensitive Matching**: Handles variations in capitalization
+- **Admin Override**: Manual selection always takes precedence
+- **Backward Compatible**: Works with existing meeting points that have area codes
+
+#### FILES MODIFIED
+- `lib/core/services/here_maps_service.dart` (+85 lines)
+- `lib/core/constants/meeting_point_constants.dart` (+183 lines)
+- `lib/features/admin/presentation/screens/admin_meeting_point_form_screen.dart` (+269/-144 lines)
+
+#### NEW FILES
+- `lib/data/models/geocoding_result.dart` - Structured HERE Maps response model
+
+#### TESTING
+- ✅ HERE Maps API integration verified
+- ✅ Area code detection logic tested with real coordinates
+- ✅ UI state management validated
+- ✅ Form validation working correctly
+- ✅ Flutter analyze passed with no critical issues
+
+#### USER IMPACT
+- **Faster Data Entry**: Area auto-populated from coordinates
+- **Reduced Errors**: No manual area code entry mistakes
+- **Better Context**: See detailed location while editing
+- **Flexibility**: Can still manually select area if auto-detection wrong
+- **Consistent Data**: All area codes standardized to short codes
+
+---
+
 ## [1.6.1] - 2025-11-27
 
 ### 🔧 Fixed - Meeting Points Complete Refactor
