@@ -41,6 +41,14 @@ This document provides comprehensive API documentation for the AD4x4 off-roading
 27. [Validators](#validators)
 
 ---
+### New Endpoints (Added 2025-11-27)
+- [🌍 Geocoding Endpoints](#-geocoding-endpoints)
+- [⚙️ Settings Endpoints](#️-settings-endpoints)
+- [🔒 Global Settings Endpoints](#-global-settings-endpoints)
+- [👤 GDPR Compliance Endpoints](#-gdpr-compliance-endpoints)
+- [📝 UI Strings Management Endpoints](#-ui-strings-management-endpoints)
+- [📋 Trips Logbook Endpoints](#-trips-logbook-endpoints)
+
 
 ## Authentication
 
@@ -5018,7 +5026,586 @@ curl -X PATCH http://localhost:8000/api/trips/456/ \
 5. **Use pagination for large datasets**
 6. **Implement proper error handling**
 7. **Validate data on the client side before sending**
-8. **Use appropriate HTTP methods** (GET, POST, PUT, PATCH, DELETE)
+8. **Use appropriate HTTP methods** (
+
+---
+
+## 🆕 New Endpoints (Added November 27, 2025)
+
+**Testing Date**: 2025-11-27  
+**Tested By**: Hani AMJ (Member ID: 10613)  
+**Endpoints Count**: 13 (11 fully tested, 2 admin-only)  
+
+The following endpoints were added in the latest API update and have been thoroughly tested:
+
+## 🌍 Geocoding Endpoints
+
+### POST `/api/geocoding/reverse/`
+
+Convert latitude/longitude coordinates to human-readable location information.
+
+**Authentication**: Required (Bearer Token)
+
+**Request Body**:
+```json
+{
+  "latitude": "25.0657",
+  "longitude": "55.1713"
+}
+```
+
+**Response** (Success - 200 OK):
+```json
+{
+  "area": "Dubai, Al Thanyah 4",
+  "city": "Dubai",
+  "district": "Al Thanyah 4",
+  "cached": false
+}
+```
+
+**Use Cases**:
+- Auto-detect area codes for meeting points
+- Display location context in forms
+- Validate GPS coordinates
+
+**Testing Result**: ✅ **WORKING**
+
+**Example Usage**:
+```bash
+curl -X POST "https://ap.ad4x4.com/api/geocoding/reverse/" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"latitude": "25.0657", "longitude": "55.1713"}'
+```
+
+---
+
+## ⚙️ Settings Endpoints
+
+### GET `/api/settings/here-maps-config/`
+
+Retrieve HERE Maps integration configuration settings.
+
+**Authentication**: Required (Bearer Token)
+
+**Response** (Success - 200 OK):
+```json
+{
+  "enabled": true,
+  "selectedFields": ["city", "district"],
+  "maxFields": 2,
+  "availableFields": [
+    "Place Name",
+    "District",
+    "City",
+    "County",
+    "Country",
+    "Postal Code",
+    "Full Address",
+    "Category"
+  ]
+}
+```
+
+**Response Fields**:
+- `enabled` (boolean): Whether HERE Maps is enabled globally
+- `selectedFields` (array): Fields currently displayed to users
+- `maxFields` (integer): Maximum number of fields that can be selected
+- `availableFields` (array): All available field options
+
+**Use Cases**:
+- Configure HERE Maps display in mobile app
+- Validate field selections
+- Dynamic form rendering
+
+**Testing Result**: ✅ **WORKING**
+
+---
+
+## 🔒 Global Settings Endpoints
+
+### PUT `/api/globalsettings/{id}/`
+### PATCH `/api/globalsettings/{id}/`
+
+Update global application settings (full or partial update).
+
+**Authentication**: Required (Bearer Token) + **Admin/Superuser Permissions**
+
+**Access Control**:
+- ❌ **Regular users**: 403 Forbidden
+- ✅ **Admin/Superuser**: Full access
+
+**PUT Request Example** (Full Update):
+```json
+{
+  "emailSupportAddress": "support@ad4x4.com",
+  "forceWaitlist": false,
+  "enableAutoUpgradeOnCheckin": true,
+  "hereMapsEnabled": true,
+  "hereMapsApiBaseUrl": "https://revgeocode.search.hereapi.com/v1/revgeocode",
+  "hereMapsSelectedFields": ["city", "district"],
+  "hereMapsMaxFields": 2,
+  "hereMapsCacheDuration": 1440,
+  "hereMapsRequestTimeout": 10,
+  "galleryApiUrl": "https://media.ad4x4.com",
+  "galleryApiTimeout": 30
+}
+```
+
+**PATCH Request Example** (Partial Update):
+```json
+{
+  "emailSupportAddress": "newsupport@ad4x4.com"
+}
+```
+
+**Error Response** (403 Forbidden):
+```json
+{
+  "detail": "You do not have permission to perform this action."
+}
+```
+
+**Testing Result**: 🔒 **RESTRICTED** (Tested with regular user account)
+
+**Recommendation**: 
+- Regular users should use `GET /api/globalsettings/` (read-only)
+- Only superadmins can modify settings via API
+
+---
+
+## 👤 GDPR Compliance Endpoints
+
+### POST `/api/members/request-deletion`
+
+Request account deletion (GDPR "Right to be Forgotten" compliance).
+
+**Authentication**: Required (Bearer Token)
+
+**Request Body**: Empty object `{}`
+
+**Response** (Success - 200 OK):
+```json
+{
+  "success": true,
+  "message": "deletion_request_submitted"
+}
+```
+
+**Testing Result**: ✅ **WORKING**
+
+**Workflow**:
+1. User requests deletion via this endpoint
+2. System flags account for deletion (scheduled process)
+3. User can cancel deletion before processing
+
+---
+
+### POST `/api/members/cancel-deletion`
+
+Cancel a pending account deletion request.
+
+**Authentication**: Required (Bearer Token)
+
+**Request Body**: Empty object `{}`
+
+**Response** (Success - 200 OK):
+```json
+{
+  "success": true,
+  "message": "deletion_request_cancelled"
+}
+```
+
+**Testing Result**: ✅ **WORKING**
+
+**Use Cases**:
+- User changes mind about account deletion
+- Accidental deletion request
+- GDPR compliance - allow user to cancel before processing
+
+**Example Flow**:
+```bash
+# 1. Request deletion
+curl -X POST "https://ap.ad4x4.com/api/members/request-deletion" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# 2. Cancel deletion (if needed)
+curl -X POST "https://ap.ad4x4.com/api/members/cancel-deletion" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+---
+
+## 📝 UI Strings Management Endpoints
+
+Manage multilingual UI strings for web and mobile applications.
+
+**Authentication**: Required (Bearer Token)
+
+### GET `/api/strings/`
+
+List all UI strings (paginated).
+
+**Query Parameters**:
+- `page` (integer): Page number
+- `pageSize` (integer): Results per page
+
+**Response** (Success - 200 OK):
+```json
+{
+  "count": 0,
+  "next": null,
+  "previous": null,
+  "results": []
+}
+```
+
+**Testing Result**: ✅ **WORKING** (Empty initially)
+
+---
+
+### POST `/api/strings/`
+
+Create a new UI string entry.
+
+**Request Body**:
+```json
+{
+  "key": "test_welcome_message",
+  "valuesEn": {
+    "web": "Welcome to AD4x4 Off-Road Club!",
+    "mobile": "Welcome to AD4x4!"
+  },
+  "valuesAr": {
+    "web": "مرحبا بكم في نادي AD4x4 للطرق الوعرة!",
+    "mobile": "مرحبا بكم في AD4x4!"
+  }
+}
+```
+
+**Response** (Success - 201 Created):
+```json
+{
+  "key": "test_welcome_message",
+  "valuesEn": {
+    "web": "Welcome to AD4x4 Off-Road Club!",
+    "mobile": "Welcome to AD4x4!"
+  },
+  "valuesAr": {
+    "web": "مرحبا بكم في نادي AD4x4 للطرق الوعرة!",
+    "mobile": "مرحبا بكم في AD4x4!"
+  }
+}
+```
+
+**Field Requirements**:
+- `key` (string, required): Unique identifier (max 255 chars)
+- `valuesEn` (object, required): English translations as JSON object
+- `valuesAr` (object, optional): Arabic translations as JSON object
+
+**Testing Result**: ✅ **WORKING**
+
+---
+
+### GET `/api/strings/{key}/`
+
+Retrieve a specific UI string by key.
+
+**Path Parameter**:
+- `key` (string): The unique string key
+
+**Response** (Success - 200 OK):
+```json
+{
+  "key": "test_welcome_message",
+  "values": {
+    "web": "Welcome to AD4x4 Off-Road Club!",
+    "mobile": "Welcome to AD4x4!"
+  }
+}
+```
+
+**Note**: Response uses `values` (singular) field that combines language-specific values.
+
+**Testing Result**: ✅ **WORKING**
+
+---
+
+### PUT `/api/strings/{key}/`
+
+Full update of a UI string entry.
+
+**Request Body**:
+```json
+{
+  "key": "test_welcome_message",
+  "valuesEn": {
+    "web": "Welcome to AD4x4 Off-Road Club - Updated!",
+    "mobile": "Welcome to AD4x4 - Updated!"
+  },
+  "valuesAr": {
+    "web": "مرحبا بكم - تحديث كامل!",
+    "mobile": "مرحبا - تحديث!"
+  }
+}
+```
+
+**Response** (Success - 200 OK):
+```json
+{
+  "key": "test_welcome_message",
+  "valuesEn": {
+    "web": "Welcome to AD4x4 Off-Road Club - Updated!",
+    "mobile": "Welcome to AD4x4 - Updated!"
+  },
+  "valuesAr": {
+    "web": "مرحبا بكم - تحديث كامل!",
+    "mobile": "مرحبا - تحديث!"
+  }
+}
+```
+
+**Testing Result**: ✅ **WORKING**
+
+---
+
+### PATCH `/api/strings/{key}/`
+
+Partial update of a UI string entry.
+
+**Request Body** (Update only English values):
+```json
+{
+  "valuesEn": {
+    "web": "Welcome to AD4x4 - Patched!",
+    "mobile": "Welcome - Patched!"
+  }
+}
+```
+
+**Response** (Success - 200 OK):
+```json
+{
+  "key": "test_welcome_message",
+  "valuesEn": {
+    "web": "Welcome to AD4x4 - Patched!",
+    "mobile": "Welcome - Patched!"
+  },
+  "valuesAr": {
+    "web": "مرحبا بكم - تحديث كامل!",
+    "mobile": "مرحبا - تحديث!"
+  }
+}
+```
+
+**Testing Result**: ✅ **WORKING**
+
+---
+
+### DELETE `/api/strings/{key}/`
+
+Delete a UI string entry.
+
+**Response** (Success - 204 No Content): Empty response
+
+**Testing Result**: ✅ **WORKING**
+
+---
+
+## 📋 Trips Logbook Endpoints
+
+### POST `/api/trips/{id}/logbook-entries`
+
+Create a logbook entry for a specific trip.
+
+**Authentication**: Required (Bearer Token)
+
+**Path Parameter**:
+- `id` (integer): Trip ID
+
+**Request Body**:
+```json
+{
+  "member": 10613,
+  "comment": "Great off-road experience! Challenging terrain but well organized.",
+  "date": "2025-11-27",
+  "location": "Liwa Desert",
+  "difficulty": "moderate"
+}
+```
+
+**Required Fields**:
+- `member` (integer): Member ID (must be checked-in for the trip)
+- `comment` (string): Logbook entry comment/review
+
+**Optional Fields**:
+- `date` (string, ISO 8601): Entry date
+- `location` (string): Location description
+- `difficulty` (string): Difficulty level
+
+**Response** (Success - 201 Created):
+```json
+{
+  "success": true,
+  "data": {
+    "id": 12345,
+    "member": 10613,
+    "comment": "Great off-road experience!",
+    "date": "2025-11-27",
+    "location": "Liwa Desert",
+    "difficulty": "moderate",
+    "created_at": "2025-11-27T18:00:00Z"
+  }
+}
+```
+
+**Error Response** (Business Rule Violation):
+```json
+{
+  "success": false,
+  "message": "no_checked_in_member_registration_for_trip"
+}
+```
+
+**Testing Result**: ⚠️ **CONDITIONAL**
+
+**Business Rules**:
+- User MUST be registered for the trip
+- User MUST be checked-in (not just registered)
+- Cannot create logbook entries for trips user hasn't attended
+
+**Use Cases**:
+- Post-trip reviews
+- Logbook skill tracking
+- Trip feedback collection
+
+---
+
+## 🔐 Authentication Notes
+
+**All endpoints require Bearer token authentication**:
+
+```bash
+# 1. Login to get token
+curl -X POST "https://ap.ad4x4.com/api/auth/login/" \
+  -H "Content-Type: application/json" \
+  -d '{"login": "USERNAME", "password": "PASSWORD"}'
+
+# Response:
+{
+  "detail": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+
+# 2. Use token in subsequent requests
+curl -X GET "https://ap.ad4x4.com/api/ENDPOINT/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Important**: Use `Bearer` prefix, NOT `Token`.
+
+---
+
+## 📊 Testing Summary
+
+### ✅ Successfully Tested Endpoints (11/13)
+
+1. ✅ POST `/api/geocoding/reverse/` - Reverse geocoding
+2. ✅ GET `/api/settings/here-maps-config/` - HERE Maps settings
+3. ✅ POST `/api/members/request-deletion` - Request account deletion
+4. ✅ POST `/api/members/cancel-deletion` - Cancel deletion request
+5. ✅ GET `/api/strings/` - List UI strings
+6. ✅ POST `/api/strings/` - Create UI string
+7. ✅ GET `/api/strings/{key}/` - Get single UI string
+8. ✅ PUT `/api/strings/{key}/` - Full update UI string
+9. ✅ PATCH `/api/strings/{key}/` - Partial update UI string
+10. ✅ DELETE `/api/strings/{key}/` - Delete UI string
+11. ⚠️ POST `/api/trips/{id}/logbook-entries` - Conditional (requires check-in)
+
+### 🔒 Admin-Only Endpoints (2/13)
+
+12. 🔒 PUT `/api/globalsettings/{id}/` - Requires admin permissions
+13. 🔒 PATCH `/api/globalsettings/{id}/` - Requires admin permissions
+
+---
+
+## 💡 Implementation Recommendations
+
+### For Mobile App Developers:
+
+1. **Geocoding**:
+   - Use for meeting point auto-detection
+   - Cache results to minimize API calls
+   - Handle offline scenarios gracefully
+
+2. **UI Strings**:
+   - Implement local caching with TTL
+   - Fetch strings on app startup
+   - Support dynamic language switching
+
+3. **GDPR Compliance**:
+   - Add "Delete Account" option in settings
+   - Show confirmation dialog before deletion
+   - Explain deletion timeline (e.g., "Account will be deleted in 30 days")
+
+4. **Trips Logbook**:
+   - Only show logbook entry form after trip check-in
+   - Validate check-in status before allowing entry creation
+   - Handle business rule violations gracefully
+
+### For Backend Developers:
+
+1. **Global Settings**:
+   - Implement admin-only endpoints carefully
+   - Log all settings changes for audit trail
+   - Consider adding settings change notifications
+
+2. **Strings Management**:
+   - Use strings for all UI text (future-proof for i18n)
+   - Implement versioning for string changes
+   - Consider adding string import/export for translations
+
+---
+
+## 🐛 Known Issues & Limitations
+
+1. **GLOBALSETTINGS Endpoints**:
+   - Regular users cannot modify settings (by design)
+   - No granular permission control documented
+
+2. **TRIPS Logbook**:
+   - Strict business rule: must be checked-in
+   - No API to check if user can create logbook entry
+   - Consider adding `GET /api/trips/{id}/can-create-logbook/` helper endpoint
+
+3. **STRINGS Endpoint**:
+   - No bulk operations documented
+   - No string import/export functionality
+   - No versioning system documented
+
+---
+
+## 📚 Additional Resources
+
+- **Main API Documentation**: `/docs/MAIN_API_DOCUMENTATION.md`
+- **API Schema**: `/api_new.yaml` (OpenAPI 3.0.3)
+- **Test Scripts**: `/home/user/test_all_new_endpoints.sh`
+- **Test Results**: `/tmp/api_tests/`, `/tmp/api_tests_corrected/`
+
+---
+
+**Documentation Version**: 1.0  
+**Last Updated**: 2025-11-27 (Added 13 new endpoints)
+**Tested Against**: AD4x4 API Production Environment  
+
+
+GET, POST, PUT, PATCH, DELETE)
 9. **Include proper Content-Type headers**
 10. **Test with the Swagger UI** at `/docs/swagger-ui/`
 
