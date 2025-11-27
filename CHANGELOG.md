@@ -24,6 +24,115 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2025-11-27
+
+### 🔒 Security - HERE Maps Backend Migration (CRITICAL)
+
+**⚠️ SECURITY FIX**: Migrated HERE Maps geocoding from client-side to secure backend architecture
+
+### Added
+- **Backend-Driven HERE Maps Configuration** (Security & Flexibility Upgrade)
+  - Configuration loading from Django Admin panel
+  - Auto-refresh every 15 minutes from backend
+  - Read-only admin screen displaying current backend configuration
+  - New API endpoints:
+    - `GET /api/settings/here-maps-config/` - Load configuration (public)
+    - `POST /api/geocoding/reverse/` - Reverse geocode (authenticated)
+  - New repository methods: `getHereMapsConfig()` and `reverseGeocode()`
+  - Client-side cache (5 minutes) for performance
+  - Backend cache (24 hours) for cost optimization
+
+### Changed
+- **HereMapsService - Backend API Integration** (Breaking Change)
+  - Removed direct HERE Maps API calls
+  - Now calls AD4x4 backend API exclusively
+  - Simplified response parsing (backend returns pre-formatted strings)
+  - JWT authentication required for geocoding requests
+  - Graceful degradation if service unavailable
+  
+- **HereMapsSettings Model - Backend Configuration** (Breaking Change)
+  - Removed `apiKey` field (now secured on backend)
+  - Removed `defaultApiKey` constant (security risk eliminated)
+  - Added `enabled` field (global toggle from backend)
+  - Added `maxFields` field (configurable limit)
+  - Added `availableFields` list (all field options)
+  - Backend field parsing: `hereMapsEnabled`, `hereMapsSelectedFields`, etc.
+  
+- **HereMapsSettingsProvider - Auto-Refresh** (Architecture Change)
+  - Changed from simple state to AsyncValue state management
+  - Auto-loads configuration on provider initialization
+  - Periodic refresh every 15 minutes
+  - New methods: `refreshSettings()`, `isEnabled()`, `getSettingsOrDefault()`
+  - Timer-based auto-refresh mechanism
+  
+- **Admin HERE Maps Settings Screen - Read-Only Display** (UI Change)
+  - Converted from editable form to read-only information display
+  - Shows current backend configuration
+  - Manual refresh button to check for backend changes
+  - Admin instructions for Django Admin panel access
+  - Backend management notice prominently displayed
+
+### Removed
+- **⚠️ CRITICAL**: Exposed HERE Maps API key (`tLzdVrbRbvWpl_8Em4JbjHxzFMIvIRyMo9xyKn7fBW8`)
+  - API key NO LONGER stored in Flutter app
+  - API key secured in Django backend environment variables
+  - **ACTION REQUIRED**: Backend team must rotate this key immediately
+- Client-side API key management UI
+- Direct HERE Maps API integration code
+- Complex response parsing logic (now handled by backend)
+
+### Security Improvements
+- ✅ API key protected server-side (never exposed to clients)
+- ✅ JWT authentication required for all geocoding requests
+- ✅ Centralized rate limiting on backend
+- ✅ Input validation and sanitization on backend
+- ✅ Usage monitoring and analytics enabled
+- ✅ Configuration changes require Django Admin access only
+
+### Performance Improvements
+- ✅ 70%+ cache hit rate expected (backend caching)
+- ✅ Faster response times for cached locations
+- ✅ Reduced client complexity (simplified parsing)
+- ✅ Lower API costs (shared backend cache benefits all users)
+
+### Testing
+- ✅ Tested with production credentials (Hani amj / 3213Plugin?)
+- ✅ Configuration endpoint verified working
+- ✅ Reverse geocoding endpoint verified working
+- ✅ Test location: Abu Dhabi (24.4539, 54.3773) → "Abu Dhabi, Al Karamah"
+- ✅ Response time: < 1 second
+- ✅ All Flutter analyze checks passed
+
+### Documentation
+- ✅ Updated `BACKEND_API_DOCUMENTATION.md` with migration completion status
+- ✅ Added Flutter migration summary with test results
+- ✅ Documented all modified files and changes
+- ✅ Backend integration test results documented
+
+### Migration Notes
+**Files Modified:**
+- `lib/data/models/here_maps_settings.dart` - Backend-driven model
+- `lib/core/services/here_maps_service.dart` - Backend API integration
+- `lib/core/providers/here_maps_settings_provider.dart` - Auto-refresh provider
+- `lib/data/repositories/main_api_repository.dart` - HERE Maps endpoints
+- `lib/core/network/main_api_endpoints.dart` - Endpoint constants
+- `lib/features/admin/presentation/screens/admin_here_maps_settings_screen.dart` - Read-only UI
+- `lib/features/admin/presentation/screens/admin_meeting_point_form_screen.dart` - AsyncValue handling
+
+**Backend Requirements:**
+- ✅ Backend API already implemented and operational
+- ⚠️ **CRITICAL**: Rotate exposed HERE Maps API key immediately
+- Configuration managed via Django Admin panel
+- Cache cleanup cron job recommended (daily)
+
+**Next Steps:**
+1. Deploy updated Flutter app to TestFlight/Internal Testing
+2. Monitor backend API usage and cache hit rates
+3. Update any external documentation referencing old implementation
+4. Consider implementing rate limiting alerts for abuse prevention
+
+---
+
 ## [1.5.3] - 2025-11-27
 
 ### Added

@@ -1,61 +1,122 @@
 /// Here Maps Settings Model
 /// 
 /// Configuration for Here Maps reverse geocoding integration
+/// ✅ MIGRATED TO BACKEND-DRIVEN ARCHITECTURE
+/// - API key now secured on backend (not exposed in Flutter)
+/// - Configuration loaded from Django Admin panel
+/// - Auto-refresh every 15 minutes
 class HereMapsSettings {
-  final String apiKey;
-  final List<HereMapsDisplayField> selectedFields;
-  final bool enableReverseGeocode;
-
-  static const int maxFields = 2;
-  static const String defaultApiKey = 'tLzdVrbRbvWpl_8Em4JbjHxzFMIvIRyMo9xyKn7fBW8';
+  final bool enabled;  // Backend: hereMapsEnabled
+  final int maxFields;  // Backend: hereMapsMaxFields
+  final List<String> availableFields;  // Backend: hereMapsAvailableFields
+  final List<HereMapsDisplayField> selectedFields;  // Backend: hereMapsSelectedFields
 
   const HereMapsSettings({
-    required this.apiKey,
+    required this.enabled,
+    required this.maxFields,
+    required this.availableFields,
     required this.selectedFields,
-    this.enableReverseGeocode = true,
   });
 
-  /// Default settings with district field selected
+  /// Default settings (used as fallback if backend unavailable)
   factory HereMapsSettings.defaultSettings() {
     return const HereMapsSettings(
-      apiKey: defaultApiKey,
-      selectedFields: [HereMapsDisplayField.district],
-      enableReverseGeocode: true,
+      enabled: true,
+      maxFields: 2,
+      availableFields: [
+        'Place Name',
+        'District',
+        'City',
+        'County',
+        'Country',
+        'Postal Code',
+        'Full Address',
+        'Category',
+      ],
+      selectedFields: [HereMapsDisplayField.city, HereMapsDisplayField.district],
     );
   }
 
   HereMapsSettings copyWith({
-    String? apiKey,
+    bool? enabled,
+    int? maxFields,
+    List<String>? availableFields,
     List<HereMapsDisplayField>? selectedFields,
-    bool? enableReverseGeocode,
   }) {
     return HereMapsSettings(
-      apiKey: apiKey ?? this.apiKey,
+      enabled: enabled ?? this.enabled,
+      maxFields: maxFields ?? this.maxFields,
+      availableFields: availableFields ?? this.availableFields,
       selectedFields: selectedFields ?? this.selectedFields,
-      enableReverseGeocode: enableReverseGeocode ?? this.enableReverseGeocode,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'apiKey': apiKey,
-      'selectedFields': selectedFields.map((f) => f.name).toList(),
-      'enableReverseGeocode': enableReverseGeocode,
+      'enabled': enabled,
+      'maxFields': maxFields,
+      'availableFields': availableFields,
+      'selectedFields': selectedFields.map((f) => f.displayName).toList(),
     };
   }
 
+  /// Parse backend configuration response
+  /// Backend field names: hereMapsEnabled, hereMapsSelectedFields, hereMapsMaxFields, hereMapsAvailableFields
   factory HereMapsSettings.fromJson(Map<String, dynamic> json) {
     return HereMapsSettings(
-      apiKey: json['apiKey'] as String? ?? defaultApiKey,
-      selectedFields: (json['selectedFields'] as List<dynamic>?)
-              ?.map((name) => HereMapsDisplayField.values.firstWhere(
-                    (f) => f.name == name,
-                    orElse: () => HereMapsDisplayField.district,
-                  ))
+      enabled: json['hereMapsEnabled'] as bool? ?? true,
+      maxFields: json['hereMapsMaxFields'] as int? ?? 2,
+      availableFields: (json['hereMapsAvailableFields'] as List<dynamic>?)
+              ?.map((e) => e.toString())
               .toList() ??
-          [HereMapsDisplayField.district],
-      enableReverseGeocode: json['enableReverseGeocode'] as bool? ?? true,
+          [
+            'Place Name',
+            'District',
+            'City',
+            'County',
+            'Country',
+            'Postal Code',
+            'Full Address',
+            'Category',
+          ],
+      selectedFields: _parseSelectedFields(json['hereMapsSelectedFields']),
     );
+  }
+
+  /// Convert backend field names to Flutter enum
+  /// Backend returns: ["city", "district"]
+  /// Flutter needs: [HereMapsDisplayField.city, HereMapsDisplayField.district]
+  static List<HereMapsDisplayField> _parseSelectedFields(dynamic fields) {
+    if (fields == null) {
+      return [HereMapsDisplayField.city, HereMapsDisplayField.district];
+    }
+
+    final fieldList = fields is List ? fields : [];
+    return fieldList.map((field) {
+      final fieldStr = field.toString().toLowerCase().trim();
+      switch (fieldStr) {
+        case 'city':
+          return HereMapsDisplayField.city;
+        case 'district':
+          return HereMapsDisplayField.district;
+        case 'place name':
+        case 'title':
+          return HereMapsDisplayField.title;
+        case 'county':
+          return HereMapsDisplayField.county;
+        case 'country':
+          return HereMapsDisplayField.countryName;
+        case 'postal code':
+          return HereMapsDisplayField.postalCode;
+        case 'full address':
+        case 'label':
+          return HereMapsDisplayField.label;
+        case 'category':
+          return HereMapsDisplayField.categoryName;
+        default:
+          return HereMapsDisplayField.city;  // Fallback
+      }
+    }).toList();
   }
 }
 

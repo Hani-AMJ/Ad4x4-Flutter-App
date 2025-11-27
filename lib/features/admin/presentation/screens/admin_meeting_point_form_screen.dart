@@ -109,7 +109,8 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
       );
 
       // Get Here Maps settings and service
-      final settings = ref.read(hereMapsSettingsProvider);
+      final settingsNotifier = ref.read(hereMapsSettingsProvider.notifier);
+      final settings = settingsNotifier.getSettingsOrDefault();
       final service = ref.read(hereMapsServiceProvider);
 
       // Call Here Maps API

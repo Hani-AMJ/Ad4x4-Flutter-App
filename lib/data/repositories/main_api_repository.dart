@@ -2411,4 +2411,90 @@ class MainApiRepository {
     }
     return response.data is List ? response.data : [];
   }
+
+  // ============================================================================
+  // HERE MAPS GEOCODING (Backend-driven, Secure)
+  // ============================================================================
+
+  /// Get HERE Maps configuration
+  /// 
+  /// Returns backend configuration for HERE Maps reverse geocoding:
+  /// - hereMapsEnabled: bool (global enable/disable)
+  /// - hereMapsSelectedFields: array (e.g., ["city", "district"])
+  /// - hereMapsMaxFields: int (maximum fields to display)
+  /// - hereMapsAvailableFields: array (all available field options)
+  /// 
+  /// ✅ PUBLIC ENDPOINT - No authentication required
+  /// ✅ Configuration managed via Django Admin panel
+  /// ✅ API key secured on backend (not exposed to client)
+  /// 
+  /// Example response:
+  /// ```json
+  /// {
+  ///   "hereMapsEnabled": true,
+  ///   "hereMapsSelectedFields": ["city", "district"],
+  ///   "hereMapsMaxFields": 2,
+  ///   "hereMapsAvailableFields": [
+  ///     "Place Name", "District", "City", "County",
+  ///     "Country", "Postal Code", "Full Address", "Category"
+  ///   ]
+  /// }
+  /// ```
+  Future<Map<String, dynamic>> getHereMapsConfig() async {
+    final response = await _apiClient.get(
+      MainApiEndpoints.hereMapsConfig,
+    );
+    return response.data;
+  }
+
+  /// Reverse geocode coordinates to location information
+  /// 
+  /// Converts latitude/longitude to human-readable location string
+  /// using backend-secured HERE Maps API integration.
+  /// 
+  /// ✅ AUTHENTICATED ENDPOINT - Requires JWT token
+  /// ✅ Backend handles API key, caching, and rate limiting
+  /// ✅ Returns pre-formatted string based on admin-selected fields
+  /// 
+  /// Parameters:
+  /// - [latitude]: Decimal degrees (-90 to 90)
+  /// - [longitude]: Decimal degrees (-180 to 180)
+  /// 
+  /// Returns:
+  /// ```json
+  /// {
+  ///   "success": true,
+  ///   "area": "Abu Dhabi, Al Karamah",  // Pre-formatted display string
+  ///   "city": "Abu Dhabi",               // Individual fields (if selected)
+  ///   "district": "Al Karamah"
+  /// }
+  /// ```
+  /// 
+  /// Error handling:
+  /// - Returns {"success": false, "error": "message"} on failure
+  /// - Backend logs errors for monitoring
+  /// 
+  /// Example usage:
+  /// ```dart
+  /// final result = await mainApiRepository.reverseGeocode(
+  ///   latitude: 24.4539,
+  ///   longitude: 54.3773,
+  /// );
+  /// if (result['success'] == true) {
+  ///   print(result['area']); // "Abu Dhabi, Al Karamah"
+  /// }
+  /// ```
+  Future<Map<String, dynamic>> reverseGeocode({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final response = await _apiClient.post(
+      MainApiEndpoints.reverseGeocode,
+      data: {
+        'latitude': latitude,
+        'longitude': longitude,
+      },
+    );
+    return response.data;
+  }
 }

@@ -131,4 +131,9 @@ class MainApiEndpoints {
   // ✅ FIXED: Comment fetching endpoint - GET /api/upgraderequestcomments/?upgradeRequest=id
   static const String upgradeRequestCommentsCreate = '/api/upgraderequestcomments/';
   static String upgradeRequestCommentDelete(int commentId) => '/api/upgraderequestcomments/$commentId/';
+
+  // HERE Maps Geocoding (Backend-driven architecture)
+  // ✅ NEW: Secure geocoding via backend (API key protected)
+  static const String hereMapsConfig = '/api/settings/here-maps-config/';  // GET: Load configuration (public)
+  static const String reverseGeocode = '/api/geocoding/reverse/';  // POST: Reverse geocode coordinates (authenticated)
 }
