@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dio/dio.dart';
 import '../../../../data/models/meeting_point_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
@@ -231,44 +230,27 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
     }
   }
 
-  /// Reverse geocode lat/lon to get area name
+  /// Reverse geocode lat/lon to get area name using HERE Maps backend
   Future<String> _getAreaFromCoordinates(String lat, String lon) async {
     try {
-      final dio = Dio();
-      final response = await dio.get(
-        'https://nominatim.openstreetmap.org/reverse',
-        queryParameters: {
-          'lat': lat,
-          'lon': lon,
-          'format': 'json',
-          'accept-language': 'en',
-        },
-        options: Options(
-          headers: {
-            'User-Agent': 'AD4x4-Mobile-App/1.0',
-          },
-        ),
+      // Get HERE Maps settings and service
+      final settingsNotifier = ref.read(hereMapsSettingsProvider.notifier);
+      final settings = settingsNotifier.getSettingsOrDefault();
+      final service = ref.read(hereMapsServiceProvider);
+
+      // Call HERE Maps backend API
+      final areaValue = await service.reverseGeocode(
+        lat: double.parse(lat),
+        lon: double.parse(lon),
+        settings: settings,
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final address = response.data['address'];
-        
-        // Priority order for area name (most specific to least specific)
-        final areaName = address['city'] ?? 
-                        address['town'] ?? 
-                        address['village'] ?? 
-                        address['county'] ?? 
-                        address['state'] ?? 
-                        address['country'] ?? 
-                        'Unknown Area';
-        
-        return areaName as String;
-      }
+      // Return the formatted area string from backend
+      return areaValue;
       
-      return '';
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('Geocoding error: $e');
+        debugPrint('❌ HERE Maps geocoding error: $e');
       }
       return ''; // Return empty string on error
     }
