@@ -24,6 +24,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.1] - 2025-11-27
+
+### 🔧 Fixed - Meeting Points Complete Refactor
+
+**Complete code audit and refactor of Meeting Points functionality**
+
+### Added
+- **MeetingPointConstants class** - Shared constants for area codes, names, and colors
+  - Area code definitions with display names
+  - Color mapping for visual consistency across UI
+  - Validation utilities for area codes
+  - Shared sorting utilities
+- **Safe navigation handling** - Redirect to list if meetingPoint is null in detail route
+- **API endpoint testing script** - Verified UPDATE and DELETE endpoints with real credentials
+
+### Changed
+- **Enabled UPDATE endpoint** - Meeting points can now be edited (PUT /api/meetingpoints/{id}/)
+- **Enabled DELETE endpoint** - Meeting points can now be deleted (DELETE /api/meetingpoints/{id}/)
+- **Refactored area codes** - All screens now use shared MeetingPointConstants
+  - meeting_points_screen.dart (member view)
+  - meeting_point_detail_screen.dart  
+  - admin_meeting_points_screen.dart
+- **Improved sorting** - Extracted shared sorting logic to MeetingPointUtils
+- **Removed code duplication** - Eliminated hardcoded area colors and names across 3 files
+
+### Fixed
+- **Production code standards** - Replaced print() with debugPrint in kDebugMode blocks
+- **Removed unused field** - Deleted _meetingPoint field that was set but never used
+- **Removed unnecessary casts** - Cleaned up type casting warnings
+- **Fixed dead code** - Removed null-aware operator on non-nullable position.zoom
+
+### Backend API Test Results
+- ✅ GET /api/meetingpoints/ - Working
+- ✅ POST /api/meetingpoints/ - Working  
+- ✅ PUT /api/meetingpoints/{id}/ - Working (200 OK)
+- ⚠️  PATCH /api/meetingpoints/{id}/ - Permission issue (403 Forbidden)
+- ✅ DELETE /api/meetingpoints/{id}/ - Working (204 No Content)
+
+### Files Modified (9 files)
+- Created: `lib/core/constants/meeting_point_constants.dart` (3.3 KB)
+- Modified: `lib/core/router/app_router.dart` (safe navigation)
+- Modified: `lib/features/admin/presentation/screens/admin_meeting_point_form_screen.dart` (enabled UPDATE)
+- Modified: `lib/features/admin/presentation/screens/admin_meeting_points_screen.dart` (enabled DELETE)
+- Modified: `lib/features/meeting_points/presentation/screens/meeting_point_detail_screen.dart` (use shared constants)
+- Modified: `lib/features/meeting_points/presentation/screens/meeting_points_screen.dart` (use shared constants)
+- Modified: `lib/features/trips/presentation/providers/meeting_points_provider.dart` (debugPrint, shared sorting)
+- Modified: `lib/data/models/meeting_point_model.dart` (no changes)
+- Modified: `lib/data/repositories/main_api_repository.dart` (no changes)
+
+---
+
 ## [1.6.0] - 2025-11-27
 
 ### 🔒 Security - HERE Maps Backend Migration (CRITICAL)

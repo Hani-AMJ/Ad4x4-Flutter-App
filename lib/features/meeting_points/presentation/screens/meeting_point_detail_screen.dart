@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/constants/meeting_point_constants.dart';
 import '../../../../data/models/meeting_point_model.dart';
 
 /// Meeting Point Detail Screen - Shows detailed view with interactive map
@@ -46,41 +47,8 @@ class _MeetingPointDetailScreenState extends State<MeetingPointDetailScreen> {
     return '${lat.abs().toStringAsFixed(4)}° $latDirection, ${lon.abs().toStringAsFixed(4)}° $lonDirection';
   }
 
-  // Get area color
-  Color _getAreaColor(String? area) {
-    switch (area) {
-      case 'DXB':
-        return const Color(0xFF2196F3); // Blue
-      case 'NOR':
-        return const Color(0xFF4CAF50); // Green
-      case 'AUH':
-        return const Color(0xFFFF9800); // Orange
-      case 'AAN':
-        return const Color(0xFF9C27B0); // Purple
-      case 'LIW':
-        return const Color(0xFFF44336); // Red
-      default:
-        return Theme.of(context).colorScheme.primary;
-    }
-  }
-
-  // Get full area name
-  String _getAreaName(String? area) {
-    switch (area) {
-      case 'DXB':
-        return 'Dubai';
-      case 'NOR':
-        return 'Northern Emirates';
-      case 'AUH':
-        return 'Abu Dhabi';
-      case 'AAN':
-        return 'Al Ain';
-      case 'LIW':
-        return 'Liwa';
-      default:
-        return area ?? 'Unknown';
-    }
-  }
+  // Use shared constants for area color and name
+  // (removed duplicate code - now using MeetingPointConstants)
 
   // Launch Google Maps
   Future<void> _launchGoogleMaps() async {
@@ -199,7 +167,7 @@ class _MeetingPointDetailScreenState extends State<MeetingPointDetailScreen> {
                           maxZoom: 18.0,
                           onPositionChanged: (position, hasGesture) {
                             setState(() {
-                              _currentZoom = position.zoom ?? _currentZoom;
+                              _currentZoom = position.zoom;
                             });
                           },
                         ),
@@ -222,7 +190,7 @@ class _MeetingPointDetailScreenState extends State<MeetingPointDetailScreen> {
                                   children: [
                                     Icon(
                                       Icons.location_pin,
-                                      color: _getAreaColor(widget.meetingPoint.area),
+                                      color: MeetingPointConstants.getAreaColor(widget.meetingPoint.area),
                                       size: 48,
                                       shadows: const [
                                         Shadow(
@@ -343,13 +311,13 @@ class _MeetingPointDetailScreenState extends State<MeetingPointDetailScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: _getAreaColor(widget.meetingPoint.area).withValues(alpha: 0.2),
+                          color: MeetingPointConstants.getAreaColor(widget.meetingPoint.area).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '${widget.meetingPoint.area} - ${_getAreaName(widget.meetingPoint.area)}',
+                          '${widget.meetingPoint.area} - ${MeetingPointConstants.getAreaName(widget.meetingPoint.area)}',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: _getAreaColor(widget.meetingPoint.area),
+                            color: MeetingPointConstants.getAreaColor(widget.meetingPoint.area),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

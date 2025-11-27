@@ -87,19 +87,21 @@ class _AdminMeetingPointsScreenState extends ConsumerState<AdminMeetingPointsScr
     if (confirmed != true || !mounted) return;
 
     try {
-      // Note: Backend may need DELETE endpoint implementation
-      // For now, show a message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('⚠️ Delete endpoint not yet implemented in backend'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      // Delete meeting point using DELETE endpoint
+      final repository = ref.read(mainApiRepositoryProvider);
+      await repository.deleteMeetingPoint(meetingPoint.id);
       
-      // TODO: Uncomment when backend supports delete
-      // final repository = ref.read(mainApiRepositoryProvider);
-      // await repository.deleteMeetingPoint(meetingPoint.id);
-      // await _loadMeetingPoints();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Meeting point deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Reload meeting points list
+        await _loadMeetingPoints();
+      }
     } catch (e) {
       if (mounted) {
         final errorMessage = e.toString().toLowerCase();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/meeting_point_constants.dart';
 import '../../../../data/models/meeting_point_model.dart';
 import '../../../trips/presentation/providers/meeting_points_provider.dart';
 
@@ -15,16 +16,6 @@ class MeetingPointsScreen extends ConsumerStatefulWidget {
 class _MeetingPointsScreenState extends ConsumerState<MeetingPointsScreen> {
   String _searchQuery = '';
   String? _selectedArea;
-  
-  // Area codes with display names
-  final Map<String?, String> _areaOptions = {
-    null: 'All Areas',
-    'DXB': 'Dubai',
-    'NOR': 'Northern Emirates',
-    'AUH': 'Abu Dhabi',
-    'AAN': 'Al Ain',
-    'LIW': 'Liwa',
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +68,7 @@ class _MeetingPointsScreenState extends ConsumerState<MeetingPointsScreen> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              children: _areaOptions.entries.map((entry) {
+              children: MeetingPointConstants.allAreaOptions.map((entry) {
                 final isSelected = _selectedArea == entry.key;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
@@ -227,23 +218,8 @@ class _MeetingPointCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     
-    // Determine area color
-    Color getAreaColor(String? area) {
-      switch (area) {
-        case 'DXB':
-          return const Color(0xFF2196F3); // Blue
-        case 'NOR':
-          return const Color(0xFF4CAF50); // Green
-        case 'AUH':
-          return const Color(0xFFFF9800); // Orange
-        case 'AAN':
-          return const Color(0xFF9C27B0); // Purple
-        case 'LIW':
-          return const Color(0xFFF44336); // Red
-        default:
-          return colors.primary;
-      }
-    }
+    // Use shared color utility
+    final areaColor = MeetingPointConstants.getAreaColor(meetingPoint.area);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -259,12 +235,12 @@ class _MeetingPointCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: getAreaColor(meetingPoint.area).withValues(alpha: 0.2),
+                  color: areaColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.location_on,
-                  color: getAreaColor(meetingPoint.area),
+                  color: areaColor,
                   size: 32,
                 ),
               ),
@@ -289,13 +265,13 @@ class _MeetingPointCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: getAreaColor(meetingPoint.area).withValues(alpha: 0.2),
+                          color: areaColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           meetingPoint.area!,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: getAreaColor(meetingPoint.area),
+                            color: areaColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

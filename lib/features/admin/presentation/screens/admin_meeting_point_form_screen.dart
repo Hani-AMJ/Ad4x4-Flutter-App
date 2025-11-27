@@ -44,8 +44,6 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
   late TextEditingController _lonController;
   late TextEditingController _linkController;
 
-  MeetingPoint? _meetingPoint;
-
   @override
   void initState() {
     super.initState();
@@ -200,8 +198,6 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
       );
 
       setState(() {
-        _meetingPoint = meetingPoint;
-        
         // Populate form
         _nameController.text = meetingPoint.name;
         _areaController.text = meetingPoint.area ?? '';
@@ -297,16 +293,24 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
       };
 
       if (widget.isEditing) {
-        // TODO: Backend needs PUT/PATCH endpoint for meeting points
-        // await repository.updateMeetingPoint(widget.meetingPointId!, data);
+        // Update existing meeting point using PUT endpoint
+        await repository.updateMeetingPoint(
+          id: widget.meetingPointId!,
+          name: data['name'] as String?,
+          area: data['area'] as String?,
+          lat: data['lat'] as String?,
+          lon: data['lon'] as String?,
+          link: data['link'] as String?,
+        );
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('⚠️ Edit endpoint not yet implemented in backend'),
-              backgroundColor: Colors.orange,
+              content: Text('✅ Meeting point updated successfully'),
+              backgroundColor: Colors.green,
             ),
           );
+          context.pop(true); // Return success
         }
       } else {
         await repository.createMeetingPoint(

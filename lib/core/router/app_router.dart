@@ -274,9 +274,22 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'meeting-point-detail',
         builder: (context, state) {
           final meetingPoint = state.extra as MeetingPoint?;
-          // If meetingPoint is passed via extra, use it directly
-          // Otherwise, we'd need to fetch from API (not implemented yet)
-          return MeetingPointDetailScreen(meetingPoint: meetingPoint!);
+          
+          // Safe navigation: redirect if meetingPoint is not provided
+          if (meetingPoint == null) {
+            // Redirect back to meeting points list
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.go('/meeting-points');
+            });
+            // Return placeholder while redirecting
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          
+          return MeetingPointDetailScreen(meetingPoint: meetingPoint);
         },
       ),
 
