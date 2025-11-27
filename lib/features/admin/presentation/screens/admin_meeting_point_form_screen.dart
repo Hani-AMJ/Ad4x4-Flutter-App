@@ -294,13 +294,20 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
 
       if (widget.isEditing) {
         // Update existing meeting point using PUT endpoint
+        // Convert empty strings to null for optional fields
+        final name = (data['name'] as String).trim();
+        final area = (data['area'] as String?)?.trim();
+        final lat = (data['lat'] as String?)?.trim();
+        final lon = (data['lon'] as String?)?.trim();
+        final link = (data['link'] as String?)?.trim();
+        
         await repository.updateMeetingPoint(
           id: widget.meetingPointId!,
-          name: data['name'] as String?,
-          area: data['area'] as String?,
-          lat: data['lat'] as String?,
-          lon: data['lon'] as String?,
-          link: data['link'] as String?,
+          name: name.isNotEmpty ? name : null,
+          area: (area != null && area.isNotEmpty) ? area : null,
+          lat: (lat != null && lat.isNotEmpty) ? lat : null,
+          lon: (lon != null && lon.isNotEmpty) ? lon : null,
+          link: (link != null && link.isNotEmpty) ? link : null,
         );
         
         if (mounted) {
