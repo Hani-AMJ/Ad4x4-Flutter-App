@@ -1,12 +1,13 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/meeting_point_model.dart';
+import '../../../../data/models/geocoding_result.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/here_maps_settings_provider.dart';
 import '../../../../core/providers/here_maps_service_provider.dart';
+import '../../../../core/constants/meeting_point_constants.dart';
 
 /// Admin Meeting Point Form Screen
 /// 
@@ -39,16 +40,19 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
 
   // Form controllers
   late TextEditingController _nameController;
-  late TextEditingController _areaController;
   late TextEditingController _latController;
   late TextEditingController _lonController;
   late TextEditingController _linkController;
+
+  // Smart area detection state
+  String? _selectedAreaCode; // Area code (DXB, AUH, etc.)
+  GeocodingResult? _hereMapsLocation; // HERE Maps detailed location
+  bool _isDetectingArea = false;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _areaController = TextEditingController();
     _latController = TextEditingController();
     _lonController = TextEditingController();
     _linkController = TextEditingController();
@@ -63,14 +67,13 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
   @override
   void dispose() {
     _nameController.dispose();
-    _areaController.dispose();
     _latController.dispose();
     _lonController.dispose();
     _linkController.dispose();
     super.dispose();
   }
 
-  /// Fetch location from Here Maps using coordinates
+  /// Fetch location from Here Maps using coordinates with smart area detection
   Future<void> _fetchLocationFromHereMaps() async {
     // Validate coordinates are provided
     if (_latController.text.trim().isEmpty || _lonController.text.trim().isEmpty) {
@@ -83,35 +86,41 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
       return;
     }
 
+    setState(() {
+      _isDetectingArea = true;
+    });
+
     try {
       final lat = double.parse(_latController.text.trim());
       final lon = double.parse(_lonController.text.trim());
 
       // Show loading indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              ),
-              SizedBox(width: 12),
-              Text('🗺️ Fetching location from Here Maps...'),
-            ],
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                ),
+                SizedBox(width: 12),
+                Text('🗺️ Detecting location and area...'),
+              ],
+            ),
+            duration: Duration(seconds: 10),
           ),
-          duration: Duration(seconds: 10),
-        ),
-      );
+        );
+      }
 
       // Get Here Maps settings and service
       final settingsNotifier = ref.read(hereMapsSettingsProvider.notifier);
       final settings = settingsNotifier.getSettingsOrDefault();
       final service = ref.read(hereMapsServiceProvider);
 
-      // Call Here Maps API
-      final areaValue = await service.reverseGeocode(
+      // Call Here Maps API with structured response
+      final result = await service.reverseGeocodeWithFields(
         lat: lat,
         lon: lon,
         settings: settings,
@@ -123,58 +132,89 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
       }
 
       // Check if we got data
-      if (areaValue.isEmpty) {
-        // No data - show warning with selected field names
-        final fieldNames = settings.selectedFields
-            .map((f) => f.displayName)
-            .join(', ');
-        
+      if (!result.isValid) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('⚠️ No data available for: $fieldNames'),
+            const SnackBar(
+              content: Text('⚠️ No location data available for these coordinates'),
               backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 4),
+              duration: Duration(seconds: 4),
             ),
           );
         }
         
-        // Leave area field blank
         setState(() {
-          _areaController.text = '';
+          _hereMapsLocation = null;
+          _selectedAreaCode = null;
+          _isDetectingArea = false;
         });
-      } else {
-        // Got data - update field and show success
-        setState(() {
-          _areaController.text = areaValue;
-        });
+        return;
+      }
+
+      // Smart area code detection
+      final detectedCode = MeetingPointConstants.detectAreaCode(
+        result.city,
+        result.district,
+      );
+
+      // Validate detection
+      final validation = MeetingPointConstants.validateAreaCodeDetection(
+        result.city,
+        result.district,
+      );
+
+      setState(() {
+        _hereMapsLocation = result;
+        _selectedAreaCode = detectedCode;
+        _isDetectingArea = false;
+      });
+
+      // Show success message with detection info
+      if (mounted) {
+        final confidenceIcon = validation['confidence'] == 'high' 
+            ? '✅' 
+            : validation['confidence'] == 'medium' 
+                ? '⚠️' 
+                : '❓';
         
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('✅ Location fetched: $areaValue'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
+        final message = detectedCode != null
+            ? '$confidenceIcon Location: ${result.area}\\nArea: ${MeetingPointConstants.getAreaName(detectedCode)}'
+            : '⚠️ Location: ${result.area}\\nCould not auto-detect area';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: detectedCode != null ? Colors.green : Colors.orange,
+            duration: const Duration(seconds: 5),
+          ),
+        );
       }
     } on FormatException {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ Invalid coordinates format'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Invalid coordinates format'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      setState(() {
+        _isDetectingArea = false;
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('❌ Failed to fetch location: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Failed to fetch location: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      setState(() {
+        _isDetectingArea = false;
+      });
     }
   }
 
@@ -200,7 +240,7 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
       setState(() {
         // Populate form
         _nameController.text = meetingPoint.name;
-        _areaController.text = meetingPoint.area ?? '';
+        _selectedAreaCode = meetingPoint.area; // Area code from database
         _latController.text = meetingPoint.lat ?? '';
         _lonController.text = meetingPoint.lon ?? '';
         _linkController.text = meetingPoint.link ?? '';
@@ -208,9 +248,9 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
         _isLoading = false;
       });
 
-      // Auto-fetch area if empty and coordinates are available
-      if ((meetingPoint.area == null || meetingPoint.area!.isEmpty) &&
-          meetingPoint.lat != null &&
+      // Auto-fetch HERE Maps location if coordinates are available
+      // This populates the location context and validates/suggests area code
+      if (meetingPoint.lat != null &&
           meetingPoint.lon != null &&
           meetingPoint.lat!.isNotEmpty &&
           meetingPoint.lon!.isNotEmpty) {
@@ -226,34 +266,21 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
     }
   }
 
-  /// Reverse geocode lat/lon to get area name using HERE Maps backend
-  Future<String> _getAreaFromCoordinates(String lat, String lon) async {
-    try {
-      // Get HERE Maps settings and service
-      final settingsNotifier = ref.read(hereMapsSettingsProvider.notifier);
-      final settings = settingsNotifier.getSettingsOrDefault();
-      final service = ref.read(hereMapsServiceProvider);
 
-      // Call HERE Maps backend API
-      final areaValue = await service.reverseGeocode(
-        lat: double.parse(lat),
-        lon: double.parse(lon),
-        settings: settings,
-      );
-
-      // Return the formatted area string from backend
-      return areaValue;
-      
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ HERE Maps geocoding error: $e');
-      }
-      return ''; // Return empty string on error
-    }
-  }
 
   Future<void> _saveMeetingPoint() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Validate area code is selected
+    if (_selectedAreaCode == null || _selectedAreaCode!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Please select an area or fetch location from coordinates'),
+          backgroundColor: Colors.orange,
+        ),
+      );
       return;
     }
 
@@ -262,46 +289,26 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       
-      // Auto-populate area from coordinates if provided
-      String areaValue = _areaController.text.trim();
       final lat = _latController.text.trim();
       final lon = _lonController.text.trim();
+      final link = _linkController.text.trim();
       
-      // If coordinates are provided, fetch area name
-      if (lat.isNotEmpty && lon.isNotEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('🔍 Getting area name from coordinates...'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-        
-        final fetchedArea = await _getAreaFromCoordinates(lat, lon);
-        if (fetchedArea.isNotEmpty) {
-          areaValue = fetchedArea;
-        }
-      }
-      
-      final data = {
-        'name': _nameController.text.trim(),
-        'area': areaValue,
-        'lat': lat,
-        'lon': lon,
-        'link': _linkController.text.trim(),
-      };
+      // Prepare data - only send area code (not HERE Maps descriptive text)
+      // Convert empty strings to null for optional fields
+      final areaCode = _selectedAreaCode; // Area code (DXB, AUH, etc.)
+      final latValue = lat.isNotEmpty ? lat : null;
+      final lonValue = lon.isNotEmpty ? lon : null;
+      final linkValue = link.isNotEmpty ? link : null;
 
       if (widget.isEditing) {
-        // Update existing meeting point using PUT endpoint
-        // Use the fetched areaValue (from HERE Maps) instead of controller text
+        // Update existing meeting point
         await repository.updateMeetingPoint(
           id: widget.meetingPointId!,
-          name: data['name'] as String,
-          area: data['area'] as String?,  // This is the fetched area from HERE Maps
-          lat: data['lat'] as String?,
-          lon: data['lon'] as String?,
-          link: data['link'] as String?,
+          name: _nameController.text.trim(),
+          area: areaCode,  // Save only area code
+          lat: latValue,
+          lon: lonValue,
+          link: linkValue,
         );
         
         if (mounted) {
@@ -314,12 +321,13 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
           context.pop(true); // Return success
         }
       } else {
+        // Create new meeting point
         await repository.createMeetingPoint(
-          name: data['name'] as String,
-          area: data['area'] as String?,
-          lat: data['lat'] as String?,
-          lon: data['lon'] as String?,
-          link: data['link'] as String?,
+          name: _nameController.text.trim(),
+          area: areaCode,  // Save only area code
+          lat: latValue,
+          lon: lonValue,
+          link: linkValue,
         );
         
         if (mounted) {
@@ -484,6 +492,8 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
+            
+            // Meeting Point Name
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(
@@ -499,27 +509,88 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
               },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _areaController,
-              decoration: InputDecoration(
-                labelText: 'Area',
-                hintText: 'Will be populated automatically',
-                border: const OutlineInputBorder(),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.location_searching),
-                  onPressed: _fetchLocationFromHereMaps,
-                  tooltip: 'Fetch location from Here Maps',
+            
+            // HERE Maps Location Display (Read-only context)
+            if (_hereMapsLocation != null && _hereMapsLocation!.isValid) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                 ),
-                helperText: '🗺️ Automatically Populated from Here Maps',
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on, color: Colors.blue, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Detected Location:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _hereMapsLocation!.area,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            
+            // Area Code Dropdown (Required field)
+            DropdownButtonFormField<String>(
+              value: _selectedAreaCode,
+              decoration: InputDecoration(
+                labelText: 'Area *',
+                hintText: 'Select area or fetch from coordinates',
+                border: const OutlineInputBorder(),
+                helperText: _hereMapsLocation != null 
+                    ? '✅ Auto-detected from coordinates'
+                    : 'Select manually or click "Fetch Location" below',
                 helperMaxLines: 2,
               ),
-              readOnly: true,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontStyle: FontStyle.italic,
-              ),
+              items: MeetingPointConstants.areaNames.entries.map((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.key,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: MeetingPointConstants.getAreaColor(entry.key),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(entry.value),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedAreaCode = value;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select an area';
+                }
+                return null;
+              },
             ),
           ],
         ),
@@ -584,6 +655,28 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
                 }
                 return null;
               },
+            ),
+            const SizedBox(height: 16),
+            
+            // Fetch Location Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isDetectingArea ? null : _fetchLocationFromHereMaps,
+                icon: _isDetectingArea 
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.location_searching),
+                label: Text(_isDetectingArea 
+                    ? 'Detecting Location...' 
+                    : '📍 Fetch Location & Auto-Detect Area'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
             ),
           ],
         ),

@@ -67,6 +67,152 @@ class MeetingPointConstants {
   /// Get all area options for filters (includes null/"All Areas")
   static List<MapEntry<String?, String>> get allAreaOptions => 
       areaOptions.entries.toList();
+
+  /// Smart area code detection from HERE Maps city name
+  /// 
+  /// Detects the appropriate area code based on city name from HERE Maps.
+  /// Uses multiple strategies for robust detection:
+  /// 1. Exact city name match (case-insensitive)
+  /// 2. Partial city name match (contains check)
+  /// 3. District name fallback for Al Ain/Liwa
+  /// 
+  /// Parameters:
+  /// - [city]: City name from HERE Maps (e.g., "Dubai", "Abu Dhabi")
+  /// - [district]: District name for additional context (optional)
+  /// 
+  /// Returns:
+  /// - Area code (DXB, AUH, NOR, AAN, LIW) if detected
+  /// - null if location cannot be mapped to known areas
+  /// 
+  /// Examples:
+  /// ```dart
+  /// detectAreaCode('Dubai', 'Business Bay')    // Returns: 'DXB'
+  /// detectAreaCode('Abu Dhabi', 'Al Karamah') // Returns: 'AUH'
+  /// detectAreaCode('Sharjah', 'Al Majaz')     // Returns: 'NOR'
+  /// detectAreaCode('Al Ain', 'Al Jimi')       // Returns: 'AAN'
+  /// detectAreaCode('Muscat', '')              // Returns: null (not UAE)
+  /// ```
+  static String? detectAreaCode(String city, [String? district]) {
+    final cityLower = city.toLowerCase().trim();
+    final districtLower = (district ?? '').toLowerCase().trim();
+
+    // Strategy 1: Exact and partial city name matching
+    final cityMapping = {
+      'dubai': 'DXB',
+      'abu dhabi': 'AUH',
+      'abudhabi': 'AUH',
+      'sharjah': 'NOR',
+      'ajman': 'NOR',
+      'ras al khaimah': 'NOR',
+      'ras al-khaimah': 'NOR',
+      'fujairah': 'NOR',
+      'umm al quwain': 'NOR',
+      'umm al-quwain': 'NOR',
+      'al ain': 'AAN',
+      'liwa': 'LIW',
+    };
+
+    // Check for exact matches first
+    for (var entry in cityMapping.entries) {
+      if (cityLower == entry.key || cityLower.contains(entry.key)) {
+        return entry.value;
+      }
+    }
+
+    // Strategy 2: District-based detection for ambiguous cases
+    if (districtLower.isNotEmpty) {
+      // Al Ain specific districts
+      if (districtLower.contains('al ain') || 
+          districtLower.contains('al jimi') ||
+          districtLower.contains('tawam')) {
+        return 'AAN';
+      }
+
+      // Liwa specific districts
+      if (districtLower.contains('liwa') || 
+          districtLower.contains('madinat zayed')) {
+        return 'LIW';
+      }
+
+      // Northern Emirates districts (if city detection failed)
+      if (districtLower.contains('sharjah') ||
+          districtLower.contains('ajman') ||
+          districtLower.contains('fujairah') ||
+          districtLower.contains('rak') ||
+          districtLower.contains('umm')) {
+        return 'NOR';
+      }
+    }
+
+    // Strategy 3: Fallback - check if any area name appears in the full string
+    final fullText = '$cityLower $districtLower';
+    for (var entry in cityMapping.entries) {
+      if (fullText.contains(entry.key)) {
+        return entry.value;
+      }
+    }
+
+    // No match found
+    return null;
+  }
+
+  /// Validate detected area code and provide confidence level
+  /// 
+  /// Returns a map with detection result and confidence:
+  /// - 'code': Detected area code or null
+  /// - 'confidence': 'high', 'medium', or 'low'
+  /// - 'reason': Human-readable explanation
+  /// 
+  /// Example:
+  /// ```dart
+  /// final result = validateAreaCodeDetection('Dubai', 'Business Bay');
+  /// // Returns: {
+  /// //   'code': 'DXB',
+  /// //   'confidence': 'high',
+  /// //   'reason': 'Exact city name match'
+  /// // }
+  /// ```
+  static Map<String, String?> validateAreaCodeDetection(
+    String city, [
+    String? district,
+  ]) {
+    final detectedCode = detectAreaCode(city, district);
+    
+    if (detectedCode == null) {
+      return {
+        'code': null,
+        'confidence': 'low',
+        'reason': 'Location not recognized as UAE area',
+      };
+    }
+
+    // Check confidence based on match quality
+    final cityLower = city.toLowerCase().trim();
+    final exactMatches = ['dubai', 'abu dhabi', 'sharjah', 'ajman', 
+                          'fujairah', 'al ain', 'liwa'];
+    
+    if (exactMatches.any((name) => cityLower == name || cityLower.contains(name))) {
+      return {
+        'code': detectedCode,
+        'confidence': 'high',
+        'reason': 'Exact city name match',
+      };
+    }
+
+    if (district != null && district.isNotEmpty) {
+      return {
+        'code': detectedCode,
+        'confidence': 'medium',
+        'reason': 'Detected from district name',
+      };
+    }
+
+    return {
+      'code': detectedCode,
+      'confidence': 'medium',
+      'reason': 'Partial text match',
+    };
+  }
 }
 
 /// Meeting Point Utilities

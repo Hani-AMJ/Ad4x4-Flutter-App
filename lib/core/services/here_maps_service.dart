@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/here_maps_settings.dart';
+import '../../data/models/geocoding_result.dart';
 import '../../data/repositories/main_api_repository.dart';
 
 /// Here Maps Service
@@ -213,6 +214,87 @@ class HereMapsService {
       'validEntries': validEntries,
       'expiredEntries': expiredEntries,
     };
+  }
+
+  /// Reverse geocode with structured data (NEW)
+  /// 
+  /// Returns detailed location information for smart area code detection.
+  /// 
+  /// ✅ AUTHENTICATED ENDPOINT - Requires JWT token
+  /// ✅ Backend handles API key, caching, rate limiting
+  /// ✅ Returns structured data with city, district, and full address
+  /// 
+  /// Parameters:
+  /// - [lat]: Latitude in decimal degrees (-90 to 90)
+  /// - [lon]: Longitude in decimal degrees (-180 to 180)
+  /// - [settings]: Current configuration (checks if geocoding enabled)
+  /// 
+  /// Returns:
+  /// - [GeocodingResult] with city, district, and area fields
+  /// - Empty result if geocoding disabled or error occurs
+  /// 
+  /// Example:
+  /// ```dart
+  /// final result = await hereMapsService.reverseGeocodeWithFields(
+  ///   lat: 24.4539,
+  ///   lon: 54.3773,
+  ///   settings: currentSettings,
+  /// );
+  /// print(result.city);     // "Abu Dhabi"
+  /// print(result.district); // "Al Karamah"
+  /// print(result.area);     // "Abu Dhabi, Al Karamah"
+  /// ```
+  Future<GeocodingResult> reverseGeocodeWithFields({
+    required double lat,
+    required double lon,
+    required HereMapsSettings settings,
+  }) async {
+    try {
+      // Check if reverse geocoding is enabled
+      if (!settings.enabled) {
+        if (kDebugMode) {
+          debugPrint('ℹ️ HERE Maps reverse geocoding is disabled in backend settings');
+        }
+        return GeocodingResult.empty();
+      }
+
+      if (kDebugMode) {
+        debugPrint('🌍 HERE Maps: Fetching structured data for ($lat, $lon)');
+      }
+
+      // Call backend API
+      final response = await _repository.reverseGeocode(
+        latitude: lat,
+        longitude: lon,
+      );
+
+      // Parse structured response
+      if (response['success'] == true) {
+        final result = GeocodingResult.fromJson(response);
+        
+        if (kDebugMode) {
+          debugPrint('✅ HERE Maps: Success - $result');
+        }
+
+        return result;
+      } else {
+        // Backend returned success=false
+        if (kDebugMode) {
+          debugPrint('⚠️ HERE Maps: Backend returned no location data');
+          if (response['error'] != null) {
+            debugPrint('   Error: ${response['error']}');
+          }
+        }
+        return GeocodingResult.empty();
+      }
+      
+    } catch (e) {
+      // Graceful error handling - return empty result
+      if (kDebugMode) {
+        debugPrint('❌ HERE Maps API error: $e');
+      }
+      return GeocodingResult.empty();
+    }
   }
 }
 
