@@ -992,6 +992,7 @@ class MainApiRepository {
       queryParameters: {
         'page': page,
         'pageSize': pageSize,
+        'expand': 'member,trip,signedBy,skill',  // ✅ Request full nested objects for certificates
       },
     );
     return response.data;

@@ -3,6 +3,7 @@
 /// Models for logbook entries, skills, and skill references
 
 import 'package:flutter/foundation.dart';
+import '../../shared/constants/level_constants.dart';
 
 // ============================================================================
 // TRIP REPORT SERIALIZATION HELPERS
@@ -99,11 +100,19 @@ class LogbookEntry {
   });
 
   factory LogbookEntry.fromJson(Map<String, dynamic> json) {
-    // Handle member field - can be int (ID only) or Map (full object)
+    // Handle member field - can be null, int (ID only), or Map (full object)
     final memberData = json['member'];
     final MemberBasicInfo member;
     
-    if (memberData is int) {
+    if (memberData == null) {
+      // ✅ FIX: API returned null/missing member - create placeholder
+      // This happens when member field is not included in response
+      member = MemberBasicInfo(
+        id: 0,
+        firstName: 'Member',
+        lastName: 'Unknown',
+      );
+    } else if (memberData is int) {
       // API returned just member ID - create minimal MemberBasicInfo
       member = MemberBasicInfo(
         id: memberData,
@@ -289,21 +298,15 @@ class LogbookSkill {
   }
   
   /// Helper to convert level ID to level name
+  /// Uses centralized LevelConstants for correct level name lookup
   static String _getLevelNameFromId(int levelId) {
-    switch (levelId) {
-      case 1:
-        return 'Beginner';
-      case 2:
-        return 'Intermediate';
-      case 3:
-        return 'Advanced';
-      case 4:
-        return 'Expert';
-      case 5:
-        return 'Master';
-      default:
-        return 'Unknown';
+    // Import required: import '../../shared/constants/level_constants.dart';
+    final levelData = LevelConstants.getById(levelId);
+    if (levelData != null) {
+      return levelData.name;
     }
+    // Fallback if level not found
+    return 'Level $levelId';
   }
 
   Map<String, dynamic> toJson() {
@@ -789,6 +792,12 @@ class TripBasicInfo {
   });
 
   factory TripBasicInfo.fromJson(Map<String, dynamic> json) {
+    // Safely parse ID - CRITICAL: Must have an ID
+    final id = json['id'] as int?;
+    if (id == null) {
+      throw Exception('Trip ID is required but was null. JSON: $json');
+    }
+    
     // Safely parse startTime
     DateTime startTime;
     try {
@@ -799,8 +808,8 @@ class TripBasicInfo {
     }
     
     return TripBasicInfo(
-      id: json['id'] as int,
-      title: (json['title'] as String?) ?? 'Trip #${json['id']}',
+      id: id,
+      title: (json['title'] as String?) ?? 'Trip #$id',
       startTime: startTime,
       level: json['level'] != null && json['level'] is Map<String, dynamic>
           ? LevelBasicInfo.fromJson(json['level'] as Map<String, dynamic>)
@@ -831,10 +840,16 @@ class LevelBasicInfo {
   });
 
   factory LevelBasicInfo.fromJson(Map<String, dynamic> json) {
+    // CRITICAL: Handle null ID gracefully
+    final id = json['id'] as int?;
+    if (id == null) {
+      throw Exception('Level ID is required but was null. JSON: $json');
+    }
+    
     return LevelBasicInfo(
-      id: json['id'] as int,
+      id: id,
       name: (json['name'] as String?) ?? 'Unknown Level',
-      numericLevel: json['numericLevel'] as int? ?? json['numeric_level'] as int? ?? 0,
+      numericLevel: json['numericLevel'] as int? ?? json['numeric_level'] as int? ?? id,
     );
   }
 
@@ -886,21 +901,15 @@ class LogbookSkillBasicInfo {
     );
   }
 
+  /// Helper to convert level ID to level name
+  /// Uses centralized LevelConstants for correct level name lookup
   static String _getLevelNameFromId(int levelId) {
-    switch (levelId) {
-      case 1:
-        return 'Beginner';
-      case 2:
-        return 'Intermediate';
-      case 3:
-        return 'Advanced';
-      case 4:
-        return 'Expert';
-      case 5:
-        return 'Master';
-      default:
-        return 'Unknown';
+    final levelData = LevelConstants.getById(levelId);
+    if (levelData != null) {
+      return levelData.name;
     }
+    // Fallback if level not found
+    return 'Level $levelId';
   }
 
   Map<String, dynamic> toJson() {

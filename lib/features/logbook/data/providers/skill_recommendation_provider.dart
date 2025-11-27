@@ -76,8 +76,8 @@ final skillRecommendationsProvider = FutureProvider.autoDispose
   // Generate recommendations
   final recommendations = <SkillRecommendation>[];
   
-  // Determine member's current level based on verified skills
-  final currentLevel = _determineCurrentLevel(verifiedSkills, allSkills);
+  // Determine member's current level from user profile (source of truth)
+  final currentLevel = _determineCurrentLevel(authState.user);
   
   for (final skill in unverifiedSkills) {
     final recommendation = _generateRecommendation(
@@ -148,8 +148,8 @@ final recommendationStatsProvider = FutureProvider.autoDispose
       .where((r) => r.isUpcomingTripOpportunity)
       .length;
   
-  // Calculate current level completion
-  final currentLevel = _determineCurrentLevel(verifiedSkills, allSkills);
+  // Calculate current level completion from user profile (source of truth)
+  final currentLevel = _determineCurrentLevel(authState.user);
   final currentLevelSkills = allSkills.where((s) => s.level.numericLevel == currentLevel).toList();
   final verifiedSkillIds = verifiedSkills.map((r) => r.logbookSkill.id).toSet();
   final verifiedCurrentLevel = currentLevelSkills
@@ -242,26 +242,17 @@ final recommendationFilterProvider =
 // Helper Functions
 // ============================================================================
 
-/// Determine member's current level based on verified skills
-int _determineCurrentLevel(List<LogbookSkillReference> verifiedSkills, List<LogbookSkill> allSkills) {
-  if (verifiedSkills.isEmpty) return 1;
-  
-  // Create a map of skill ID to skill for quick lookup
-  final skillMap = <int, LogbookSkill>{};
-  for (final skill in allSkills) {
-    skillMap[skill.id] = skill;
+/// Determine member's current level from user profile (source of truth)
+/// Uses official profile level instead of calculating from verified skills
+/// This ensures recommendations align with user's official club level
+int _determineCurrentLevel(user) {
+  // Use user's profile level as source of truth
+  final userProfileLevel = user?.level;
+  if (userProfileLevel == null) {
+    return 1; // Default to level 1 (ANIT/Beginner) if no level set
   }
   
-  // Find highest skill level among verified skills
-  int maxLevel = 1;
-  for (final ref in verifiedSkills) {
-    final skill = skillMap[ref.logbookSkill.id];
-    if (skill != null && skill.level.numericLevel > maxLevel) {
-      maxLevel = skill.level.numericLevel;
-    }
-  }
-  
-  return maxLevel;
+  return userProfileLevel.numericLevel;
 }
 
 /// Generate recommendation for a skill

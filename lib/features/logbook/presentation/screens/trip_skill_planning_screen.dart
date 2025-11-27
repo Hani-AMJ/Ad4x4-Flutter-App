@@ -247,6 +247,7 @@ class _TripSkillPlanningScreenState
   }
 
   Widget _buildTripCard(TripWithSkills tripData, ThemeData theme) {
+    final colors = theme.colorScheme;
     final difficultyColor = _getDifficultyColor(tripData.difficultyLevel);
     final difficultyLabel = _getDifficultyLabel(tripData.difficultyLevel);
 
@@ -334,12 +335,12 @@ class _TripSkillPlanningScreenState
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: colors.primaryContainer.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.lightbulb, color: Colors.blue, size: 20),
+                    Icon(Icons.lightbulb, color: colors.primary, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -347,9 +348,9 @@ class _TripSkillPlanningScreenState
                         children: [
                           Text(
                             '$unverifiedSkills skill${unverifiedSkills != 1 ? 's' : ''} you can verify',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: Colors.blue,
+                              color: colors.primary,
                             ),
                           ),
                           if (tripData.skillsAlreadyVerified > 0)
@@ -357,13 +358,13 @@ class _TripSkillPlanningScreenState
                               '${tripData.skillsAlreadyVerified} already completed',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade700,
+                                color: colors.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blue),
+                    Icon(Icons.arrow_forward_ios, size: 16, color: colors.primary),
                   ],
                 ),
               ),
@@ -375,6 +376,9 @@ class _TripSkillPlanningScreenState
   }
 
   void _showTripSkillsDialog(TripWithSkills tripData) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -385,9 +389,9 @@ class _TripSkillPlanningScreenState
         maxChildSize: 0.95,
         builder: (context, scrollController) {
           return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Column(
               children: [
@@ -397,7 +401,7 @@ class _TripSkillPlanningScreenState
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: colors.onSurface.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -410,8 +414,7 @@ class _TripSkillPlanningScreenState
                     children: [
                       Text(
                         tripData.trip.title,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -419,7 +422,9 @@ class _TripSkillPlanningScreenState
                       Text(
                         DateFormat('MMMM dd, yyyy')
                             .format(tripData.trip.startTime),
-                        style: TextStyle(color: Colors.grey.shade600),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                     ],
                   ),
@@ -427,17 +432,48 @@ class _TripSkillPlanningScreenState
 
                 const Divider(),
 
-                // Skills List
+                // Skills List or Empty State
                 Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: tripData.skillOpportunities.length,
-                    itemBuilder: (context, index) {
-                      final opportunity = tripData.skillOpportunities[index];
-                      return _buildSkillOpportunityCard(opportunity);
-                    },
-                  ),
+                  child: tripData.skillOpportunities.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  size: 64,
+                                  color: colors.onSurface.withValues(alpha: 0.3),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No skill opportunities',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: colors.onSurface.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'This trip doesn\'t have any matching skills for your current level.',
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colors.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: scrollController,
+                          padding: const EdgeInsets.all(16),
+                          itemCount: tripData.skillOpportunities.length,
+                          itemBuilder: (context, index) {
+                            final opportunity = tripData.skillOpportunities[index];
+                            return _buildSkillOpportunityCard(opportunity);
+                          },
+                        ),
                 ),
               ],
             ),
@@ -600,7 +636,7 @@ class _TripSkillPlanningScreenState
             ],
 
             // Verification tips
-            if (opportunity.canAttempt && opportunity.verificationTips != null) ...[
+            if (opportunity.canAttempt) ...[
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(8),
@@ -616,7 +652,7 @@ class _TripSkillPlanningScreenState
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        opportunity.verificationTips!,
+                        opportunity.verificationTips,
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.blue.shade900,

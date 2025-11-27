@@ -22,6 +22,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete issue tracking system with GitHub integration
 - Project management workflow (TODO.md, issue templates)
 
+---
+
+## [1.5.3] - 2025-11-27
+
+### Added
+- **Certificate Platform Utilities** (Phase 7 Enhancement)
+  - Platform-specific certificate generation for mobile and web
+  - `certificate_mobile_utils.dart` - Native mobile PDF generation utilities
+  - `certificate_web_utils.dart` - Web-compatible PDF generation utilities
+  - Improved certificate service architecture with better platform support
+
+### Changed
+- **Skills Matrix Progress Card Optimization** (UI/UX Improvement)
+  - Reduced overall card height by ~25% for better space efficiency
+  - Proportionally reduced padding: 16px → 12px
+  - Optimized font sizes for cleaner appearance:
+    - "Overall Progress" title: 16px → 13px
+    - Progress count: 32px → 24px
+    - Percentage text: 14px → 12px
+  - Reduced progress bar height: 8px → 6px
+  - Reduced border radius: 8px → 6px
+  - Maintained visual hierarchy and readability
+  - More compact design allows better content visibility
+
+- **Login Logo Animation Simplification** (Performance & Stability)
+  - Simplified animation from 483 lines to 130 lines (70% code reduction)
+  - Replaced complex multi-controller system with single unified controller
+  - New subtle animation features:
+    - Gentle pulse/glow effect (opacity: 0.3 → 0.6 → 0.3)
+    - Smooth scale breathing animation (size: 1.0 → 1.05 → 1.0)
+    - 2-second animation cycle with ease-in-out curves
+  - Removed complex features that caused rendering issues:
+    - 8 AnimationControllers (corona, float, rotation, entrance, shimmer, sparkle)
+    - Multiple pulsing corona rings system
+    - Particle shimmer effects
+    - 3D rotation and floating animations
+    - Color shifting effects
+    - Sparkle system with random positioning
+  - Fixed: Animation now stays centered on all screen sizes (no more breaking on wider screens)
+  - Result: Professional appearance, better performance, more stable rendering
+
+- **Level Configuration Service Enhancements** (Phase 7 Backend Integration)
+  - Improved async provider with `levelConfigurationReadyProvider`
+  - Better cache readiness detection before rendering
+  - Enhanced error handling with loading and error states
+  - Proper async/await patterns for level data fetching
+
+### Fixed
+- **CORS Image Loading for APK Builds** (Build Optimization)
+  - Removed custom `CorsImageProvider` (web-only workaround)
+  - Removed `ImageProxy` utility (ineffective due to server redirects)
+  - Restored simple `Image.network()` throughout the app
+  - Cleaned up CORS-related imports and dependencies
+  - Rationale: Backend server (`ap.ad4x4.com`) redirects HTTP→HTTPS automatically
+  - CORS issues only affect web preview, not production APK builds
+  - APK builds work perfectly with standard Flutter image loading
+  - Result: Cleaner, simpler codebase with better maintainability
+
+- **Skills Matrix Rendering Performance** (Phase 7 Fix)
+  - Fixed level section rendering to wait for cache initialization
+  - Improved loading states with proper CircularProgressIndicator
+  - Better error states with retry functionality
+  - Eliminated race conditions in level configuration loading
+
+### Technical Improvements
+- Enhanced certificate generation with platform-specific utilities
+- Improved progress tracking widgets with better state management
+- Better async/await patterns in level configuration providers
+- Optimized widget rebuilds in skills matrix and dashboard screens
+- Cleaner code structure with reduced complexity in animation systems
+
 ### Changed
 - **Trip Reports feature temporarily hidden from UI** (under development)
   - Admin menu items and navigation routes commented out with TODO markers
@@ -179,6 +250,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Release Date | Key Features |
 |---------|--------------|--------------|
+| **1.5.3** | 2025-11-27 | UI optimization, logo animation fix, CORS cleanup |
 | **1.5.2** | 2024-11-16 | Gallery integration docs, issue tracking |
 | **1.5.0** | 2024-11-15 | Gallery infrastructure, multi-API auth |
 | **1.4.0** | 2024-11-10 | Admin panel, permission system |

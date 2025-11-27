@@ -205,20 +205,30 @@ class _SkillVerificationHistoryScreenState
                   );
                 }
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(
-                        memberSkillVerificationHistoryProvider(targetMemberId));
-                  },
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredReferences.length,
-                    itemBuilder: (context, index) {
-                      return _buildVerificationCard(
-                        filteredReferences[index],
-                        theme,
-                      );
+                // ✅ Use async FutureProvider to ensure cache is ready
+                final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
+                
+                return levelConfigAsync.when(
+                  data: (levelConfig) => RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(
+                          memberSkillVerificationHistoryProvider(targetMemberId));
                     },
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredReferences.length,
+                      itemBuilder: (context, index) {
+                        return _buildVerificationCard(
+                          filteredReferences[index],
+                          theme,
+                          levelConfig,
+                        );
+                      },
+                    ),
+                  ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, s) => Center(
+                    child: Text('Error loading level config: $e'),
                   ),
                 );
               },
@@ -376,8 +386,7 @@ class _SkillVerificationHistoryScreenState
   }
 
   Widget _buildVerificationCard(
-      LogbookSkillReference reference, ThemeData theme) {
-    final levelConfig = ref.read(levelConfigurationProvider);
+      LogbookSkillReference reference, ThemeData theme, levelConfig) {
     final levelColor = levelConfig.getLevelColor(reference.logbookSkill.level.id);
     final levelEmoji = levelConfig.getLevelEmoji(reference.logbookSkill.level.id);
 

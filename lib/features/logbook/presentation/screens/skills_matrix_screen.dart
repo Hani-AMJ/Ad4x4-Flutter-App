@@ -284,7 +284,7 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),  // Reduced from 16
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [colors.primaryContainer, colors.secondaryContainer],
@@ -297,34 +297,34 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
           Text(
             'Overall Progress',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 13,  // Reduced from 16
               fontWeight: FontWeight.w600,
               color: colors.onPrimaryContainer,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),  // Reduced from 8
           Text(
             '$verifiedCount / $totalCount',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: 24,  // Reduced from 32
               fontWeight: FontWeight.bold,
               color: colors.onPrimaryContainer,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),  // Reduced from 4
           Text(
             '$percentage% Complete',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,  // Reduced from 14
               color: colors.onPrimaryContainer.withValues(alpha: 0.8),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),  // Reduced from 12
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),  // Reduced from 8
             child: LinearProgressIndicator(
               value: _overallProgress,
-              minHeight: 8,
+              minHeight: 6,  // Reduced from 8
               backgroundColor: colors.surface.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
             ),
@@ -419,23 +419,42 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
         final levelId = skills.first.level.id;
         final isCurrentLevel = levelId == _userProfileLevelId;
         
-        // Use LevelConfigurationService for dynamic level display
-        final levelConfig = ref.read(levelConfigurationProvider);
-        final cleanName = levelConfig.getCleanLevelName(levelName);
-        final levelColor = levelConfig.getLevelColor(levelId);
-        final levelEmoji = levelConfig.getLevelEmoji(levelId);
+        // ✅ Use async FutureProvider to ensure cache is ready
+        final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
         
-        return _LevelSection(
-          levelName: cleanName,
-          levelColor: levelColor,
-          levelEmoji: levelEmoji,
-          skills: skills,
-          verifiedCount: verifiedCount,
-          levelProgress: levelProgress,
-          isCurrentLevel: isCurrentLevel,
-          isSkillVerified: _isSkillVerified,
-          getMemberSkillStatus: _getMemberSkillStatus,
-          onSkillTap: _showSkillDetails,
+        return levelConfigAsync.when(
+          data: (levelConfig) {
+            final cleanName = levelConfig.getCleanLevelName(levelName);
+            final levelColor = levelConfig.getLevelColor(levelId);
+            final levelEmoji = levelConfig.getLevelEmoji(levelId);
+            
+            return _LevelSection(
+              levelName: cleanName,
+              levelColor: levelColor,
+              levelEmoji: levelEmoji,
+              skills: skills,
+              verifiedCount: verifiedCount,
+              levelProgress: levelProgress,
+              isCurrentLevel: isCurrentLevel,
+              isSkillVerified: _isSkillVerified,
+              getMemberSkillStatus: _getMemberSkillStatus,
+              onSkillTap: _showSkillDetails,
+            );
+          },
+          loading: () => Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ),
+          error: (e, s) => Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text('Error loading level config: $e'),
+            ),
+          ),
         );
       },
     );
@@ -594,81 +613,106 @@ class _LevelSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Level Header
+          // Level Header - Redesigned layout
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isCurrentLevel
                   ? levelColor.withValues(alpha: 0.15)
                   : levelColor.withValues(alpha: 0.08),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  levelEmoji,
-                  style: const TextStyle(fontSize: 28),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            levelName,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: levelColor,
-                            ),
-                          ),
-                          if (isCurrentLevel) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: levelColor,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'CURRENT',
-                                style: TextStyle(
-                                  color: colors.onPrimary,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                // Top row: Stars + Name + Badge
+                Row(
+                  children: [
+                    // Smaller stars (20px instead of 28px)
+                    Text(
+                      levelEmoji,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    // Level name - expandable
+                    Expanded(
+                      child: Text(
+                        levelName,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontSize: 18,  // Slightly smaller for better fit
+                          fontWeight: FontWeight.bold,
+                          color: levelColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '$verifiedCount / ${skills.length} verified',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(width: 8),
+                    // Current badge (if applicable)
+                    if (isCurrentLevel)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: levelColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'CURRENT',
+                          style: TextStyle(
+                            color: colors.onPrimary,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
-                CircularProgressIndicator(
-                  value: levelProgress,
-                  backgroundColor: colors.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation<Color>(levelColor),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${(levelProgress * 100).toStringAsFixed(0)}%',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: levelColor,
-                  ),
+                const SizedBox(height: 8),
+                // Bottom row: Verified count + Progress circle
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '$verifiedCount / ${skills.length} verified',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    // Smaller progress circle (40px instead of 48px)
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: CircularProgressIndicator(
+                              value: levelProgress,
+                              strokeWidth: 3.5,
+                              backgroundColor: colors.surfaceContainerHighest,
+                              valueColor: AlwaysStoppedAnimation<Color>(levelColor),
+                            ),
+                          ),
+                          Text(
+                            '${(levelProgress * 100).toStringAsFixed(0)}%',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: levelColor,
+                              fontSize: 9,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

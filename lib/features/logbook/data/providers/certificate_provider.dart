@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -272,22 +273,42 @@ class CertificatesNotifier extends StateNotifier<AsyncValue<List<SkillCertificat
     await _loadCertificates();
   }
 
-  /// Generate certificate PDF
+  /// Generate certificate PDF (the slow part - PDF generation)
+  Future<Uint8List> generateCertificatePDF(SkillCertificate certificate) async {
+    return _certificateService.generateCertificatePDF(certificate);
+  }
+
+  /// Show preview with pre-generated PDF (fast - just display)
+  Future<void> showPreview(SkillCertificate certificate, Uint8List pdfData) async {
+    await _certificateService.showPreview(certificate, pdfData);
+  }
+
+  /// Show share sheet with pre-generated PDF (fast - just display)
+  Future<void> showShare(SkillCertificate certificate, Uint8List pdfData) async {
+    await _certificateService.showShare(certificate, pdfData);
+  }
+
+  /// Show print dialog with pre-generated PDF (fast - just display)
+  Future<void> showPrint(SkillCertificate certificate, Uint8List pdfData) async {
+    await _certificateService.showPrint(certificate, pdfData);
+  }
+
+  /// Generate certificate PDF (legacy method)
   Future<Uint8List> generatePDF(SkillCertificate certificate) async {
     return _certificateService.generateCertificatePDF(certificate);
   }
 
-  /// Preview certificate
+  /// Preview certificate (legacy method - slow, combines generation + display)
   Future<void> previewCertificate(SkillCertificate certificate) async {
     await _certificateService.previewCertificate(certificate);
   }
 
-  /// Share certificate
+  /// Share certificate (legacy method - slow, combines generation + display)
   Future<void> shareCertificate(SkillCertificate certificate) async {
     await _certificateService.shareCertificate(certificate);
   }
 
-  /// Print certificate
+  /// Print certificate (legacy method - slow, combines generation + display)
   Future<void> printCertificate(SkillCertificate certificate) async {
     await _certificateService.printCertificate(certificate);
   }

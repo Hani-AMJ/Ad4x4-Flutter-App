@@ -148,21 +148,21 @@ class LogbookHomeScreen extends ConsumerWidget {
       _QuickActionData(
         icon: Icons.directions_car,
         title: 'Trip History',
-        subtitle: 'Filter & search trips',
+        subtitle: 'Filter & search',
         color: const Color(0xFF64B5F6),
         onTap: () => context.push('/logbook/trip-history-enhanced'),
       ),
       _QuickActionData(
         icon: Icons.history,
         title: 'Verification History',
-        subtitle: 'View all sign-offs',
+        subtitle: 'Sign-offs',
         color: const Color(0xFF7E57C2),
         onTap: () => context.push('/logbook/verification-history'),
       ),
       _QuickActionData(
         icon: Icons.calendar_today,
         title: 'Trip Planning',
-        subtitle: 'Plan skill goals',
+        subtitle: 'Plan goals',
         color: const Color(0xFF26A69A),
         onTap: () => context.push('/logbook/trip-planning'),
       ),
@@ -176,7 +176,7 @@ class LogbookHomeScreen extends ConsumerWidget {
       _QuickActionData(
         icon: Icons.recommend,
         title: 'Recommendations',
-        subtitle: 'Smart suggestions',
+        subtitle: 'Suggestions',
         color: const Color(0xFF5E35B1),
         onTap: () => context.push('/logbook/skill-recommendations'),
       ),
@@ -198,7 +198,7 @@ class LogbookHomeScreen extends ConsumerWidget {
         _QuickActionData(
           icon: Icons.flash_on,
           title: 'Quick Sign-Off',
-          subtitle: 'Fast skill verification',
+          subtitle: 'Fast verification',
           color: const Color(0xFF4CAF50),
           onTap: () => context.push('/admin/logbook/quick-signoff'),
         ),
@@ -219,7 +219,7 @@ class LogbookHomeScreen extends ConsumerWidget {
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 1.3,
+        childAspectRatio: 1.4,  // Increased from 1.3 for more vertical space
       ),
       itemCount: actions.length,
       itemBuilder: (context, index) {
@@ -236,28 +236,33 @@ class LogbookHomeScreen extends ConsumerWidget {
         onTap: action.onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),  // Optimized padding
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,  // Prevent overflow
             children: [
-              Icon(action.icon, size: 36, color: action.color),
-              const SizedBox(height: 12),
+              Icon(action.icon, size: 32, color: action.color),  // Slightly smaller icon
+              const SizedBox(height: 8),
               Text(
                 action.title,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,  // Reduced from 16
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,  // Allow wrapping
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 action.subtitle,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,  // Reduced from 12
                   color: Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

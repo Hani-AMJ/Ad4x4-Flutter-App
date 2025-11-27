@@ -466,10 +466,52 @@ class _CertificateActionsSheet extends ConsumerWidget {
             title: const Text('Preview Certificate'),
             onTap: () async {
               Navigator.pop(context);
+              
+              // Show loading dialog
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) => WillPopScope(
+                    onWillPop: () async => false,
+                    child: AlertDialog(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Generating certificate PDF...'),
+                          SizedBox(height: 8),
+                          Text(
+                            'This may take a few seconds',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+              
               try {
-                await ref.read(certificatesProvider(memberId).notifier)
-                    .previewCertificate(certificate);
+                final notifier = ref.read(certificatesProvider(memberId).notifier);
+                
+                // Generate PDF first (this is the slow part)
+                final pdfData = await notifier.generateCertificatePDF(certificate);
+                    
+                // Close loading dialog NOW that generation is done
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                
+                // Now show the preview (fast, already generated)
+                await notifier.showPreview(certificate, pdfData);
               } catch (e) {
+                // Close loading dialog
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error: $e')),
@@ -483,10 +525,52 @@ class _CertificateActionsSheet extends ConsumerWidget {
             title: const Text('Share Certificate'),
             onTap: () async {
               Navigator.pop(context);
+              
+              // Show loading dialog
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) => WillPopScope(
+                    onWillPop: () async => false,
+                    child: AlertDialog(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Preparing certificate to share...'),
+                          SizedBox(height: 8),
+                          Text(
+                            'This may take a few seconds',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+              
               try {
-                await ref.read(certificatesProvider(memberId).notifier)
-                    .shareCertificate(certificate);
+                final notifier = ref.read(certificatesProvider(memberId).notifier);
+                
+                // Generate PDF first (this is the slow part)
+                final pdfData = await notifier.generateCertificatePDF(certificate);
+                    
+                // Close loading dialog NOW that generation is done
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                
+                // Now show the share sheet (fast, already generated)
+                await notifier.showShare(certificate, pdfData);
               } catch (e) {
+                // Close loading dialog
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error: $e')),
@@ -500,10 +584,52 @@ class _CertificateActionsSheet extends ConsumerWidget {
             title: const Text('Print Certificate'),
             onTap: () async {
               Navigator.pop(context);
+              
+              // Show loading dialog
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) => WillPopScope(
+                    onWillPop: () async => false,
+                    child: AlertDialog(
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Preparing certificate for printing...'),
+                          SizedBox(height: 8),
+                          Text(
+                            'This may take a few seconds',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+              
               try {
-                await ref.read(certificatesProvider(memberId).notifier)
-                    .printCertificate(certificate);
+                final notifier = ref.read(certificatesProvider(memberId).notifier);
+                
+                // Generate PDF first (this is the slow part)
+                final pdfData = await notifier.generateCertificatePDF(certificate);
+                    
+                // Close loading dialog NOW that generation is done
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                
+                // Now show the print dialog (fast, already generated)
+                await notifier.showPrint(certificate, pdfData);
               } catch (e) {
+                // Close loading dialog
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error: $e')),

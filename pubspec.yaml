@@ -2,7 +2,7 @@ name: ad4x4_mobile
 description: "AD4x4 Mobile App - Official Abu Dhabi Off-Road Club Application"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.5.3+6
 
 environment:
   sdk: ^3.9.2

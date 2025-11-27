@@ -17,12 +17,24 @@ class UserAvatar extends StatelessWidget {
   });
 
   String _getInitials() {
-    final parts = name.trim().split(' ');
+    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return '?';
+    
+    // Single name or first part
     if (parts.length == 1) {
-      return parts[0].substring(0, 1).toUpperCase();
+      final first = parts[0];
+      return first.isNotEmpty ? first.substring(0, 1).toUpperCase() : '?';
     }
-    return '${parts[0].substring(0, 1)}${parts[1].substring(0, 1)}'.toUpperCase();
+    
+    // Two or more names - use first and last
+    final first = parts.first;
+    final last = parts.last;
+    
+    final firstInitial = first.isNotEmpty ? first.substring(0, 1) : '';
+    final lastInitial = last.isNotEmpty ? last.substring(0, 1) : '';
+    
+    if (firstInitial.isEmpty && lastInitial.isEmpty) return '?';
+    return '$firstInitial$lastInitial'.toUpperCase();
   }
 
   @override

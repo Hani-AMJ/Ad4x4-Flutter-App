@@ -590,7 +590,9 @@ class TripListItem {
       registeredCount: json['registered_count'] as int? ?? json['registeredCount'] as int? ?? 0,
       waitlistCount: json['waitlist_count'] as int? ?? json['waitlistCount'] as int? ?? 0,
       imageUrl: json['image_url'] as String? ?? json['imageUrl'] as String? ?? json['image'] as String?,
-      lead: BasicMember.fromJson(json['lead'] as Map<String, dynamic>),
+      lead: json['lead'] != null 
+          ? BasicMember.fromJson(json['lead'] as Map<String, dynamic>)
+          : BasicMember(id: 0, username: 'Unknown'),
       meetingPoint: (json['meeting_point'] ?? json['meetingPoint']) != null
           ? mp.MeetingPoint.fromJson((json['meeting_point'] ?? json['meetingPoint']) as Map<String, dynamic>)
           : null,

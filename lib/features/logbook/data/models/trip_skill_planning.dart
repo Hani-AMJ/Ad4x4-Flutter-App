@@ -39,7 +39,7 @@ class SkillOpportunity {
   final bool meetsPrerequisites;
   final List<String> prerequisites;
   final OpportunityLevel opportunityLevel;
-  final String? verificationTips;
+  final String verificationTips;
 
   const SkillOpportunity({
     required this.skill,
@@ -47,7 +47,7 @@ class SkillOpportunity {
     required this.meetsPrerequisites,
     required this.prerequisites,
     required this.opportunityLevel,
-    this.verificationTips,
+    required this.verificationTips,
   });
 
   /// Whether this skill can be attempted on the trip

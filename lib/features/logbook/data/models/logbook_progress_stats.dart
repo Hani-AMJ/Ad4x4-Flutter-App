@@ -71,6 +71,75 @@ class LogbookProgressStats {
   int get remainingSkillsForCurrentLevel {
     return (totalSkillsForCurrentLevel - verifiedSkillsForCurrentLevel).clamp(0, totalSkillsForCurrentLevel);
   }
+
+  // ============================================================
+  // COMPATIBILITY PROPERTIES FOR OLD WIDGET API
+  // ============================================================
+  
+  /// Legacy property: officialLevel
+  /// Maps to current profile level (source of truth)
+  ({int id, String name})? get officialLevel {
+    return (id: currentLevelId, name: currentLevelName);
+  }
+  
+  /// Legacy property: workingLevel
+  /// Maps to current level progress data
+  ({
+    int levelId,
+    String levelName,
+    int skillsVerified,
+    int totalSkills,
+    int skillsRemaining,
+    double progress,
+  })? get workingLevel {
+    final current = currentLevelProgress;
+    if (current == null) return null;
+    
+    return (
+      levelId: current.levelId,
+      levelName: current.levelName,
+      skillsVerified: current.verifiedSkills,
+      totalSkills: current.totalSkills,
+      skillsRemaining: current.remainingSkills,
+      progress: current.progressPercentage / 100.0,
+    );
+  }
+  
+  /// Legacy property: nextLevel
+  /// Calculates next level from allLevelsBreakdown
+  ({
+    int levelId,
+    String levelName,
+    int totalSkills,
+  })? get nextLevel {
+    // Sort levels by numeric ID and find the next one after current
+    final sortedLevels = allLevelsBreakdown.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    
+    final currentIndex = sortedLevels.indexWhere((e) => e.key == currentLevelId);
+    if (currentIndex == -1 || currentIndex >= sortedLevels.length - 1) {
+      return null; // No next level
+    }
+    
+    final next = sortedLevels[currentIndex + 1].value;
+    return (
+      levelId: next.levelId,
+      levelName: next.levelName,
+      totalSkills: next.totalSkills,
+    );
+  }
+  
+  /// Legacy property: totalSkillsVerified
+  /// Maps to verifiedSkillsAllLevels
+  int get totalSkillsVerified => verifiedSkillsAllLevels;
+  
+  /// Legacy property: totalSkillsAvailable
+  /// Maps to totalSkillsAllLevels
+  int get totalSkillsAvailable => totalSkillsAllLevels;
+  
+  /// Legacy property: overallProgress
+  /// Maps to overallProgressPercentage as 0-1 fraction
+  double get overallProgress => overallProgressPercentage / 100.0;
 }
 
 /// Progress data for a specific skill level

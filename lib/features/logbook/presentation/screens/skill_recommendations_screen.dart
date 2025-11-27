@@ -242,22 +242,29 @@ class SkillRecommendationsScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Recommended Skills (${recommendations.length})',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
+    // ✅ Use async FutureProvider to ensure cache is ready
+    final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
+    
+    return levelConfigAsync.when(
+      data: (levelConfig) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Recommended Skills (${recommendations.length})',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
+          const SizedBox(height: 12),
 
-        ...recommendations.map((rec) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _buildRecommendationCard(rec, theme, colors, context, ref),
-        )),
-      ],
+          ...recommendations.map((rec) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildRecommendationCard(rec, theme, colors, context, ref, levelConfig),
+          )),
+        ],
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => Center(child: Text('Error loading level config: $e')),
     );
   }
 
@@ -267,6 +274,7 @@ class SkillRecommendationsScreen extends ConsumerWidget {
     ColorScheme colors,
     BuildContext context,
     WidgetRef ref,
+    levelConfig,
   ) {
     final priorityColor = _getPriorityColor(rec.priority);
 
@@ -306,13 +314,13 @@ class SkillRecommendationsScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: ref.read(levelConfigurationProvider).getLevelColor(rec.skill.level.id).withValues(alpha: 0.2),
+                      color: levelConfig.getLevelColor(rec.skill.level.id).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      '${ref.read(levelConfigurationProvider).getCleanLevelName(rec.skill.level.name)} ${ref.read(levelConfigurationProvider).getLevelEmoji(rec.skill.level.id)}',
+                      '${levelConfig.getCleanLevelName(rec.skill.level.name)} ${levelConfig.getLevelEmoji(rec.skill.level.id)}',
                       style: TextStyle(
-                        color: ref.read(levelConfigurationProvider).getLevelColor(rec.skill.level.id),
+                        color: levelConfig.getLevelColor(rec.skill.level.id),
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
@@ -405,6 +413,9 @@ class SkillRecommendationsScreen extends ConsumerWidget {
   void _showRecommendationDetails(BuildContext context, SkillRecommendation rec, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    
+    // ⚠️ Using sync provider here - acceptable for modal since main list uses async
+    final levelConfig = ref.read(levelConfigurationProvider);
 
     showModalBottomSheet(
       context: context,
@@ -413,44 +424,44 @@ class SkillRecommendationsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      rec.skill.name,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) => SingleChildScrollView(
+            controller: scrollController,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        rec.skill.name,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
 
-              // Badges
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildDetailBadge(
-                    '${ref.read(levelConfigurationProvider).getCleanLevelName(rec.skill.level.name)} ${ref.read(levelConfigurationProvider).getLevelEmoji(rec.skill.level.id)}',
-                    ref.read(levelConfigurationProvider).getLevelColor(rec.skill.level.id),
-                  ),
+                // Badges
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildDetailBadge(
+                      '${levelConfig.getCleanLevelName(rec.skill.level.name)} ${levelConfig.getLevelEmoji(rec.skill.level.id)}',
+                      levelConfig.getLevelColor(rec.skill.level.id),
+                    ),
                   _buildDetailBadge(
                     rec.priorityText,
                     _getPriorityColor(rec.priority),

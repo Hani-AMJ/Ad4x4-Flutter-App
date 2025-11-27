@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -26,13 +27,40 @@ final upcomingTripsWithSkillsProvider = FutureProvider.autoDispose<List<TripWith
     pageSize: 50,
     startTimeAfter: now.toIso8601String(),
     startTimeBefore: thirtyDaysLater.toIso8601String(),
-    approvalStatus: 'P',
+    approvalStatus: 'A',  // Changed from 'P' to 'A' - show APPROVED trips
   );
 
-  final tripsData = tripsResponse['results'] as List<dynamic>;
-  final trips = tripsData
-      .map((json) => TripBasicInfo.fromJson(json as Map<String, dynamic>))
-      .toList();
+  // Use regular print for production logging
+  print('🔍 [TripPlanning] API call completed');
+
+  final tripsData = tripsResponse['results'] as List<dynamic>?;
+  if (tripsData == null) {
+    print('⚠️ [TripPlanning] No trips data in response');
+    return [];
+  }
+  
+  print('🔍 [TripPlanning] Found ${tripsData.length} trips in response');
+  
+  // Parse trips with error handling - skip invalid entries
+  final trips = <TripBasicInfo>[];
+  for (var i = 0; i < tripsData.length; i++) {
+    final json = tripsData[i];
+    try {
+      if (json is Map<String, dynamic>) {
+        print('🔍 [TripPlanning] Parsing trip #$i: ID=${json['id']}, Level=${json['level']}');
+        
+        final trip = TripBasicInfo.fromJson(json);
+        trips.add(trip);
+        
+        print('✅ [TripPlanning] Parsed trip #${trip.id}: ${trip.title}');
+      }
+    } catch (e, stackTrace) {
+      print('❌ [TripPlanning] Failed to parse trip #$i: $e');
+      print('   Level data: ${json['level']}');
+      print('   Full JSON: $json');
+      // Skip invalid trip, continue with others
+    }
+  }
 
   // Fetch all skills
   final skillsResponse = await repository.getLogbookSkills(
@@ -40,48 +68,119 @@ final upcomingTripsWithSkillsProvider = FutureProvider.autoDispose<List<TripWith
     pageSize: 100,
   );
 
-  final skillsData = skillsResponse['results'] as List<dynamic>;
-  final allSkills = skillsData
-      .map((json) => LogbookSkill.fromJson(json as Map<String, dynamic>))
-      .toList();
+  final skillsData = skillsResponse['results'] as List<dynamic>?;
+  if (skillsData == null) {
+    print('⚠️ [TripPlanning] No skills data in response');
+    return [];
+  }
+  
+  // Parse skills with error handling - skip invalid entries
+  final allSkills = <LogbookSkill>[];
+  for (final json in skillsData) {
+    try {
+      if (json is Map<String, dynamic>) {
+        allSkills.add(LogbookSkill.fromJson(json));
+      }
+    } catch (e) {
+      print('⚠️ [TripPlanning] Failed to parse skill: $e');
+      // Skip invalid skill, continue with others
+    }
+  }
 
   // Fetch member's verified skills
+  print('🔍 [TripPlanning] Fetching member verified skills...');
   final memberSkillsResponse = await repository.getMemberLogbookSkills(
     memberId: user.id,
     page: 1,
     pageSize: 100,
   );
 
-  final memberSkillsData = memberSkillsResponse['results'] as List<dynamic>;
-  final verifiedSkillIds = memberSkillsData
-      .map((json) => json['skill']['id'] as int)
-      .toSet();
+  final memberSkillsData = memberSkillsResponse['results'] as List<dynamic>? ?? [];
+  print('🔍 [TripPlanning] Found ${memberSkillsData.length} member skill entries');
+  
+  // Debug: Print first entry structure
+  if (memberSkillsData.isNotEmpty) {
+    print('🔍 [TripPlanning] First member skill entry structure: ${memberSkillsData.first}');
+  }
+  
+  // CRITICAL: Safe extraction of verified skill IDs with null checks
+  // Handle multiple possible API response structures:
+  // 1. { "skill": { "id": 123 } }  - nested skill object
+  // 2. { "skillId": 123 }  - direct skill ID
+  // 3. { "id": 456, "skill": 123 }  - skill ID as number
+  final verifiedSkillIds = <int>{};
+  for (var i = 0; i < memberSkillsData.length; i++) {
+    final json = memberSkillsData[i];
+    try {
+      if (json is Map<String, dynamic>) {
+        int? skillId;
+        
+        // Try format 1: nested skill object
+        final skill = json['skill'];
+        if (skill is Map<String, dynamic>) {
+          skillId = skill['id'] as int?;
+        } 
+        // Try format 2: direct skillId field
+        else if (json.containsKey('skillId')) {
+          skillId = json['skillId'] as int?;
+        }
+        // Try format 3: skill as direct int
+        else if (skill is int) {
+          skillId = skill;
+        }
+        
+        if (skillId != null) {
+          verifiedSkillIds.add(skillId);
+        } else {
+          print('⚠️ [TripPlanning] Member skill #$i: Could not extract skill ID from: $json');
+        }
+      }
+    } catch (e) {
+      print('⚠️ [TripPlanning] Failed to parse member skill #$i: $e');
+      // Skip invalid entry
+    }
+  }
+  print('🔍 [TripPlanning] User has ${verifiedSkillIds.length} verified skills');
 
   // Build TripWithSkills for each trip
   final tripsWithSkills = <TripWithSkills>[];
 
-  for (final trip in trips) {
-    // Determine trip difficulty based on trip metadata or defaults
-    final difficultyLevel = _calculateTripDifficulty(trip);
+  for (var i = 0; i < trips.length; i++) {
+    final trip = trips[i];
+    try {
+      print('🔨 [TripPlanning] Building TripWithSkills for trip #${trip.id}');
+      
+      // Determine trip difficulty based on trip metadata or defaults
+      final difficultyLevel = _calculateTripDifficulty(trip);
+      print('   Difficulty: $difficultyLevel');
 
-    // Get skills appropriate for this trip
-    final skillOpportunities = _getSkillOpportunitiesForTrip(
-      trip,
-      allSkills,
-      verifiedSkillIds,
-      difficultyLevel,
-    );
+      // Get skills appropriate for this trip
+      print('   Getting skill opportunities (${allSkills.length} total skills)...');
+      final skillOpportunities = _getSkillOpportunitiesForTrip(
+        trip,
+        allSkills,
+        verifiedSkillIds,
+        difficultyLevel,
+      );
+      print('   Found ${skillOpportunities.length} skill opportunities');
 
-    final totalSkills = skillOpportunities.length;
-    final verifiedCount = skillOpportunities.where((s) => s.isVerified).length;
+      final totalSkills = skillOpportunities.length;
+      final verifiedCount = skillOpportunities.where((s) => s.isVerified).length;
 
-    tripsWithSkills.add(TripWithSkills(
-      trip: trip,
-      skillOpportunities: skillOpportunities,
-      totalSkillsAvailable: totalSkills,
-      skillsAlreadyVerified: verifiedCount,
-      difficultyLevel: difficultyLevel,
-    ));
+      tripsWithSkills.add(TripWithSkills(
+        trip: trip,
+        skillOpportunities: skillOpportunities,
+        totalSkillsAvailable: totalSkills,
+        skillsAlreadyVerified: verifiedCount,
+        difficultyLevel: difficultyLevel,
+      ));
+      
+      print('✅ [TripPlanning] Built TripWithSkills for trip #${trip.id}');
+    } catch (e, stackTrace) {
+      print('❌ [TripPlanning] Failed to build TripWithSkills for trip #${trip.id}: $e');
+      print('   Stack: $stackTrace');
+      // Skip this trip and continue with others
+    }
   }
 
   // Sort by trip date
@@ -132,31 +231,36 @@ List<SkillOpportunity> _getSkillOpportunitiesForTrip(
   final appropriateLevels = _getAppropriateLevelsForTrip(tripDifficulty);
 
   for (final skill in allSkills) {
-    // Skip if skill level doesn't match trip difficulty
-    if (!appropriateLevels.contains(skill.level.numericLevel)) {
-      continue;
+    try {
+      // Skip if skill level doesn't match trip difficulty
+      if (!appropriateLevels.contains(skill.level.numericLevel)) {
+        continue;
+      }
+
+      final isVerified = verifiedSkillIds.contains(skill.id);
+
+      // Determine opportunity level based on skill and trip characteristics
+      final opportunityLevel = _calculateOpportunityLevel(skill, trip);
+
+      // Check prerequisites (simplified - assumes lower level skills are prerequisites)
+      final meetsPrerequisites = _checkPrerequisites(skill, verifiedSkillIds);
+      final prerequisites = _getPrerequisitesList(skill);
+
+      // Generate verification tips
+      final tips = _generateVerificationTips(skill, trip);
+
+      opportunities.add(SkillOpportunity(
+        skill: skill,
+        isVerified: isVerified,
+        meetsPrerequisites: meetsPrerequisites,
+        prerequisites: prerequisites,
+        opportunityLevel: opportunityLevel,
+        verificationTips: tips,
+      ));
+    } catch (e) {
+      print('⚠️ [TripPlanning] Skipping skill #${skill.id} due to error: $e');
+      // Skip invalid skill and continue
     }
-
-    final isVerified = verifiedSkillIds.contains(skill.id);
-
-    // Determine opportunity level based on skill and trip characteristics
-    final opportunityLevel = _calculateOpportunityLevel(skill, trip);
-
-    // Check prerequisites (simplified - assumes lower level skills are prerequisites)
-    final meetsPrerequisites = _checkPrerequisites(skill, verifiedSkillIds);
-    final prerequisites = _getPrerequisitesList(skill);
-
-    // Generate verification tips
-    final tips = _generateVerificationTips(skill, trip);
-
-    opportunities.add(SkillOpportunity(
-      skill: skill,
-      isVerified: isVerified,
-      meetsPrerequisites: meetsPrerequisites,
-      prerequisites: prerequisites,
-      opportunityLevel: opportunityLevel,
-      verificationTips: tips,
-    ));
   }
 
   // Sort by priority (unverified + meets prerequisites + high opportunity first)
@@ -254,7 +358,7 @@ List<String> _getPrerequisitesList(LogbookSkill skill) {
 }
 
 /// Generate verification tips for a skill
-String? _generateVerificationTips(LogbookSkill skill, TripBasicInfo trip) {
+String _generateVerificationTips(LogbookSkill skill, TripBasicInfo trip) {
   final skillName = skill.name.toLowerCase();
 
   if (skillName.contains('navigation')) {

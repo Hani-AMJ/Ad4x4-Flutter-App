@@ -18,7 +18,7 @@
     
     <application
         android:usesCleartextTraffic="false"
-        android:label="ad4x4_mobile"
+        android:label="MyApp"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -81,3 +81,5 @@
         </intent>
     </queries>
 </manifest>
+
+

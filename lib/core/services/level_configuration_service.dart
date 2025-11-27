@@ -26,6 +26,17 @@ class LevelConfigurationService {
   
   LevelConfigurationService(this._apiClient, this._repository);
   
+  /// Pre-warm cache by loading levels and skills
+  /// ⚡ Call this early (e.g., in app startup or provider initialization)
+  Future<void> prewarmCache() async {
+    try {
+      await getLevelsWithSkills(forceRefresh: false);
+      print('✅ [LevelConfig] Cache prewarmed successfully');
+    } catch (e) {
+      print('⚠️ [LevelConfig] Cache prewarm failed: $e');
+    }
+  }
+  
   /// Fetch all levels from API
   Future<List<UserLevel>> getLevels({bool forceRefresh = false}) async {
     // Return cached levels if still valid
@@ -131,8 +142,9 @@ class LevelConfigurationService {
     return properCase.trim();
   }
   
-  /// Get level color using Rainbow spectrum (ROYGBIV)
-  /// Position-based: first level = red, last level = violet
+  /// Get level color matching brand tokens (brand_tokens.json)
+  /// Position-based progression: Green → Gold → Orange → Red-Orange → Blue → Purple → Violet
+  /// ⚡ Uses cache - ensure prewarmCache() was called
   Color getLevelColor(int levelId) {
     final levelsWithSkills = _cachedLevels?.where((level) {
       return _cachedSkills?.any((skill) => skill.level.id == level.id) ?? false;
@@ -149,18 +161,44 @@ class LevelConfigurationService {
         ? index / (levelsWithSkills.length - 1) 
         : 0.0;
     
-    // Rainbow spectrum colors (ROYGBIV)
+    // Brand token colors + extended palette for additional levels
     final colors = [
-      const Color(0xFFFF0000), // Red
-      const Color(0xFFFF7F00), // Orange
-      const Color(0xFFFFFF00), // Yellow
-      const Color(0xFF00FF00), // Green
-      const Color(0xFF0000FF), // Blue
-      const Color(0xFF4B0082), // Indigo
-      const Color(0xFF9400D3), // Violet
+      const Color(0xFF38B26E), // Newbie: Green (brand token)
+      const Color(0xFFE0B223), // Intermediate: Yellow-Gold (brand token)
+      const Color(0xFFD9822B), // Advanced: Orange-Brown (brand token)
+      const Color(0xFFDA5547), // Explorer: Red-Orange (brand token)
+      const Color(0xFF4BA3C7), // Marshal: Blue-Cyan (brand token)
+      const Color(0xFF7E57C2), // Expert: Purple (extended - harmonizes with blue)
+      const Color(0xFF9C27B0), // Board Member: Violet-Purple (extended - final tier)
     ];
     
     // Map progress to color index
+    final colorIndex = (progress * (colors.length - 1)).round();
+    return colors[colorIndex.clamp(0, colors.length - 1)];
+  }
+  
+  /// Get level color async (populates cache first)
+  /// 🔄 For use in async contexts only  
+  Future<Color> getLevelColorAsync(int levelId) async {
+    // Ensure caches are populated
+    final levelsWithSkills = await getLevelsWithSkills();
+    
+    if (levelsWithSkills.isEmpty) return Colors.grey;
+    
+    final index = levelsWithSkills.indexWhere((l) => l.id == levelId);
+    if (index == -1) return Colors.grey;
+    
+    final progress = levelsWithSkills.length > 1 
+        ? index / (levelsWithSkills.length - 1) 
+        : 0.0;
+    
+    // Brand token colors + extended palette
+    final colors = [
+      const Color(0xFF38B26E), const Color(0xFFE0B223), const Color(0xFFD9822B),
+      const Color(0xFFDA5547), const Color(0xFF4BA3C7), const Color(0xFF7E57C2),
+      const Color(0xFF9C27B0),
+    ];
+    
     final colorIndex = (progress * (colors.length - 1)).round();
     return colors[colorIndex.clamp(0, colors.length - 1)];
   }
@@ -173,37 +211,88 @@ class LevelConfigurationService {
   /// - Explorer: ⭐⭐⭐⭐ (4 stars)
   /// - Marshal: ⭐⭐⭐⭐⭐ (5 stars)
   /// - Board Member: 🎖️ (badge)
+  /// ⚡ Uses cache - ensure prewarmCache() was called
   String getLevelEmoji(int levelId) {
     final levelsWithSkills = _cachedLevels?.where((level) {
       return _cachedSkills?.any((skill) => skill.level.id == level.id) ?? false;
     }).toList() ?? [];
     
-    if (levelsWithSkills.isEmpty) return '⚪';
+    if (levelsWithSkills.isEmpty) {
+      print('⚠️ [getLevelEmoji] Cache empty! Level ID: $levelId');
+      return '⚪';
+    }
     
     // Find position of this level
     final index = levelsWithSkills.indexWhere((l) => l.id == levelId);
-    if (index == -1) return '⚪';
+    if (index == -1) {
+      print('⚠️ [getLevelEmoji] Level ID $levelId not found in levelsWithSkills');
+      return '⚪';
+    }
     
     // Get level name for special handling
     final level = levelsWithSkills[index];
     final cleanName = getCleanLevelName(level.name).toLowerCase();
     
+    // 🔍 DEBUG: Log what we're matching against
+    print('🔍 [getLevelEmoji] Level ID: $levelId, Raw: "${level.name}", Clean: "$cleanName", Index: $index');
+    print('   🔍 Testing "board": ${cleanName.contains('board')}');
+    print('   🔍 Testing "marshal": ${cleanName.contains('marshal')}');
+    print('   🔍 Testing "expert": ${cleanName.contains('expert')}');
+    print('   🔍 Testing "advanced": ${cleanName.contains('advanced')}');
+    print('   🔍 Testing "intermediate": ${cleanName.contains('intermediate')}');
+    print('   🔍 Testing "anit": ${cleanName.contains('anit')}');
+    print('   🔍 Testing "newbie": ${cleanName.contains('newbie')}');
+    
     // Special cases based on level name
+    // ⭐ U+2B50 (White Medium Star) - Using Text widget styling to ensure proper rendering
     if (cleanName.contains('board')) {
+      print('   ✅ Matched: Board Member → 🎖️');
       return '🎖️'; // Badge for Board Member
     } else if (cleanName.contains('marshal')) {
+      print('   ✅ Matched: Marshal → ⭐⭐⭐⭐⭐');
       return '⭐⭐⭐⭐⭐'; // 5 stars for Marshal
     } else if (cleanName.contains('expert') || cleanName.contains('explorer')) {
+      print('   ✅ Matched: Expert/Explorer → ⭐⭐⭐⭐');
       return '⭐⭐⭐⭐'; // 4 stars for Expert and Explorer
     } else if (cleanName.contains('advanced') || cleanName.contains('advance')) {
+      print('   ✅ Matched: Advanced → ⭐⭐⭐');
       return '⭐⭐⭐'; // 3 stars for Advanced
-    } else if (cleanName.contains('intermediate')) {
-      return '⭐⭐'; // 2 stars for Intermediate
+    } else if (cleanName.contains('intermediate') || cleanName.contains('anit')) {
+      print('   ✅ Matched: Intermediate/ANIT → ⭐⭐');
+      return '⭐⭐'; // 2 stars for Intermediate (ANIT = Advanced Newbie In Training?)
     } else if (cleanName.contains('newbie') || cleanName.contains('beginner')) {
+      print('   ✅ Matched: Newbie/Beginner → ⭐');
       return '⭐'; // 1 star for Newbie/Beginner
     }
     
     // Default: position-based stars (1-5)
+    final starCount = min(index + 1, 5);
+    print('   ⚠️ No match! Falling back to position-based: $starCount stars (index $index)');
+    print('   ⚠️ All levels with skills: ${levelsWithSkills.map((l) => "ID=${l.id} Name=${l.name}").join(", ")}');
+    return '⭐' * starCount;
+  }
+  
+  /// Get level emoji async (populates cache first)
+  /// 🔄 For use in async contexts only
+  Future<String> getLevelEmojiAsync(int levelId) async {
+    // Ensure caches are populated
+    final levelsWithSkills = await getLevelsWithSkills();
+    
+    if (levelsWithSkills.isEmpty) return '⚪';
+    
+    final index = levelsWithSkills.indexWhere((l) => l.id == levelId);
+    if (index == -1) return '⚪';
+    
+    final level = levelsWithSkills[index];
+    final cleanName = getCleanLevelName(level.name).toLowerCase();
+    
+    if (cleanName.contains('board')) return '🎖️';
+    else if (cleanName.contains('marshal')) return '⭐⭐⭐⭐⭐';
+    else if (cleanName.contains('expert') || cleanName.contains('explorer')) return '⭐⭐⭐⭐';
+    else if (cleanName.contains('advanced') || cleanName.contains('advance')) return '⭐⭐⭐';
+    else if (cleanName.contains('intermediate')) return '⭐⭐';
+    else if (cleanName.contains('newbie') || cleanName.contains('beginner')) return '⭐';
+    
     final starCount = min(index + 1, 5);
     return '⭐' * starCount;
   }

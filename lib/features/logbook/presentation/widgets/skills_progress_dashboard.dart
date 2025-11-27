@@ -77,11 +77,11 @@ class SkillsProgressDashboard extends ConsumerWidget {
         _buildLevelBreakdownGrid(context, ref, stats),
         const SizedBox(height: 16),
         
-        // Recent Activity
-        if (stats.recentEntries.isNotEmpty) ...[
-          _buildRecentActivitySection(context, stats),
-          const SizedBox(height: 16),
-        ],
+        // Recent Activity - Removed (already in Quick Actions)
+        // if (stats.recentEntries.isNotEmpty) ...[
+          // _buildRecentActivitySection(context, stats),
+          // const SizedBox(height: 16),
+        // ],
         
         // Milestones & Achievements
         _buildMilestonesSection(context, ref, stats),
@@ -93,9 +93,12 @@ class SkillsProgressDashboard extends ConsumerWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final percentage = stats.currentLevelProgressPercentage;
-    final levelConfig = ref.read(levelConfigurationProvider);
     
-    return Card(
+    // ✅ Use FutureProvider for emoji (needs cache)
+    final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
+    
+    return levelConfigAsync.when(
+      data: (levelConfig) => Card(
       elevation: 3,
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -175,7 +178,7 @@ class SkillsProgressDashboard extends ConsumerWidget {
                     context,
                     'Trips Attended',
                     '${stats.checkedInTrips}',
-                    '🚙',
+                    '🗓️',
                   ),
                 ),
               ],
@@ -189,19 +192,20 @@ class SkillsProgressDashboard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colors.secondaryContainer.withValues(alpha: 0.3),
+                  color: colors.surfaceContainerHigh,  // Better dark theme color
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: colors.secondary.withValues(alpha: 0.3)),
+                  border: Border.all(color: colors.outline.withValues(alpha: 0.3)),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.emoji_events, color: colors.secondary, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.lightbulb_outline, color: colors.primary, size: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Your ${stats.currentLevelName} level is club-verified. Start attending trips to build your digital logbook!',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.8),
+                          color: colors.onSurface.withValues(alpha: 0.85),
                         ),
                       ),
                     ),
@@ -212,7 +216,20 @@ class SkillsProgressDashboard extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ),
+    loading: () => Card(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    ),
+    error: (e, s) => Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text('Error loading level config'),
+      ),
+    ),
+  );
   }
 
   Widget _buildStatItem(BuildContext context, String label, String value, String emoji) {
@@ -287,124 +304,201 @@ class SkillsProgressDashboard extends ConsumerWidget {
             // Check if this is the current user level
             final isCurrentLevel = levelId == stats.currentLevelId;
             
-            return _buildLevelCard(context, ref, levelData, stats, isCurrentLevel: isCurrentLevel);
+            // Determine level position relative to current
+            final currentLevelIndex = levelIds.indexOf(stats.currentLevelId);
+            final isBeforeCurrent = currentLevelIndex != -1 && index < currentLevelIndex;
+            final isAfterCurrent = currentLevelIndex != -1 && index > currentLevelIndex;
+            
+            return _buildLevelCard(
+              context, 
+              ref, 
+              levelData, 
+              stats, 
+              isCurrentLevel: isCurrentLevel,
+              isBeforeCurrent: isBeforeCurrent,
+              isAfterCurrent: isAfterCurrent,
+            );
           },
         ),
       ],
     );
   }
 
-  Widget _buildLevelCard(BuildContext context, WidgetRef ref, LevelProgressData levelData, LogbookProgressStats stats, {bool isCurrentLevel = false}) {
+  Widget _buildLevelCard(
+    BuildContext context, 
+    WidgetRef ref, 
+    LevelProgressData levelData, 
+    LogbookProgressStats stats, 
+    {
+      bool isCurrentLevel = false,
+      bool isBeforeCurrent = false,
+      bool isAfterCurrent = false,
+    }
+  ) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final isCompleted = levelData.isCompleted;
-    final levelConfig = ref.read(levelConfigurationProvider);
     
-    // Get dynamic level configuration
-    final cleanName = levelConfig.getCleanLevelName(levelData.levelName);
-    final levelColor = levelConfig.getLevelColor(levelData.levelId);
-    final levelEmoji = levelConfig.getLevelEmoji(levelData.levelId);
-    final statusLabel = levelConfig.getLevelStatusLabel(levelData.levelId, stats.currentLevelId);
+    // ✅ Use FutureProvider to ensure cache is ready
+    final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
+    
+    return levelConfigAsync.when(
+      data: (levelConfig) {
+        // Get dynamic level configuration (cache is ready!)
+        final cleanName = levelConfig.getCleanLevelName(levelData.levelName);
+        final levelColor = levelConfig.getLevelColor(levelData.levelId);
+        final levelEmoji = levelConfig.getLevelEmoji(levelData.levelId);
+        final statusLabel = levelConfig.getLevelStatusLabel(levelData.levelId, stats.currentLevelId);
+        
+        return _buildLevelCardContent(
+          context,
+          theme,
+          colors,
+          levelData,
+          stats,
+          cleanName,
+          levelColor,
+          levelEmoji,
+          statusLabel,
+          isCurrentLevel: isCurrentLevel,
+          isBeforeCurrent: isBeforeCurrent,
+          isAfterCurrent: isAfterCurrent,
+          isCompleted: isCompleted,
+        );
+      },
+      loading: () => Card(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
+      error: (e, s) => Card(
+        child: Center(
+          child: Icon(Icons.error, color: colors.error),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLevelCardContent(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colors,
+    LevelProgressData levelData,
+    LogbookProgressStats stats,
+    String cleanName,
+    Color levelColor,
+    String levelEmoji,
+    String statusLabel,
+    {
+      required bool isCurrentLevel,
+      required bool isBeforeCurrent,
+      required bool isAfterCurrent,
+      required bool isCompleted,
+    }
+  ) {
     
     return Card(
-      elevation: isCurrentLevel ? 4 : (isCompleted ? 3 : 1),
+      elevation: isCurrentLevel ? 4 : (isBeforeCurrent ? 3 : 1),
       color: isCurrentLevel
-          ? colors.primary.withValues(alpha: 0.15)
-          : (isCompleted 
-              ? colors.primaryContainer 
+          ? colors.primaryContainer.withValues(alpha: 0.3)
+          : (isBeforeCurrent 
+              ? colors.primaryContainer.withValues(alpha: 0.5)
               : colors.surface),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: isCurrentLevel
-            ? BorderSide(color: colors.primary, width: 2)
+            ? BorderSide(color: levelColor, width: 2)
             : BorderSide.none,
       ),
       child: InkWell(
         onTap: () => context.push('/logbook/skills-matrix'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
             children: [
+              // Top: Stars only
+              Text(
+                levelEmoji,
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              // Middle: Skills count + Progress bar
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    levelEmoji,
-                    style: const TextStyle(fontSize: 24),
+                    '${levelData.verifiedSkills}/${levelData.totalSkills}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: colors.onSurface.withValues(alpha: 0.8),
+                    ),
                   ),
-                  if (isCurrentLevel)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: levelColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        'IN PROGRESS',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: colors.onPrimary,
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: isCompleted ? Colors.green.withValues(alpha: 0.15) : colors.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        statusLabel,
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: isCompleted ? Colors.green : colors.onSurface.withValues(alpha: 0.6),
+                  const SizedBox(width: 4),
+                  Text(
+                    'skills',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      color: colors.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: levelData.progressPercentage / 100,
+                        minHeight: 5,
+                        backgroundColor: colors.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isBeforeCurrent ? Colors.green : levelColor,
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    cleanName,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: isCurrentLevel || isCompleted 
-                          ? levelColor 
-                          : colors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${levelData.verifiedSkills}/${levelData.totalSkills} skills',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isCompleted 
-                          ? colors.onPrimaryContainer.withValues(alpha: 0.8)
-                          : colors.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: levelData.progressPercentage / 100,
-                      minHeight: 6,
-                      backgroundColor: isCompleted 
-                          ? colors.onPrimaryContainer.withValues(alpha: 0.2)
+              const SizedBox(height: 8),
+              // Bottom: Status badge on the left
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isCurrentLevel
+                      ? levelColor
+                      : isBeforeCurrent
+                          ? Colors.green.withValues(alpha: 0.2)
                           : colors.surfaceContainerHighest,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isCompleted ? Colors.green : levelColor,
-                      ),
-                    ),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isCurrentLevel
+                        ? levelColor
+                        : isBeforeCurrent
+                            ? Colors.green.withValues(alpha: 0.5)
+                            : colors.surfaceContainerHighest,
+                    width: 1.5,
                   ),
-                ],
+                ),
+                child: Text(
+                  isCurrentLevel 
+                      ? 'Current level' 
+                      : isBeforeCurrent 
+                          ? 'Completed level' 
+                          : 'next level',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: isCurrentLevel
+                        ? Colors.white
+                        : isBeforeCurrent
+                            ? Colors.green.shade800
+                            : colors.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
               ),
             ],
           ),
@@ -480,8 +574,8 @@ class SkillsProgressDashboard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (entry.trip != null)
-            Text('Trip: ${entry.trip.name}'),
-          Text('Signed by: ${entry.signedBy.fullName}'),
+            Text('Trip: ${entry.trip.title}'),
+          Text('Signed by: ${entry.signedBy.displayName}'),
           Text(dateStr, style: theme.textTheme.bodySmall),
         ],
       ),
@@ -495,10 +589,14 @@ class SkillsProgressDashboard extends ConsumerWidget {
   Widget _buildMilestonesSection(BuildContext context, WidgetRef ref, LogbookProgressStats stats) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final levelConfig = ref.read(levelConfigurationProvider);
     
-    return Card(
-      color: colors.secondaryContainer.withValues(alpha: 0.3),
+    // ✅ Use FutureProvider for emoji (needs cache)
+    final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
+    
+    return levelConfigAsync.when(
+      data: (levelConfig) => Card(
+      color: colors.surfaceContainerHigh,
+      elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -506,12 +604,13 @@ class SkillsProgressDashboard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.emoji_events, color: colors.secondary),
+                Icon(Icons.emoji_events, color: colors.primary, size: 24),
                 const SizedBox(width: 8),
                 Text(
                   'Milestones',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: colors.onSurface,
                   ),
                 ),
               ],
@@ -551,7 +650,7 @@ class SkillsProgressDashboard extends ConsumerWidget {
                 Expanded(
                   child: _buildMiniStat(
                     context,
-                    '🚙',
+                    '🗓️',
                     stats.checkedInTrips.toString(),
                     'Trips Attended',
                   ),
@@ -561,7 +660,20 @@ class SkillsProgressDashboard extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ),
+    loading: () => Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    ),
+    error: (e, s) => Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text('Error loading milestones'),
+      ),
+    ),
+  );
   }
 
   Widget _buildMilestoneBadge(BuildContext context, String emoji, String label) {

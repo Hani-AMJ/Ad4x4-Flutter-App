@@ -134,7 +134,7 @@ class _SkillsComparisonScreenState extends ConsumerState<SkillsComparisonScreen>
               ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
-                onPressed: () => context.go('/members'),
+                onPressed: () => context.push('/members'),
                 icon: const Icon(Icons.people),
                 label: const Text('Go to Members List'),
                 style: ElevatedButton.styleFrom(
@@ -407,49 +407,59 @@ class _SkillsComparisonScreenState extends ConsumerState<SkillsComparisonScreen>
       );
     }
 
-    // Group by level
-    final byLevel = <int, List<SkillComparisonItem>>{};
-    for (final item in items) {
-      final level = item.skill.level.numericLevel;
-      byLevel.putIfAbsent(level, () => []).add(item);
-    }
+    // ✅ Use async FutureProvider to ensure cache is ready
+    final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
+    
+    return levelConfigAsync.when(
+      data: (levelConfig) {
+        // Group by level
+        final byLevel = <int, List<SkillComparisonItem>>{};
+        for (final item in items) {
+          final level = item.skill.level.numericLevel;
+          byLevel.putIfAbsent(level, () => []).add(item);
+        }
 
-    final sortedLevels = byLevel.keys.toList()..sort();
+        final sortedLevels = byLevel.keys.toList()..sort();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Skills Breakdown (${items.length})',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...sortedLevels.map((level) {
-          final levelItems = byLevel[level]!;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildLevelHeader(level, levelItems.length, theme),
-                const SizedBox(height: 8),
-                ...levelItems.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _buildComparisonCard(item, theme, colors),
-                )),
-              ],
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Skills Breakdown (${items.length})',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          );
-        }),
-      ],
+            const SizedBox(height: 12),
+            ...sortedLevels.map((level) {
+              final levelItems = byLevel[level]!;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildLevelHeader(level, levelItems.length, theme, levelConfig),
+                    const SizedBox(height: 8),
+                    ...levelItems.map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _buildComparisonCard(item, theme, colors),
+                    )),
+                  ],
+                ),
+              );
+            }),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => Center(
+        child: Text('Error loading level config: $e'),
+      ),
     );
   }
 
-  Widget _buildLevelHeader(int level, int count, ThemeData theme) {
+  Widget _buildLevelHeader(int level, int count, ThemeData theme, levelConfig) {
     final levelName = _getLevelName(level);
-    final levelConfig = ref.read(levelConfigurationProvider);
     final emoji = levelConfig.getLevelEmoji(level);
     final color = levelConfig.getLevelColor(level);
 

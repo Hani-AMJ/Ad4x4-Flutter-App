@@ -1,10 +1,15 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import '../data/models/certificate_model.dart';
-import '../../../core/services/level_configuration_service.dart';
+
+// Conditional import for platform-specific PDF utilities
+import 'certificate_web_utils.dart'
+    if (dart.library.html) 'certificate_web_utils.dart'
+    if (dart.library.io) 'certificate_mobile_utils.dart';
 
 /// Certificate Service
 /// 
@@ -22,6 +27,16 @@ class CertificateService {
     final fontBold = await PdfGoogleFonts.robotoBold();
     final fontItalic = await PdfGoogleFonts.robotoItalic();
 
+    // Load club logo
+    pw.ImageProvider? logoImage;
+    try {
+      final logoData = await rootBundle.load('assets/images/logo_transparent.png');
+      logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+    } catch (e) {
+      // Logo loading failed - continue without logo
+      print('⚠️ Failed to load club logo: $e');
+    }
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -31,7 +46,7 @@ class CertificateService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               // Header with club branding
-              _buildHeader(certificate, fontBold, fontRegular),
+              _buildHeader(certificate, fontBold, fontRegular, logoImage),
               pw.SizedBox(height: 30),
 
               // Certificate title
@@ -69,6 +84,15 @@ class CertificateService {
     final fontBold = await PdfGoogleFonts.robotoBold();
     final fontItalic = await PdfGoogleFonts.robotoItalic();
 
+    // Load club logo
+    pw.ImageProvider? logoImage;
+    try {
+      final logoData = await rootBundle.load('assets/images/logo_transparent.png');
+      logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+    } catch (e) {
+      print('⚠️ Failed to load club logo: $e');
+    }
+
     // First page: Overview
     pdf.addPage(
       pw.Page(
@@ -77,7 +101,7 @@ class CertificateService {
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            _buildHeader(certificate, fontBold, fontRegular),
+            _buildHeader(certificate, fontBold, fontRegular, logoImage),
             pw.SizedBox(height: 30),
             _buildTitle(certificate, fontBold),
             pw.SizedBox(height: 20),
@@ -102,6 +126,7 @@ class CertificateService {
     SkillCertificate certificate,
     pw.Font fontBold,
     pw.Font fontRegular,
+    pw.ImageProvider? logoImage,
   ) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(16),
@@ -112,28 +137,40 @@ class CertificateService {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                _clubName,
-                style: pw.TextStyle(
-                  font: fontBold,
-                  fontSize: 20,
-                  color: PdfColors.blue900,
+          // Club logo (if available)
+          if (logoImage != null)
+            pw.Container(
+              width: 60,
+              height: 60,
+              margin: const pw.EdgeInsets.only(right: 16),
+              child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+            ),
+          // Club name and title
+          pw.Expanded(
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  _clubName,
+                  style: pw.TextStyle(
+                    font: fontBold,
+                    fontSize: 20,
+                    color: PdfColors.blue900,
+                  ),
                 ),
-              ),
-              pw.SizedBox(height: 4),
-              pw.Text(
-                'Skill Verification Certificate',
-                style: pw.TextStyle(
-                  font: fontRegular,
-                  fontSize: 12,
-                  color: PdfColors.blue700,
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  'Skill Verification Certificate',
+                  style: pw.TextStyle(
+                    font: fontRegular,
+                    fontSize: 12,
+                    color: PdfColors.blue700,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          // Certificate ID badge
           pw.Container(
             padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: pw.BoxDecoration(
@@ -207,7 +244,7 @@ class CertificateService {
           ),
           pw.SizedBox(height: 4),
           pw.Text(
-            'Member Level: ${certificate.member.level ?? "Member"}',
+            'Member Level: ${_getCleanLevelName(certificate.member.level?.name ?? "Member")}',
             style: pw.TextStyle(font: fontRegular, fontSize: 12, color: PdfColors.grey700),
           ),
           pw.SizedBox(height: 16),
@@ -255,7 +292,7 @@ class CertificateService {
           return pw.TableRow(
             children: [
               _buildTableCell(skill.skill.name, fontRegular),
-              _buildTableCell(skill.skill.level.name, fontRegular),
+              _buildTableCell(_getCleanLevelName(skill.skill.level.name), fontRegular),
               _buildTableCell(
                 DateFormat('MMM d, yyyy').format(skill.verifiedDate),
                 fontRegular,
@@ -456,7 +493,7 @@ class CertificateService {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Text(
-                '${entry.key} Skills',
+                '${_getCleanLevelName(entry.key)} Skills',
                 style: pw.TextStyle(font: fontBold, fontSize: 18, color: PdfColors.blue900),
               ),
               pw.SizedBox(height: 16),
@@ -542,29 +579,88 @@ class CertificateService {
     );
   }
 
-  /// Preview certificate PDF
+  /// Show preview with pre-generated PDF (fast - just display)
+  Future<void> showPreview(SkillCertificate certificate, Uint8List pdfData) async {
+    if (kIsWeb) {
+      // On web, open PDF in new tab instead of using print dialog
+      CertificateWebUtils.openPdfInNewTab(pdfData);
+    } else {
+      // On mobile/desktop, use printing package
+      await Printing.layoutPdf(
+        onLayout: (format) async => pdfData,
+        name: 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf',
+      );
+    }
+  }
+
+  /// Show share sheet with pre-generated PDF (fast - just display)
+  Future<void> showShare(SkillCertificate certificate, Uint8List pdfData) async {
+    if (kIsWeb) {
+      // On web, trigger download instead of share sheet
+      final filename = 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf';
+      CertificateWebUtils.downloadPdf(pdfData, filename);
+    } else {
+      // On mobile/desktop, use share sheet
+      await Printing.sharePdf(
+        bytes: pdfData,
+        filename: 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf',
+      );
+    }
+  }
+
+  /// Show print dialog with pre-generated PDF (fast - just display)
+  Future<void> showPrint(SkillCertificate certificate, Uint8List pdfData) async {
+    if (kIsWeb) {
+      // On web, download the PDF (print dialog doesn't work well on web)
+      final filename = 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf';
+      CertificateWebUtils.downloadPdf(pdfData, filename);
+    } else {
+      // On mobile/desktop, use printing package
+      await Printing.layoutPdf(
+        onLayout: (format) async => pdfData,
+        name: 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf',
+      );
+    }
+  }
+
+  /// Preview certificate PDF (legacy - combines generation + display)
   Future<void> previewCertificate(SkillCertificate certificate) async {
     final pdfData = await generateCertificatePDF(certificate);
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdfData,
-      name: 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf',
-    );
+    await showPreview(certificate, pdfData);
   }
 
-  /// Share certificate PDF
+  /// Share certificate PDF (legacy - combines generation + display)
   Future<void> shareCertificate(SkillCertificate certificate) async {
     final pdfData = await generateCertificatePDF(certificate);
-    await Printing.sharePdf(
-      bytes: pdfData,
-      filename: 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf',
-    );
+    await showShare(certificate, pdfData);
   }
 
-  /// Download/Print certificate
+  /// Download/Print certificate (legacy - combines generation + display)
   Future<void> printCertificate(SkillCertificate certificate) async {
-    await Printing.layoutPdf(
-      onLayout: (format) async => await generateCertificatePDF(certificate),
-      name: 'Certificate_${certificate.member.displayName}_${certificate.certificateId}.pdf',
-    );
+    final pdfData = await generateCertificatePDF(certificate);
+    await showPrint(certificate, pdfData);
+  }
+
+  /// Get clean level name (strip numeric suffix, proper case)
+  /// "Board member-800" → "Board Member"
+  /// "Intermediate-100" → "Intermediate"
+  /// "ANTI--10" → "Anti"
+  String _getCleanLevelName(String rawName) {
+    // Remove numeric suffix (e.g., "-800", "-100", "--10")
+    String cleaned = rawName.replaceAll(RegExp(r'-+\d+$'), '');
+    
+    // Proper case: capitalize first letter of each word
+    final words = cleaned.split(' ');
+    final properCase = words.map((word) {
+      if (word.isEmpty) return word;
+      if (word.toUpperCase() == word && word.length <= 4) {
+        // Keep all-caps acronyms (e.g., "ANTI" → "ANTI")
+        return word;
+      }
+      // Capitalize first letter, lowercase rest
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+    
+    return properCase.trim();
   }
 }

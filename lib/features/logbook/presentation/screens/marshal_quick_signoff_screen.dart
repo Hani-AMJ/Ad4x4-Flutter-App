@@ -714,65 +714,84 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
       return const Text('No skills available');
     }
 
-    // Group skills by level
-    final skillsByLevel = <int, List<LogbookSkill>>{};
-    for (final skill in _allSkills) {
-      final levelId = skill.level.id;
-      skillsByLevel.putIfAbsent(levelId, () => []).add(skill);
-    }
+    // ✅ Use async FutureProvider to ensure cache is ready
+    final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
+    
+    return levelConfigAsync.when(
+      data: (levelConfig) {
+        // Group skills by level
+        final skillsByLevel = <int, List<LogbookSkill>>{};
+        for (final skill in _allSkills) {
+          final levelId = skill.level.id;
+          skillsByLevel.putIfAbsent(levelId, () => []).add(skill);
+        }
 
-    // Filter if level filter is active
-    final levelsToShow = _selectedLevelFilter != null
-        ? [_selectedLevelFilter!]
-        : skillsByLevel.keys.toList()..sort();
+        // Filter if level filter is active
+        final levelsToShow = _selectedLevelFilter != null
+            ? [_selectedLevelFilter!]
+            : skillsByLevel.keys.toList()..sort();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Level Filter
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              FilterChip(
-                label: const Text('All Levels'),
-                selected: _selectedLevelFilter == null,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedLevelFilter = null;
-                  });
-                },
-              ),
-              const SizedBox(width: 8),
-              ...([1, 2, 3, 4, 5].map((level) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(_getLevelName(level)),
-                    selected: _selectedLevelFilter == level,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Level Filter
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  FilterChip(
+                    label: const Text('All Levels'),
+                    selected: _selectedLevelFilter == null,
                     onSelected: (selected) {
                       setState(() {
-                        _selectedLevelFilter = selected ? level : null;
+                        _selectedLevelFilter = null;
                       });
                     },
                   ),
-                );
-              })),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
+                  const SizedBox(width: 8),
+                  ...([1, 2, 3, 4, 5].map((level) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(_getLevelName(level)),
+                        selected: _selectedLevelFilter == level,
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedLevelFilter = selected ? level : null;
+                          });
+                        },
+                      ),
+                    );
+                  })),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
 
-        // Skills by Level
-        ...levelsToShow.map((levelId) {
-          final skills = skillsByLevel[levelId] ?? [];
-          return _buildLevelSkillSection(levelId, skills);
-        }),
-      ],
+            // Skills by Level
+            ...levelsToShow.map((levelId) {
+              final skills = skillsByLevel[levelId] ?? [];
+              return _buildLevelSkillSection(levelId, skills, levelConfig);
+            }),
+          ],
+        );
+      },
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (e, s) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text('Error loading level config: $e'),
+        ),
+      ),
     );
   }
 
-  Widget _buildLevelSkillSection(int levelId, List<LogbookSkill> skills) {
+  Widget _buildLevelSkillSection(int levelId, List<LogbookSkill> skills, levelConfig) {
     final theme = Theme.of(context);
 
     return Column(
@@ -783,12 +802,12 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
           child: Row(
             children: [
               Text(
-                ref.read(levelConfigurationProvider).getLevelEmoji(levelId),
+                levelConfig.getLevelEmoji(levelId),
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(width: 8),
               Text(
-                ref.read(levelConfigurationProvider).getCleanLevelName(_getLevelName(levelId)),
+                levelConfig.getCleanLevelName(_getLevelName(levelId)),
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),

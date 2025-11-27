@@ -349,12 +349,7 @@ class TripDetailsScreen extends ConsumerWidget {
                         ),
                       ),
                       
-                      // Status Badge (bottom-right overlay) - for admins only
-                      if (_canAdminTrip(ref, trip))
-                        TripStatusBadge(
-                          approvalStatus: trip.approvalStatus,
-                          position: BadgePosition.bottomRight,
-                        ),
+                      // Status Badge removed from image overlay - moved to badges row below
                     ],
                   ),
                 ),
@@ -365,15 +360,30 @@ class TripDetailsScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Level Badge
+                    // Level Badge + Status Badges Row
                     Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                      child: Row(
                         children: [
-                          LevelDisplayHelper.buildCompactBadge(trip.level),
-                          _buildStatusBadge(_getStatusText(trip), colors),
+                          // Left side: Level and Status badges
+                          Expanded(
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                LevelDisplayHelper.buildCompactBadge(trip.level),
+                                _buildStatusBadge(_getStatusText(trip), colors),
+                              ],
+                            ),
+                          ),
+                          // Right side: Approval Status Badge (for admins only)
+                          if (_canAdminTrip(ref, trip)) ...[
+                            const SizedBox(width: 8),
+                            TripStatusBadge(
+                              approvalStatus: trip.approvalStatus,
+                              position: BadgePosition.inline,
+                            ),
+                          ],
                         ],
                       ),
                     ),

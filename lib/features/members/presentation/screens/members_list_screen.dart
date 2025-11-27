@@ -513,13 +513,14 @@ class _MemberCard extends StatelessWidget {
                     Row(
                       children: [
                         // Level Badge - using centralized helper for UserLevel
-                        if (member.level != null)
+                        if (member.level != null && member.level!.name.isNotEmpty)
                           LevelDisplayHelper.buildCompactBadgeFromString(
                             levelName: member.level!.displayName ?? member.level!.name,
                             numericLevel: member.level!.numericLevel,
                           ),
                         
-                        const SizedBox(width: 8),
+                        if (member.level != null && member.level!.name.isNotEmpty)
+                          const SizedBox(width: 8),
 
                         // Trip Count
                         Icon(
@@ -692,7 +693,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: colors.surface,
+            color: theme.scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
