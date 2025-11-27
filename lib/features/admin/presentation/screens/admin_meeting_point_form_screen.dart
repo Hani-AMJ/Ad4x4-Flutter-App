@@ -294,20 +294,14 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
 
       if (widget.isEditing) {
         // Update existing meeting point using PUT endpoint
-        // Convert empty strings to null for optional fields
-        final name = (data['name'] as String).trim();
-        final area = (data['area'] as String?)?.trim();
-        final lat = (data['lat'] as String?)?.trim();
-        final lon = (data['lon'] as String?)?.trim();
-        final link = (data['link'] as String?)?.trim();
-        
+        // For edit mode, only send non-empty values (backend uses partial update logic)
         await repository.updateMeetingPoint(
           id: widget.meetingPointId!,
-          name: name.isNotEmpty ? name : null,
-          area: (area != null && area.isNotEmpty) ? area : null,
-          lat: (lat != null && lat.isNotEmpty) ? lat : null,
-          lon: (lon != null && lon.isNotEmpty) ? lon : null,
-          link: (link != null && link.isNotEmpty) ? link : null,
+          name: _nameController.text.trim(),
+          area: _areaController.text.trim().isNotEmpty ? _areaController.text.trim() : null,
+          lat: _latController.text.trim().isNotEmpty ? _latController.text.trim() : null,
+          lon: _lonController.text.trim().isNotEmpty ? _lonController.text.trim() : null,
+          link: _linkController.text.trim().isNotEmpty ? _linkController.text.trim() : null,
         );
         
         if (mounted) {
