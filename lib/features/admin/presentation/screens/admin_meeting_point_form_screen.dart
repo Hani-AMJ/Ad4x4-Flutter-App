@@ -294,14 +294,14 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
 
       if (widget.isEditing) {
         // Update existing meeting point using PUT endpoint
-        // For edit mode, only send non-empty values (backend uses partial update logic)
+        // Use the fetched areaValue (from HERE Maps) instead of controller text
         await repository.updateMeetingPoint(
           id: widget.meetingPointId!,
-          name: _nameController.text.trim(),
-          area: _areaController.text.trim().isNotEmpty ? _areaController.text.trim() : null,
-          lat: _latController.text.trim().isNotEmpty ? _latController.text.trim() : null,
-          lon: _lonController.text.trim().isNotEmpty ? _lonController.text.trim() : null,
-          link: _linkController.text.trim().isNotEmpty ? _linkController.text.trim() : null,
+          name: data['name'] as String,
+          area: data['area'] as String?,  // This is the fetched area from HERE Maps
+          lat: data['lat'] as String?,
+          lon: data['lon'] as String?,
+          link: data['link'] as String?,
         );
         
         if (mounted) {
