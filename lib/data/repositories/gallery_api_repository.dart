@@ -214,7 +214,7 @@ class GalleryApiRepository {
     
     final formData = FormData.fromMap({
       'session_id': sessionId,
-      'file': multipartFile,
+      'photos': multipartFile,  // API expects 'photos' not 'file'
       if (caption != null) 'caption': caption,
     });
 
