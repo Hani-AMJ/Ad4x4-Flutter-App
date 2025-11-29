@@ -1,0 +1,1721 @@
+{
+  "/api/auth/profile/": {
+    "status": 200,
+    "data": {
+      "id": 10613,
+      "username": "Hani AMJ",
+      "email": "hani_janem@hotmail.com",
+      "firstName": "Hani",
+      "lastName": "AMJ",
+      "phone": "+971501166676",
+      "carBrand": "Jeep",
+      "carModel": "Gladiator",
+      "carYear": 2020,
+      "carColor": "Orange",
+      "carImage": null,
+      "dob": "1981-03-02",
+      "iceName": "Elle",
+      "icePhone": "+971506910354",
+      "level": {
+        "id": 9,
+        "name": "Board member",
+        "numericLevel": 800
+      },
+      "tripCount": 41,
+      "avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+      "permissions": [
+        {
+          "id": 1,
+          "levels": [
+            {
+              "id": 3,
+              "name": "Newbie",
+              "numericLevel": 10
+            }
+          ],
+          "action": "create_trip_with_approval"
+        },
+        {
+          "id": 3,
+          "levels": [],
+          "action": "create_meeting_points"
+        },
+        {
+          "id": 4,
+          "levels": [],
+          "action": "create_trip"
+        },
+        {
+          "id": 5,
+          "levels": [],
+          "action": "view_upgrade_req"
+        },
+        {
+          "id": 6,
+          "levels": [],
+          "action": "vote_upgrade_req"
+        },
+        {
+          "id": 7,
+          "levels": [],
+          "action": "create_comment_upgrade_req"
+        },
+        {
+          "id": 8,
+          "levels": [],
+          "action": "view_upgrade_req"
+        },
+        {
+          "id": 9,
+          "levels": [],
+          "action": "vote_upgrade_req"
+        },
+        {
+          "id": 10,
+          "levels": [],
+          "action": "create_comment_upgrade_req"
+        },
+        {
+          "id": 11,
+          "levels": [],
+          "action": "approve_upgrade_req"
+        },
+        {
+          "id": 12,
+          "levels": [],
+          "action": "override_waitlist"
+        },
+        {
+          "id": 13,
+          "levels": [],
+          "action": "view_upgrade_req"
+        },
+        {
+          "id": 14,
+          "levels": [],
+          "action": "vote_upgrade_req"
+        },
+        {
+          "id": 15,
+          "levels": [],
+          "action": "create_comment_upgrade_req"
+        },
+        {
+          "id": 16,
+          "levels": [],
+          "action": "edit_upgrade_req"
+        },
+        {
+          "id": 17,
+          "levels": [],
+          "action": "delete_upgrade_req"
+        },
+        {
+          "id": 18,
+          "levels": [],
+          "action": "delete_comment_upgrade_req"
+        },
+        {
+          "id": 19,
+          "levels": [],
+          "action": "edit_trips"
+        },
+        {
+          "id": 20,
+          "levels": [],
+          "action": "approve_trip"
+        },
+        {
+          "id": 21,
+          "levels": [],
+          "action": "delete_trips"
+        },
+        {
+          "id": 22,
+          "levels": [],
+          "action": "delete_trip_comments"
+        },
+        {
+          "id": 23,
+          "levels": [],
+          "action": "edit_trip_registrations"
+        },
+        {
+          "id": 24,
+          "levels": [],
+          "action": "create_trip"
+        },
+        {
+          "id": 25,
+          "levels": [],
+          "action": "override_waitlist"
+        },
+        {
+          "id": 26,
+          "levels": [],
+          "action": "edit_trip_media"
+        },
+        {
+          "id": 27,
+          "levels": [],
+          "action": "create_meeting_points"
+        },
+        {
+          "id": 28,
+          "levels": [],
+          "action": "edit_meeting_points"
+        },
+        {
+          "id": 29,
+          "levels": [],
+          "action": "delete_meeting_points"
+        },
+        {
+          "id": 30,
+          "levels": [],
+          "action": "create_trip"
+        },
+        {
+          "id": 31,
+          "levels": [],
+          "action": "create_trip_with_approval"
+        },
+        {
+          "id": 32,
+          "levels": [],
+          "action": "approve_trip"
+        },
+        {
+          "id": 33,
+          "levels": [],
+          "action": "override_waitlist"
+        },
+        {
+          "id": 34,
+          "levels": [],
+          "action": "edit_trips"
+        },
+        {
+          "id": 35,
+          "levels": [],
+          "action": "edit_trip_media"
+        },
+        {
+          "id": 36,
+          "levels": [],
+          "action": "edit_trip_registrations"
+        },
+        {
+          "id": 37,
+          "levels": [],
+          "action": "delete_trips"
+        },
+        {
+          "id": 38,
+          "levels": [],
+          "action": "delete_trip_comments"
+        },
+        {
+          "id": 39,
+          "levels": [],
+          "action": "create_meeting_points"
+        },
+        {
+          "id": 41,
+          "levels": [],
+          "action": "delete_meeting_points"
+        },
+        {
+          "id": 43,
+          "levels": [],
+          "action": "create_upgrade_req_for_other"
+        },
+        {
+          "id": 44,
+          "levels": [],
+          "action": "edit_upgrade_req"
+        },
+        {
+          "id": 45,
+          "levels": [],
+          "action": "approve_upgrade_req"
+        },
+        {
+          "id": 46,
+          "levels": [],
+          "action": "delete_upgrade_req"
+        },
+        {
+          "id": 47,
+          "levels": [],
+          "action": "view_upgrade_req"
+        },
+        {
+          "id": 48,
+          "levels": [],
+          "action": "vote_upgrade_req"
+        },
+        {
+          "id": 49,
+          "levels": [],
+          "action": "create_comment_upgrade_req"
+        },
+        {
+          "id": 50,
+          "levels": [],
+          "action": "delete_comment_upgrade_req"
+        },
+        {
+          "id": 51,
+          "levels": [],
+          "action": "edit_membership_payments"
+        },
+        {
+          "id": 52,
+          "levels": [],
+          "action": "approve_trip"
+        },
+        {
+          "id": 53,
+          "levels": [],
+          "action": "edit_trips"
+        },
+        {
+          "id": 54,
+          "levels": [],
+          "action": "edit_trips"
+        },
+        {
+          "id": 55,
+          "levels": [],
+          "action": "delete_trips"
+        },
+        {
+          "id": 56,
+          "levels": [],
+          "action": "delete_trips"
+        },
+        {
+          "id": 57,
+          "levels": [],
+          "action": "create_meeting_points"
+        },
+        {
+          "id": 40,
+          "levels": [],
+          "action": "edit_meeting_points"
+        },
+        {
+          "id": 42,
+          "levels": [],
+          "action": "create_upgrade_req_for_self"
+        },
+        {
+          "id": 61,
+          "levels": [],
+          "action": "bypass_level_req"
+        },
+        {
+          "id": 62,
+          "levels": [],
+          "action": "access_marshal_panel"
+        },
+        {
+          "id": 63,
+          "levels": [],
+          "action": "create_trip_report"
+        },
+        {
+          "id": 66,
+          "levels": [],
+          "action": "create_logbook_entries_superuser"
+        },
+        {
+          "id": 67,
+          "levels": [],
+          "action": "view_contact_info"
+        },
+        {
+          "id": 68,
+          "levels": [],
+          "action": "create_trip_report"
+        },
+        {
+          "id": 69,
+          "levels": [],
+          "action": "bypass_level_req"
+        },
+        {
+          "id": 70,
+          "levels": [],
+          "action": "create_upgrade_req_for_self"
+        },
+        {
+          "id": 71,
+          "levels": [],
+          "action": "create_logbook_entries"
+        },
+        {
+          "id": 72,
+          "levels": [],
+          "action": "sign_logbook_skills"
+        },
+        {
+          "id": 73,
+          "levels": [],
+          "action": "create_logbook_entries_superuser"
+        },
+        {
+          "id": 74,
+          "levels": [],
+          "action": "access_marshal_panel"
+        },
+        {
+          "id": 75,
+          "levels": [],
+          "action": "view_contact_info"
+        },
+        {
+          "id": 76,
+          "levels": [],
+          "action": "edit_ui_strings"
+        },
+        {
+          "id": 65,
+          "levels": [
+            {
+              "id": 4,
+              "name": "Intermediate",
+              "numericLevel": 100
+            },
+            {
+              "id": 5,
+              "name": "Advanced",
+              "numericLevel": 200
+            },
+            {
+              "id": 7,
+              "name": "Explorer",
+              "numericLevel": 400
+            },
+            {
+              "id": 6,
+              "name": "Expert",
+              "numericLevel": 300
+            }
+          ],
+          "action": "sign_logbook_skills"
+        },
+        {
+          "id": 64,
+          "levels": [
+            {
+              "id": 4,
+              "name": "Intermediate",
+              "numericLevel": 100
+            },
+            {
+              "id": 5,
+              "name": "Advanced",
+              "numericLevel": 200
+            },
+            {
+              "id": 7,
+              "name": "Explorer",
+              "numericLevel": 400
+            },
+            {
+              "id": 6,
+              "name": "Expert",
+              "numericLevel": 300
+            }
+          ],
+          "action": "create_logbook_entries"
+        },
+        {
+          "id": 2,
+          "levels": [
+            {
+              "id": 4,
+              "name": "Intermediate",
+              "numericLevel": 100
+            },
+            {
+              "id": 5,
+              "name": "Advanced",
+              "numericLevel": 200
+            },
+            {
+              "id": 7,
+              "name": "Explorer",
+              "numericLevel": 400
+            },
+            {
+              "id": 6,
+              "name": "Expert",
+              "numericLevel": 300
+            }
+          ],
+          "action": "create_trip"
+        }
+      ],
+      "paidMember": false,
+      "dateJoined": "2006-10-18T11:00:00",
+      "city": "Al Ain",
+      "gender": "M",
+      "nationality": "JO",
+      "title": "Founder & Webmaster"
+    },
+    "description": "User Profile"
+  },
+  "/api/auth/profile/notificationsettings": {
+    "status": 200,
+    "data": {
+      "clubNewsEnabledEmail": true,
+      "clubNewsEnabledAppPush": true,
+      "newTripAlertsEnabledEmail": true,
+      "newTripAlertsEnabledAppPush": true,
+      "upgradeRequestReminderEmail": true,
+      "lastUserActivity": "2025-11-29",
+      "member": 10613,
+      "newTripAlertsLevelFilter": []
+    },
+    "description": "Notification Settings"
+  },
+  "/api/members/?page=1&pageSize=5": {
+    "status": 200,
+    "data": {
+      "count": 10587,
+      "next": "https://ap.ad4x4.com/api/members/?page=2&pageSize=5",
+      "previous": null,
+      "results": [
+        {
+          "id": 10554,
+          "username": "Admin",
+          "firstName": "Admin",
+          "lastName": "AD4x4",
+          "phone": "+971502218532",
+          "level": "ANIT",
+          "tripCount": 0,
+          "carBrand": "Other",
+          "carModel": "Cherokee",
+          "carColor": null,
+          "carImage": null,
+          "email": "admin@ad4x4.com",
+          "paidMember": false
+        },
+        {
+          "id": 10555,
+          "username": "MegaMoe",
+          "firstName": "Mohammed",
+          "lastName": "Hunaidi",
+          "phone": "+971506213955",
+          "level": "Board member",
+          "tripCount": 3,
+          "carBrand": "Other",
+          "carModel": "Porsche Cayenne Turbo S",
+          "carColor": null,
+          "carImage": null,
+          "email": "mohammedhunaidi@hotmail.com",
+          "paidMember": false
+        },
+        {
+          "id": 10556,
+          "username": "khaiwi",
+          "firstName": "Abdulrahman",
+          "lastName": "Khaiwi",
+          "phone": "+971506229266",
+          "level": "Board member",
+          "tripCount": 154,
+          "carBrand": "Jeep",
+          "carModel": "JLUR",
+          "carColor": null,
+          "carImage": null,
+          "email": "akhaiwi@eim.ae",
+          "paidMember": false
+        },
+        {
+          "id": 10557,
+          "username": "iguana",
+          "firstName": "Islam",
+          "lastName": "El mantawi",
+          "phone": "+971506224377",
+          "level": "Board member",
+          "tripCount": 0,
+          "carBrand": "Mitsubishi",
+          "carModel": "Pajero",
+          "carColor": null,
+          "carImage": null,
+          "email": "islam.mantawi@hotmail.com",
+          "paidMember": false
+        },
+        {
+          "id": 10558,
+          "username": "Neo",
+          "firstName": "",
+          "lastName": "",
+          "phone": null,
+          "level": "ANIT",
+          "tripCount": 0,
+          "carBrand": "Other",
+          "carModel": null,
+          "carColor": null,
+          "carImage": null,
+          "email": "ermanderici@me.com",
+          "paidMember": false
+        }
+      ]
+    },
+    "description": "Members List (paginated)"
+  },
+  "/api/members/leadsearch?search=Hani": {
+    "status": 500,
+    "error": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+    "description": "Lead Search"
+  },
+  "/api/trips/?page=1&pageSize=3": {
+    "status": 200,
+    "data": {
+      "count": 3160,
+      "next": "https://ap.ad4x4.com/api/trips/?page=2&pageSize=3",
+      "previous": null,
+      "results": [
+        {
+          "id": 3151,
+          "lead": {
+            "id": 14777,
+            "username": "Carlo"
+          },
+          "deputyLeads": [],
+          "meetingPoint": {
+            "id": 117,
+            "name": "Badayer shops",
+            "lat": "24.954864",
+            "lon": "55.714139",
+            "link": "https://maps.google.com/?q=24.954864,55.714139",
+            "area": ""
+          },
+          "level": {
+            "id": 3,
+            "name": "Newbie",
+            "numericLevel": 10,
+            "displayName": "Newbie",
+            "active": true
+          },
+          "waitlistCount": 0,
+          "registeredCount": 8,
+          "image": "https://ap.ad4x4.com/uploads/trips_images/Carlo/img-20181010-wa0043.jpg",
+          "approvedBy": null,
+          "galleryId": null,
+          "isRegistered": true,
+          "isWaitlisted": false,
+          "created": "2018-10-10T19:33:35",
+          "title": "The beauty of Badayer",
+          "description": "",
+          "startTime": "2018-10-12T09:00:00",
+          "endTime": "2018-10-12T13:30:00",
+          "cutOff": "2018-10-12T00:00:00",
+          "capacity": 10,
+          "approvalStatus": "A",
+          "allowWaitlist": true
+        },
+        {
+          "id": 3143,
+          "lead": {
+            "id": 15515,
+            "username": "EmDoc"
+          },
+          "deputyLeads": [],
+          "meetingPoint": {
+            "id": 111,
+            "name": "Razeen Street ",
+            "lat": "23.756237",
+            "lon": "54.782426",
+            "link": "https://maps.google.com/?q=23.756237,54.782426",
+            "area": ""
+          },
+          "level": {
+            "id": 5,
+            "name": "Advanced",
+            "numericLevel": 200,
+            "displayName": "Advance",
+            "active": true
+          },
+          "waitlistCount": 0,
+          "registeredCount": 5,
+          "image": "https://ap.ad4x4.com/uploads/trips_images/FidoDido/UMOSHH.jpg",
+          "approvedBy": null,
+          "galleryId": null,
+          "isRegistered": false,
+          "isWaitlisted": false,
+          "created": "2018-10-09T08:14:16",
+          "title": "Sand Surfing in Um Al Oush: 12/10/2018am",
+          "description": "<p>A Friday morning cruise around the spectacular sands of Umm al Oush to practice and develop Advance level skills.</p>\r\n<p>Dear Members, Please be reminded that as an Advance drive this is trip is NOT open to any driver below the advance level.</p>\r\n<p>Trip limited to a maximum of 5 Advance drivers.</p>",
+          "startTime": "2018-10-12T09:30:00",
+          "endTime": "2018-10-12T13:30:00",
+          "cutOff": "2018-10-12T09:30:00",
+          "capacity": 0,
+          "approvalStatus": "A",
+          "allowWaitlist": true
+        },
+        {
+          "id": 3146,
+          "lead": {
+            "id": 10556,
+            "username": "khaiwi"
+          },
+          "deputyLeads": [],
+          "meetingPoint": {
+            "id": 112,
+            "name": "wadi Shawka",
+            "lat": "25.080557",
+            "lon": "56.027811",
+            "link": "https://maps.google.com/?q=25.080557,56.027811",
+            "area": ""
+          },
+          "level": {
+            "id": 3,
+            "name": "Newbie",
+            "numericLevel": 10,
+            "displayName": "Newbie",
+            "active": true
+          },
+          "waitlistCount": 0,
+          "registeredCount": 6,
+          "image": "https://ap.ad4x4.com/uploads/trips_images/khaiwi/dsc_0356.jpg",
+          "approvedBy": null,
+          "galleryId": null,
+          "isRegistered": false,
+          "isWaitlisted": false,
+          "created": "2018-10-08T21:55:13",
+          "title": "Wadi Shwaka Revisited",
+          "description": "<p>Relaxing and relatively moderate to easy rock crawling trip in Wadi Shawka area for those who like such type of terrain.</p>\r\n<p>Be ready for a full day of a different type of fun.</p>\r\n<p>Please bring enough food and drinks for you and your passengers, your camera and garbage bags so we do not throw our garbage on the trail.\u00a0</p>\r\n<p>\u00a0</p>\r\n<p>Meeting will be ADNOC Sharjah Kalba Road\u00a0 found on the following link</p>\r\n<p><a href=\"https://goo.gl/maps/UqctvfKtRBn\">https://goo.gl/maps/UqctvfKtRBn</a></p>\r\n<p>\u00a0</p>",
+          "startTime": "2018-10-12T12:00:00",
+          "endTime": "2018-10-12T20:00:00",
+          "cutOff": "2018-10-12T15:00:00",
+          "capacity": 0,
+          "approvalStatus": "A",
+          "allowWaitlist": true
+        }
+      ]
+    },
+    "description": "Trips List"
+  },
+  "/api/levels/": {
+    "status": 200,
+    "data": {
+      "count": 9,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": 1,
+          "name": "Club Event",
+          "numericLevel": 5,
+          "displayName": "Club Event",
+          "active": true
+        },
+        {
+          "id": 3,
+          "name": "Newbie",
+          "numericLevel": 10,
+          "displayName": "Newbie",
+          "active": true
+        },
+        {
+          "id": 2,
+          "name": "ANIT",
+          "numericLevel": 10,
+          "displayName": "ANIT",
+          "active": true
+        },
+        {
+          "id": 4,
+          "name": "Intermediate",
+          "numericLevel": 100,
+          "displayName": "Intermediate",
+          "active": true
+        },
+        {
+          "id": 5,
+          "name": "Advanced",
+          "numericLevel": 200,
+          "displayName": "Advance",
+          "active": true
+        },
+        {
+          "id": 6,
+          "name": "Expert",
+          "numericLevel": 300,
+          "displayName": "Expert",
+          "active": false
+        },
+        {
+          "id": 7,
+          "name": "Explorer",
+          "numericLevel": 400,
+          "displayName": "Explorer",
+          "active": true
+        },
+        {
+          "id": 8,
+          "name": "Marshal",
+          "numericLevel": 600,
+          "displayName": "Marshal",
+          "active": true
+        },
+        {
+          "id": 9,
+          "name": "Board member",
+          "numericLevel": 800,
+          "displayName": "Board member",
+          "active": true
+        }
+      ]
+    },
+    "description": "Difficulty Levels"
+  },
+  "/api/groups/": {
+    "status": 200,
+    "data": {
+      "count": 13,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": 14,
+          "name": "ANIT",
+          "permissions": []
+        },
+        {
+          "id": 4,
+          "name": "Advanced",
+          "permissions": []
+        },
+        {
+          "id": 8,
+          "name": "Board members",
+          "permissions": []
+        },
+        {
+          "id": 5,
+          "name": "Experts",
+          "permissions": []
+        },
+        {
+          "id": 6,
+          "name": "Explorers",
+          "permissions": []
+        },
+        {
+          "id": 3,
+          "name": "Intermediates",
+          "permissions": []
+        },
+        {
+          "id": 7,
+          "name": "Marshals",
+          "permissions": []
+        },
+        {
+          "id": 11,
+          "name": "Media managers",
+          "permissions": []
+        },
+        {
+          "id": 10,
+          "name": "Meeting point managers",
+          "permissions": []
+        },
+        {
+          "id": 2,
+          "name": "Newbies",
+          "permissions": []
+        },
+        {
+          "id": 13,
+          "name": "Site admins",
+          "permissions": []
+        },
+        {
+          "id": 9,
+          "name": "Trip managers",
+          "permissions": []
+        },
+        {
+          "id": 12,
+          "name": "Upgrade request managers",
+          "permissions": []
+        }
+      ]
+    },
+    "description": "User Groups/Roles"
+  },
+  "/api/meetingpoints/?page=1&pageSize=3": {
+    "status": 200,
+    "data": {
+      "count": 108,
+      "next": "https://ap.ad4x4.com/api/meetingpoints/?page=2&pageSize=3",
+      "previous": null,
+      "results": [
+        {
+          "id": 142,
+          "name": "2nd December Cafeteria",
+          "lat": "25.041051",
+          "lon": "55.729863",
+          "link": "https://maps.google.com/?q=25.041051,55.729863",
+          "area": "DXB"
+        },
+        {
+          "id": 162,
+          "name": "ADNOC # 128 - Al Razeen",
+          "lat": "24.207018",
+          "lon": "54.833224",
+          "link": "https://maps.google.com/?q=24.207018,54.833224",
+          "area": "AUH"
+        },
+        {
+          "id": 131,
+          "name": "ADNOC AL FAYA",
+          "lat": "24.217905",
+          "lon": "54.852711",
+          "link": "https://maps.google.com/?q=24.217905,54.852711",
+          "area": "AUH"
+        }
+      ]
+    },
+    "description": "Meeting Points"
+  },
+  "/api/faqs/": {
+    "status": 200,
+    "data": [
+      {
+        "id": 1,
+        "question": "How do I reset my password?",
+        "answer": "Go to Menu > My Profile > Reset Password and follow the steps.",
+        "order": 1
+      },
+      {
+        "id": 2,
+        "question": "Can I change my username?",
+        "answer": "Usernames are permanent and cannot be changed once set.",
+        "order": 2
+      },
+      {
+        "id": 3,
+        "question": "How to contact support?",
+        "answer": "Use the 'Help & Support' section in the main menu to contact us.",
+        "order": 3
+      },
+      {
+        "id": 5,
+        "question": "More Q",
+        "answer": "Answer",
+        "order": 4
+      }
+    ],
+    "description": "Frequently Asked Questions"
+  },
+  "/api/sponsors/": {
+    "status": 200,
+    "data": [
+      {
+        "id": 2,
+        "title": "Qaruoty Car Service",
+        "description": "Qaruoty Car Service - Offroad Tuning",
+        "priority": 100,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Qaruoty_f623d96e.png"
+      },
+      {
+        "id": 3,
+        "title": "ARB Emirates",
+        "description": "ARB Emirates 4x4 Accessories",
+        "priority": 200,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/ARB_58008bcb.png"
+      },
+      {
+        "id": 4,
+        "title": "Car Care",
+        "description": "Car Care",
+        "priority": 300,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Car_care_848c8734.png"
+      },
+      {
+        "id": 5,
+        "title": "Central Motors & Equipment",
+        "description": "Central Motors & Equipment LLC (CM&E) is a Member of ALFAHIM Automotive, providing diversified range of products, services & solutions to cater the dynamic market needs of the UAE whether in retail or wholesales through its exclusive distribution rights of world renowned brands such as Bosch, Michelin, Osram, Knorr-Bremse, Valeo, Dremel, TIGAR and many more in the country with its purpose built and state of the art facilities.",
+        "priority": 400,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/CME_22af07df.png"
+      },
+      {
+        "id": 6,
+        "title": "Eastern Motors",
+        "description": "Alfahim introduced Eastern Motors to be the first ever automotive mall concept in the Emirate of Abu Dhabi. Located in the oasis city of Al Ain, and strategically located in Al Saniya District, Eastern Motors provides clients with an all-round automotive experience which includes Mercedes-Benz, Jeep, Fiat, Mopar, Michelin, Tyre Plus and Bosch.",
+        "priority": 500,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/E_M_LLC_d14963d6.png"
+      },
+      {
+        "id": 7,
+        "title": "Fury Automotive Dubai",
+        "description": "We provide auto detailing, maintenance, oil changes, and diagnostics to keep your vehicle in top shape.",
+        "priority": 600,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Fury_bcc76bc2.png"
+      },
+      {
+        "id": 8,
+        "title": "Qaruoty Car Service",
+        "description": "Qaruoty Car Service - Offroad Tuning",
+        "priority": 700,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Qaruoty_258aadee.png"
+      },
+      {
+        "id": 9,
+        "title": "Qwaider Al Nabulsi Restaurant & Sweets",
+        "description": "Qwaider Al Nabulsi Restaurant & Sweets",
+        "priority": 800,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Qwaider_b832ac16.png"
+      },
+      {
+        "id": 10,
+        "title": "Sama AlMoheet Seafood & Grill Restaurant",
+        "description": "Sama AlMoheet Seafood & Grill Restaurant",
+        "priority": 1000,
+        "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Sama_95480d0a.png"
+      }
+    ],
+    "description": "Sponsors List"
+  },
+  "/api/clubnews/?page=1&pageSize=3": {
+    "status": 200,
+    "data": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "id": 4,
+          "title": "AD4x4 2025/2026 Season Opening Main Event",
+          "content": "Event Highlights\r\nDesert Convoy Drive \u2014 all levels welcome\r\nDesert Camp Celebration \u2014 family-friendly and fun\r\nLive Shows: Belly Dance \u2022 Tanura \u2022 Sufi \u2022 Fire Dance\r\nCamel Rides \u2022 Henna Art \u2022 Sandboarding\r\nCommon Sheesha Area & Tea Lounge\r\nDinner Buffet under the Stars \u2022 Music, Games & Kids\u2019 Activities",
+          "submitDate": "2025-11-01T00:49:53.383555",
+          "status": "SENT",
+          "levels": [],
+          "image": "https://ap.ad4x4.com/uploads/club_news/2025/11/we_are_fun_7131353a.jpg"
+        },
+        {
+          "id": 3,
+          "title": "AD4x4 2025/2026 Season Opening Main Event",
+          "content": "Event Highlights\r\nDesert Convoy Drive \u2014 all levels welcome\r\nDesert Camp Celebration \u2014 family-friendly and fun\r\nLive Shows: Belly Dance \u2022 Tanura \u2022 Sufi \u2022 Fire Dance\r\nCamel Rides \u2022 Henna Art \u2022 Sandboarding\r\nCommon Sheesha Area & Tea Lounge\r\nDinner Buffet under the Stars \u2022 Music, Games & Kids\u2019 Activities",
+          "submitDate": "2025-11-01T00:49:07.870293",
+          "status": "SENT",
+          "levels": [],
+          "image": "https://ap.ad4x4.com/uploads/club_news/2025/11/11314809_ec59e125.webp"
+        },
+        {
+          "id": 2,
+          "title": "AD4x4 2025/2026 Season Opening Main Event",
+          "content": "Event Highlights\r\nDesert Convoy Drive \u2014 all levels welcome\r\nDesert Camp Celebration \u2014 family-friendly and fun\r\nLive Shows: Belly Dance \u2022 Tanura \u2022 Sufi \u2022 Fire Dance\r\nCamel Rides \u2022 Henna Art \u2022 Sandboarding\r\nCommon Sheesha Area & Tea Lounge\r\nDinner Buffet under the Stars \u2022 Music, Games & Kids\u2019 Activities",
+          "submitDate": "2025-10-31T23:46:18.393874",
+          "status": "SENT",
+          "levels": [],
+          "image": "https://ap.ad4x4.com/uploads/club_news/2025/10/season_opening_2026_84aa12b6.png"
+        }
+      ]
+    },
+    "description": "Club News"
+  },
+  "/api/notifications/?page=1&pageSize=3": {
+    "status": 200,
+    "data": {
+      "count": 20,
+      "next": "https://ap.ad4x4.com/api/notifications/?page=2&pageSize=3",
+      "previous": null,
+      "results": [
+        {
+          "id": 648,
+          "title": "New Intermediate trip on Sat 06 Dec 18:09",
+          "body": "\"Swriahan Winter Surfing\" - by Abu Makram",
+          "timestamp": "2025-11-29T18:11:13.920427",
+          "type": "NEW_TRIP",
+          "relatedObjectId": 6307,
+          "relatedObjectType": "Trip"
+        },
+        {
+          "id": 623,
+          "title": "New Intermediate trip on Sat 06 Dec 15:00",
+          "body": "\"Winter Dunes Surfing\" - by Abu Makram",
+          "timestamp": "2025-11-29T17:12:16.356141",
+          "type": "NEW_TRIP",
+          "relatedObjectId": 6306,
+          "relatedObjectType": "Trip"
+        },
+        {
+          "id": 598,
+          "title": "New Intermediate trip on Sat 06 Dec 15:00",
+          "body": "\"Winter Dunes Surfing\" - by Abu Makram",
+          "timestamp": "2025-11-29T17:11:10.208081",
+          "type": "NEW_TRIP",
+          "relatedObjectId": 6305,
+          "relatedObjectType": "Trip"
+        }
+      ]
+    },
+    "description": "User Notifications"
+  },
+  "/api/logbookskills/": {
+    "status": 200,
+    "data": {
+      "count": 22,
+      "next": "https://ap.ad4x4.com/api/logbookskills/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": 1,
+          "name": "Clear Communication",
+          "description": "Member demonstrates clear and controlled \r\ncommunication skills including proper radio discipline.",
+          "order": 10,
+          "levelRequirement": 4
+        },
+        {
+          "id": 2,
+          "name": "Cresting Small Dunes",
+          "description": "Member can safely crest small dunes straight with \r\nproper amount of power and control (without jumping or launching)",
+          "order": 20,
+          "levelRequirement": 4
+        },
+        {
+          "id": 3,
+          "name": "Cresting Medium Dunes",
+          "description": "Member can safely crest medium dunes straight \r\non with proper amount of power and control (without jumping or launching)",
+          "order": 30,
+          "levelRequirement": 4
+        },
+        {
+          "id": 4,
+          "name": "Descend Small Slip-face",
+          "description": "Member can safely descend a small slip-face in \r\na controlled manner.",
+          "order": 40,
+          "levelRequirement": 4
+        },
+        {
+          "id": 5,
+          "name": "Descend Medium Slipface",
+          "description": "Member can safely descend a medium sized \r\nslipface in a controlled manner.",
+          "order": 50,
+          "levelRequirement": 4
+        },
+        {
+          "id": 6,
+          "name": "Basic Side Sloping",
+          "description": "Member can safely side slope small dunes in a \r\ncontrolled manner and know when to turn down - not fighting gravity.",
+          "order": 60,
+          "levelRequirement": 4
+        },
+        {
+          "id": 7,
+          "name": "Basic Recovery",
+          "description": "Perform basic snatch recovery under the supervision of a Marshal demonstrating proper position, clear communication, safe equipment uses and vehicle control.",
+          "order": 70,
+          "levelRequirement": 5
+        },
+        {
+          "id": 8,
+          "name": "Crest and Descend Large dunes",
+          "description": "Member can safely crest large dunes and descend large slipface with proper amount of power and control.",
+          "order": 80,
+          "levelRequirement": 5
+        },
+        {
+          "id": 9,
+          "name": "Side Cresting Small Dunes",
+          "description": "Member can safely crest a dune at an angle other than straight on in a variety of different scenarios in a safe and controlled manner appropriate for their vehicle.",
+          "order": 90,
+          "levelRequirement": 5
+        },
+        {
+          "id": 10,
+          "name": "Enter and Exit Bowls",
+          "description": "Member can safely enter and exit small and large bowls with proper amount of power and control.",
+          "order": 100,
+          "levelRequirement": 5
+        },
+        {
+          "id": 11,
+          "name": "Side Sloping",
+          "description": "Member can safely side slope in a controlled manner and know when to turn down - not fighting gravity.",
+          "order": 110,
+          "levelRequirement": 5
+        },
+        {
+          "id": 12,
+          "name": "GPS",
+          "description": "Member can record waypoints on their GPS.",
+          "order": 120,
+          "levelRequirement": 5
+        },
+        {
+          "id": 13,
+          "name": "Fix Pop out",
+          "description": "Member can safely manage the repair of a tire Pop out.",
+          "order": 130,
+          "levelRequirement": 5
+        },
+        {
+          "id": 14,
+          "name": "Introduction to Night Drive",
+          "description": "Member to be able to drive safely at night (after sunset)",
+          "order": 140,
+          "levelRequirement": 5
+        },
+        {
+          "id": 15,
+          "name": "Side Cresting Big Dunes",
+          "description": "Member can safely crest a dune at an angle other than straight on in a variety of different scenarios in a safe and controlled manner appropriate for their vehicle.",
+          "order": 150,
+          "levelRequirement": 7
+        },
+        {
+          "id": 16,
+          "name": "Advance Recovery",
+          "description": "Member can safely manage all aspects of an advance recovery under the supervision of a Marshal demonstrating proper safety assessment and position, clear communication, safe equipment uses and vehicle control. An Advance Recovery is a recovery that cannot be pulled straight on or is performed on a steep slope or angle.",
+          "order": 160,
+          "levelRequirement": 7
+        },
+        {
+          "id": 17,
+          "name": "Winch Recovery",
+          "description": "Member can safely manage all aspects of a winch recovery and/or support winch recovery under the supervision of a Marshal demonstrating proper safety assessment and position, clear communication and safe equipment use.",
+          "order": 170,
+          "levelRequirement": 7
+        },
+        {
+          "id": 18,
+          "name": "Navigation",
+          "description": "Member can confidently and safely navigate using (GAIA/Garmin or others) to define points and a safe exit point during day or night drives, program waypoints into their GPS (different format) and use the GPS to navigate to a waypoint (Pass \u201cGPS Trip\u201d).",
+          "order": 180,
+          "levelRequirement": 7
+        },
+        {
+          "id": 19,
+          "name": "Second Leading",
+          "description": "Member can safely perform the role of second lead in various levels, stopping the convoy if the leading Marshal discovers an unknown hazard, rerouting the convoy at the leading marshal\u2019s direction and assisting the leading Marshal with managing the convoy.",
+          "order": 190,
+          "levelRequirement": 7
+        },
+        {
+          "id": 20,
+          "name": "Sweeping",
+          "description": "Member can safely perform the role of sweeper in a trip, \r\nkeeping the leading Marshal aware of any problems or stuck in the convoy and \r\ncoordinating any recoveries with the leading Marshal.",
+          "order": 200,
+          "levelRequirement": 7
+        }
+      ]
+    },
+    "description": "Available Logbook Skills"
+  },
+  "/api/permissionmatrix/": {
+    "status": 200,
+    "data": {
+      "count": 73,
+      "next": "https://ap.ad4x4.com/api/permissionmatrix/?page=2",
+      "previous": null,
+      "results": [
+        {
+          "id": 1,
+          "action": "create_trip_with_approval",
+          "group": 6,
+          "levels": [
+            3
+          ]
+        },
+        {
+          "id": 2,
+          "action": "create_trip",
+          "group": 6,
+          "levels": [
+            4,
+            5,
+            7,
+            6
+          ]
+        },
+        {
+          "id": 3,
+          "action": "create_meeting_points",
+          "group": 6,
+          "levels": []
+        },
+        {
+          "id": 4,
+          "action": "create_trip",
+          "group": 7,
+          "levels": []
+        },
+        {
+          "id": 5,
+          "action": "view_upgrade_req",
+          "group": 7,
+          "levels": []
+        },
+        {
+          "id": 6,
+          "action": "vote_upgrade_req",
+          "group": 7,
+          "levels": []
+        },
+        {
+          "id": 7,
+          "action": "create_comment_upgrade_req",
+          "group": 7,
+          "levels": []
+        },
+        {
+          "id": 8,
+          "action": "view_upgrade_req",
+          "group": 8,
+          "levels": []
+        },
+        {
+          "id": 9,
+          "action": "vote_upgrade_req",
+          "group": 8,
+          "levels": []
+        },
+        {
+          "id": 10,
+          "action": "create_comment_upgrade_req",
+          "group": 8,
+          "levels": []
+        },
+        {
+          "id": 11,
+          "action": "approve_upgrade_req",
+          "group": 8,
+          "levels": []
+        },
+        {
+          "id": 12,
+          "action": "override_waitlist",
+          "group": 8,
+          "levels": []
+        },
+        {
+          "id": 13,
+          "action": "view_upgrade_req",
+          "group": 12,
+          "levels": []
+        },
+        {
+          "id": 14,
+          "action": "vote_upgrade_req",
+          "group": 12,
+          "levels": []
+        },
+        {
+          "id": 15,
+          "action": "create_comment_upgrade_req",
+          "group": 12,
+          "levels": []
+        },
+        {
+          "id": 16,
+          "action": "edit_upgrade_req",
+          "group": 12,
+          "levels": []
+        },
+        {
+          "id": 17,
+          "action": "delete_upgrade_req",
+          "group": 12,
+          "levels": []
+        },
+        {
+          "id": 18,
+          "action": "delete_comment_upgrade_req",
+          "group": 12,
+          "levels": []
+        },
+        {
+          "id": 19,
+          "action": "edit_trips",
+          "group": 9,
+          "levels": []
+        },
+        {
+          "id": 20,
+          "action": "approve_trip",
+          "group": 9,
+          "levels": []
+        }
+      ]
+    },
+    "description": "Permission Matrix"
+  },
+  "/api/choices/carbrand": {
+    "status": 200,
+    "data": {
+      "count": 69,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "value": "AB",
+          "label": "Abarth"
+        },
+        {
+          "value": "AR",
+          "label": "Alfa Romeo"
+        },
+        {
+          "value": "AM",
+          "label": "Aston Martin"
+        },
+        {
+          "value": "AU",
+          "label": "Audi"
+        },
+        {
+          "value": "BE",
+          "label": "Bentley"
+        },
+        {
+          "value": "BM",
+          "label": "BMW"
+        },
+        {
+          "value": "BU",
+          "label": "Bugatti"
+        },
+        {
+          "value": "BY",
+          "label": "BYD"
+        },
+        {
+          "value": "CA",
+          "label": "Cadillac"
+        },
+        {
+          "value": "CH",
+          "label": "Chery"
+        },
+        {
+          "value": "CV",
+          "label": "Chevrolet"
+        },
+        {
+          "value": "CR",
+          "label": "Chrysler"
+        },
+        {
+          "value": "CI",
+          "label": "Citro\u00ebn"
+        },
+        {
+          "value": "DA",
+          "label": "Dacia"
+        },
+        {
+          "value": "DW",
+          "label": "Daewoo"
+        },
+        {
+          "value": "DH",
+          "label": "Daihatsu"
+        },
+        {
+          "value": "DO",
+          "label": "Dodge"
+        },
+        {
+          "value": "DN",
+          "label": "Donkervoort"
+        },
+        {
+          "value": "DS",
+          "label": "DS"
+        },
+        {
+          "value": "FE",
+          "label": "Ferrari"
+        },
+        {
+          "value": "FI",
+          "label": "Fiat"
+        },
+        {
+          "value": "FK",
+          "label": "Fisker"
+        },
+        {
+          "value": "FO",
+          "label": "Ford"
+        },
+        {
+          "value": "GE",
+          "label": "Geely"
+        },
+        {
+          "value": "HO",
+          "label": "Honda"
+        },
+        {
+          "value": "HU",
+          "label": "Hummer"
+        },
+        {
+          "value": "HY",
+          "label": "Hyundai"
+        },
+        {
+          "value": "IN",
+          "label": "Infiniti"
+        },
+        {
+          "value": "IV",
+          "label": "Iveco"
+        },
+        {
+          "value": "JA",
+          "label": "Jaguar"
+        },
+        {
+          "value": "JE",
+          "label": "Jeep"
+        },
+        {
+          "value": "JT",
+          "label": "Jetour"
+        },
+        {
+          "value": "KI",
+          "label": "Kia"
+        },
+        {
+          "value": "KT",
+          "label": "KTM"
+        },
+        {
+          "value": "LA",
+          "label": "Lada"
+        },
+        {
+          "value": "LM",
+          "label": "Lamborghini"
+        },
+        {
+          "value": "LN",
+          "label": "Lancia"
+        },
+        {
+          "value": "LR",
+          "label": "Land Rover"
+        },
+        {
+          "value": "LW",
+          "label": "Landwind"
+        },
+        {
+          "value": "LE",
+          "label": "Lexus"
+        },
+        {
+          "value": "LO",
+          "label": "Lotus"
+        },
+        {
+          "value": "MA",
+          "label": "Maserati"
+        },
+        {
+          "value": "MB",
+          "label": "Maybach"
+        },
+        {
+          "value": "MZ",
+          "label": "Mazda"
+        },
+        {
+          "value": "MC",
+          "label": "McLaren"
+        },
+        {
+          "value": "ME",
+          "label": "Mercedes-Benz"
+        },
+        {
+          "value": "MG",
+          "label": "MG"
+        },
+        {
+          "value": "MI",
+          "label": "Mini"
+        },
+        {
+          "value": "MT",
+          "label": "Mitsubishi"
+        },
+        {
+          "value": "MO",
+          "label": "Morgan"
+        },
+        {
+          "value": "NI",
+          "label": "Nissan"
+        },
+        {
+          "value": "OP",
+          "label": "Opel"
+        },
+        {
+          "value": "PE",
+          "label": "Peugeot"
+        },
+        {
+          "value": "PO",
+          "label": "Porsche"
+        },
+        {
+          "value": "RE",
+          "label": "Renault"
+        },
+        {
+          "value": "RR",
+          "label": "Rolls-Royce"
+        },
+        {
+          "value": "RO",
+          "label": "Rover"
+        },
+        {
+          "value": "SA",
+          "label": "Saab"
+        },
+        {
+          "value": "SE",
+          "label": "Seat"
+        },
+        {
+          "value": "SK",
+          "label": "Skoda"
+        },
+        {
+          "value": "SM",
+          "label": "Smart"
+        },
+        {
+          "value": "SS",
+          "label": "SsangYong"
+        },
+        {
+          "value": "SU",
+          "label": "Subaru"
+        },
+        {
+          "value": "SZ",
+          "label": "Suzuki"
+        },
+        {
+          "value": "TE",
+          "label": "Tesla"
+        },
+        {
+          "value": "TO",
+          "label": "Toyota"
+        },
+        {
+          "value": "VW",
+          "label": "Volkswagen"
+        },
+        {
+          "value": "VO",
+          "label": "Volvo"
+        },
+        {
+          "value": "OT",
+          "label": "Other"
+        }
+      ]
+    },
+    "description": "Car Brand Choices"
+  },
+  "/api/choices/gender": {
+    "status": 200,
+    "data": {
+      "count": 3,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "value": "M",
+          "label": "Male"
+        },
+        {
+          "value": "F",
+          "label": "Female"
+        },
+        {
+          "value": "O",
+          "label": "Other"
+        }
+      ]
+    },
+    "description": "Gender Choices"
+  },
+  "/api/choices/approvalstatus": {
+    "status": 200,
+    "data": {
+      "count": 4,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "value": "P",
+          "label": "Pending Approval"
+        },
+        {
+          "value": "A",
+          "label": "Approved"
+        },
+        {
+          "value": "R",
+          "label": "Rejected"
+        },
+        {
+          "value": "D",
+          "label": "Deleted"
+        }
+      ]
+    },
+    "description": "Approval Status Choices"
+  },
+  "/api/choices/timeofday": {
+    "status": 200,
+    "data": {
+      "count": 5,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "value": "MOR",
+          "label": "Morning"
+        },
+        {
+          "value": "MID",
+          "label": "Mid-day"
+        },
+        {
+          "value": "AFT",
+          "label": "Afternoon"
+        },
+        {
+          "value": "EVE",
+          "label": "Evening"
+        },
+        {
+          "value": "ANY",
+          "label": "Any"
+        }
+      ]
+    },
+    "description": "Time of Day Choices"
+  }
+}

@@ -5202,6 +5202,59 @@ Request account deletion (GDPR "Right to be Forgotten" compliance).
 
 ---
 
+### GET `/api/members/deletion-request`
+
+Retrieve the current user's account deletion request status.
+
+**Authentication**: Required (Bearer Token)
+
+**Request Body**: None (GET request)
+
+**Response** (Success - 200 OK - Active deletion request exists):
+```json
+{
+  "success": true,
+  "message": {
+    "id": 123,
+    "requested_at": "2024-01-15T10:30:00Z",
+    "scheduled_deletion_date": "2024-02-14T10:30:00Z",
+    "status": "pending",
+    "can_cancel": true
+  }
+}
+```
+
+**Response Fields**:
+- `id` (integer): Deletion request ID
+- `requested_at` (datetime): When the deletion was requested
+- `scheduled_deletion_date` (datetime): When the account will be deleted (typically 30 days from request)
+- `status` (string): Current status (`pending`, `processing`, `cancelled`)
+- `can_cancel` (boolean): Whether the request can still be cancelled
+
+**Response** (Not Found - 404 - No active deletion request):
+```json
+{
+  "success": false,
+  "message": "deletion_request_not_found"
+}
+```
+
+**Testing Result**: ✅ **WORKING** - Returns 404 when no active deletion request
+
+**Use Cases**:
+- Check if user has pending deletion request
+- Display deletion countdown to user
+- Show/hide deletion-related UI elements
+- GDPR transparency requirement
+
+**Example Request**:
+```bash
+curl -X GET "https://ap.ad4x4.com/api/members/deletion-request" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+---
+
 ### POST `/api/members/cancel-deletion`
 
 Cancel a pending account deletion request.
@@ -5225,20 +5278,33 @@ Cancel a pending account deletion request.
 - Accidental deletion request
 - GDPR compliance - allow user to cancel before processing
 
-**Example Flow**:
+**Complete GDPR Deletion Workflow**:
 ```bash
-# 1. Request deletion
+# 1. Check if deletion request exists
+curl -X GET "https://ap.ad4x4.com/api/members/deletion-request" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# 2. Request deletion
 curl -X POST "https://ap.ad4x4.com/api/members/request-deletion" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{}'
 
-# 2. Cancel deletion (if needed)
+# 3. Check deletion status again (should return pending request)
+curl -X GET "https://ap.ad4x4.com/api/members/deletion-request" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# 4. Cancel deletion (if needed)
 curl -X POST "https://ap.ad4x4.com/api/members/cancel-deletion" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
+
+**Related Endpoints**:
+- `GET /api/members/deletion-request` - Check deletion status
+- `POST /api/members/request-deletion` - Request account deletion
+- `POST /api/members/cancel-deletion` - Cancel deletion request
 
 ---
 
