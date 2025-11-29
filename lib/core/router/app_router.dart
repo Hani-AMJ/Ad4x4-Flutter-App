@@ -48,6 +48,7 @@ import '../../features/logbook/presentation/screens/trip_history_enhanced_screen
 import '../../features/logbook/presentation/screens/skill_certificates_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/help_support_screen.dart';
+import '../../features/settings/presentation/screens/error_logs_screen.dart';
 import '../../features/settings/presentation/screens/terms_conditions_screen.dart';
 import '../../features/settings/presentation/screens/privacy_policy_screen.dart';
 import '../../features/members/presentation/screens/members_list_screen.dart';
@@ -518,6 +519,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/error-logs',
+        name: 'error-logs',
+        builder: (context, state) => const ErrorLogsScreen(),
       ),
       GoRoute(
         path: '/settings/help-support',

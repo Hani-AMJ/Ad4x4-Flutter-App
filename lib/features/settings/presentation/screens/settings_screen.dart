@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart'; // V2 - Clean implementation
 import '../../../../shared/widgets/widgets.dart';
 import '../../../../data/repositories/main_api_repository.dart'; // ✅ NEW
 import '../../../../core/services/deletion_state_service.dart';
+import '../../../../core/services/error_log_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -332,6 +333,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               subtitle: 'Read our privacy policy',
               onTap: () {
                 context.push('/settings/privacy');
+              },
+            ),
+
+            // Developer section
+            const Divider(height: 32),
+            _SectionHeader(title: 'Developer'),
+            _SettingsTile(
+              icon: Icons.bug_report_outlined,
+              title: 'Error Logs',
+              subtitle: 'View app errors and crashes',
+              onTap: () {
+                context.push('/settings/error-logs');
               },
             ),
 
