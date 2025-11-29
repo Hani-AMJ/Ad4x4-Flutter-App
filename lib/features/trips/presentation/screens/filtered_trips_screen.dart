@@ -73,7 +73,70 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
         checkedInFilter = true; // Level filtering shows completed trips
       }
 
-      // Fetch trip history
+      // For level filtering, we need to fetch ALL pages first, then filter
+      // This is because client-side filtering only sees the current page
+      if (widget.filterType == 'level' && widget.levelNumeric != null && !loadMore) {
+        print('📥 [LevelFilter] Fetching ALL trips before filtering by levelNumeric=${widget.levelNumeric}');
+        
+        List<dynamic> allTrips = [];
+        int currentPage = 1;
+        int totalCount = 0;
+        bool hasMorePages = true;
+        
+        // Fetch all pages
+        while (hasMorePages) {
+          final response = await repository.getMemberTripHistory(
+            memberId: widget.memberId,
+            checkedIn: checkedInFilter,
+            page: currentPage,
+            pageSize: 20,
+          );
+          
+          final results = response['results'] as List<dynamic>? ?? [];
+          final count = response['count'] as int? ?? 0;
+          totalCount = count;
+          
+          allTrips.addAll(results);
+          
+          print('   📄 Fetched page $currentPage: ${results.length} trips (${allTrips.length}/$totalCount total)');
+          
+          // Check if there are more pages
+          hasMorePages = results.length >= 20 && allTrips.length < totalCount;
+          currentPage++;
+        }
+        
+        print('   ✅ Fetched all ${allTrips.length} trips across ${currentPage - 1} pages');
+        
+        // Now filter all trips by level
+        print('🔍 [LevelFilter] Filtering ${allTrips.length} trips for levelNumeric=${widget.levelNumeric}');
+        
+        final filteredTrips = allTrips.where((tripJson) {
+          final levelData = tripJson['level'];
+          if (levelData == null) {
+            return false;
+          }
+          
+          if (levelData is! Map<String, dynamic>) {
+            return false;
+          }
+          
+          final numericLevel = levelData['numericLevel'] as int? ?? 0;
+          return numericLevel == widget.levelNumeric;
+        }).toList();
+        
+        print('   📊 After filtering: ${filteredTrips.length} trips matched (${((filteredTrips.length / allTrips.length) * 100).toStringAsFixed(1)}%)');
+        
+        setState(() {
+          _trips = filteredTrips;
+          _totalCount = filteredTrips.length;
+          _hasMore = false; // All trips loaded and filtered
+          _isLoading = false;
+        });
+        
+        return;
+      }
+
+      // For non-level filters (completed, upcoming), use normal pagination
       final response = await repository.getMemberTripHistory(
         memberId: widget.memberId,
         checkedIn: checkedInFilter,
@@ -84,87 +147,20 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
       final results = response['results'] as List<dynamic>? ?? [];
       final count = response['count'] as int? ?? 0;
 
-      // Client-side level filtering if needed
-      List<dynamic> filteredTrips = results;
-      if (widget.filterType == 'level' && widget.levelNumeric != null) {
-        // Debug: Log all trips and their levels BEFORE filtering
-        print('🔍 [DEBUG] Filtering ${results.length} trips for levelNumeric=${widget.levelNumeric}');
-        
-        for (int i = 0; i < results.length && i < 5; i++) {
-          final tripJson = results[i];
-          final levelData = tripJson['level'];
-          final tripTitle = tripJson['title'] ?? 'Unknown';
-          print('   Trip $i: "$tripTitle" - level: $levelData (type: ${levelData.runtimeType})');
-        }
-        
-        filteredTrips = results.where((tripJson) {
-          final levelData = tripJson['level'];
-          if (levelData == null) return false;
-          
-          // Handle both String and Map formats
-          int numericLevel = 0;
-          if (levelData is Map<String, dynamic>) {
-            numericLevel = levelData['numeric_level'] as int? ?? 
-                          levelData['numericLevel'] as int? ?? 
-                          0;
-          } else if (levelData is String) {
-            // Map level name to numeric value
-            switch (levelData) {
-              case 'Club Event':
-              case 'CLUB EVENT':
-                numericLevel = 5;
-                break;
-              case 'Newbie':
-              case 'NEWBIE':
-              case 'ANIT':
-                numericLevel = 10;
-                break;
-              case 'Intermediate':
-              case 'INTERMEDIATE':
-                numericLevel = 100;
-                break;
-              case 'Advanced':
-              case 'ADVANCED':
-              case 'Advance':  // Backend variation without 'd'
-              case 'ADVANCE':
-                numericLevel = 200;
-                break;
-              case 'Expert':
-              case 'EXPERT':
-                numericLevel = 300;
-                break;
-            }
-          }
-          
-          final matches = numericLevel == widget.levelNumeric;
-          if (!matches && levelData != null) {
-            // Debug: Log mismatches for first few trips
-            print('   ❌ Mismatch: level=$levelData, numericLevel=$numericLevel, expected=${widget.levelNumeric}');
-          }
-          
-          return matches;
-        }).toList();
-        
-        print('   ✅ After filtering: ${filteredTrips.length} trips matched');
-      }
-
-      print('🔍 [FilteredTrips] Loaded ${filteredTrips.length} trips (page $_currentPage)');
+      print('🔍 [FilteredTrips] Loaded ${results.length} trips (page $_currentPage)');
       print('   Filter type: ${widget.filterType}');
-      print('   Level numeric: ${widget.levelNumeric}');
       print('   Total count: $count');
 
       setState(() {
         if (loadMore) {
-          _trips.addAll(filteredTrips);
+          _trips.addAll(results);
         } else {
-          _trips = filteredTrips;
+          _trips = results;
         }
         _totalCount = count;
         
         // Determine if there are more trips to load
-        // If we got fewer results than pageSize, we've reached the end
-        // This handles both normal pagination and client-side filtering
-        _hasMore = filteredTrips.length >= 20;
+        _hasMore = results.length >= 20 && _trips.length < count;
         
         _isLoading = false;
       });
@@ -314,45 +310,10 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
                       tripJson['checkedIn'] as bool? ?? 
                       false;
     
-    // Handle level data - can be String or Map
-    final levelData = tripJson['level'];
-    String levelName = 'Unknown';
-    int levelNumeric = 0;
-    
-    if (levelData is Map<String, dynamic>) {
-      levelName = levelData['name'] as String? ?? 'Unknown';
-      levelNumeric = levelData['numeric_level'] as int? ?? 
-                     levelData['numericLevel'] as int? ?? 
-                     0;
-    } else if (levelData is String) {
-      levelName = levelData;
-      // Map level name to numeric value
-      switch (levelData) {
-        case 'Club Event':
-        case 'CLUB EVENT':
-          levelNumeric = 5;
-          break;
-        case 'Newbie':
-        case 'NEWBIE':
-        case 'ANIT':
-          levelNumeric = 10;
-          break;
-        case 'Intermediate':
-        case 'INTERMEDIATE':
-          levelNumeric = 100;
-          break;
-        case 'Advanced':
-        case 'ADVANCED':
-        case 'Advance':  // Backend variation without 'd'
-        case 'ADVANCE':
-          levelNumeric = 200;
-          break;
-        case 'Expert':
-        case 'EXPERT':
-          levelNumeric = 300;
-          break;
-      }
-    }
+    // Backend always provides level object with all required fields
+    final levelData = tripJson['level'] as Map<String, dynamic>?;
+    final levelName = levelData?['name'] as String? ?? 'Unknown';
+    final levelNumeric = levelData?['numericLevel'] as int? ?? 0;
 
     final levelColor = _getLevelColor(levelNumeric);
 
