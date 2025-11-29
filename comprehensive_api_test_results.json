@@ -1,0 +1,504 @@
+[
+  {
+    "name": "Get Profile",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/auth/profile/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "id",
+      "username",
+      "email",
+      "firstName",
+      "lastName",
+      "phone",
+      "carBrand",
+      "carModel",
+      "carYear",
+      "carColor"
+    ]
+  },
+  {
+    "name": "Get Notification Settings",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/auth/profile/notificationsettings",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "clubNewsEnabledEmail",
+      "clubNewsEnabledAppPush",
+      "newTripAlertsEnabledEmail",
+      "newTripAlertsEnabledAppPush",
+      "upgradeRequestReminderEmail",
+      "lastUserActivity",
+      "member",
+      "newTripAlertsLevelFilter"
+    ]
+  },
+  {
+    "name": "Get Countries",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/choices/countries",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 238
+  },
+  {
+    "name": "Get Emirates",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/choices/emirates",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 7
+  },
+  {
+    "name": "Get Gender",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/choices/gender",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 3
+  },
+  {
+    "name": "Get Car Brands",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/choices/carbrand",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 69
+  },
+  {
+    "name": "Get Approval Status",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/choices/approvalstatus",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 4
+  },
+  {
+    "name": "Get Time of Day",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/choices/timeofday",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 5
+  },
+  {
+    "name": "List Trips",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/trips/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 5
+  },
+  {
+    "name": "Trip Details (6307)",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/trips/6307/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "id",
+      "lead",
+      "deputyLeads",
+      "meetingPoint",
+      "level",
+      "waitlistCount",
+      "registeredCount",
+      "registered",
+      "waitlist",
+      "image"
+    ]
+  },
+  {
+    "name": "Trip Comments (6307)",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/trips/6307/comments",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 0
+  },
+  {
+    "name": "List Members",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/members/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 5
+  },
+  {
+    "name": "Active Trip Leads",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/members/activetripleads",
+    "status": 200,
+    "success": true,
+    "response_type": "array",
+    "sample_keys": null,
+    "data_count": 3
+  },
+  {
+    "name": "Lead Search",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/members/leadsearch",
+    "status": 400,
+    "success": false,
+    "response_type": "object",
+    "sample_keys": [
+      "success",
+      "message"
+    ]
+  },
+  {
+    "name": "Deletion Request",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/members/deletion-request",
+    "status": 404,
+    "success": false,
+    "response_type": "object",
+    "sample_keys": [
+      "success",
+      "message"
+    ]
+  },
+  {
+    "name": "HERE Maps Config",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/settings/here-maps-config/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "enabled",
+      "selectedFields",
+      "maxFields",
+      "availableFields"
+    ]
+  },
+  {
+    "name": "System Time",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/systemtime/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "currentTime"
+    ]
+  },
+  {
+    "name": "UI Strings",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/strings/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 0
+  },
+  {
+    "name": "Global Settings",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/globalsettings/",
+    "status": 200,
+    "success": true,
+    "response_type": "array",
+    "sample_keys": null,
+    "data_count": 1
+  },
+  {
+    "name": "Logbook Skills",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/logbookskills/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 20
+  },
+  {
+    "name": "Logbook Entries",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/logbookentries/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 3
+  },
+  {
+    "name": "Difficulty Levels",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/levels/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 9
+  },
+  {
+    "name": "User Groups",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/groups/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 13
+  },
+  {
+    "name": "Permission Matrix",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/permissionmatrix/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 20
+  },
+  {
+    "name": "Club News",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/clubnews/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 3
+  },
+  {
+    "name": "Sponsors",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/sponsors/",
+    "status": 200,
+    "success": true,
+    "response_type": "array",
+    "sample_keys": null,
+    "data_count": 9
+  },
+  {
+    "name": "FAQs",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/faqs/",
+    "status": 200,
+    "success": true,
+    "response_type": "array",
+    "sample_keys": null,
+    "data_count": 4
+  },
+  {
+    "name": "Meeting Points",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/meetingpoints/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 20
+  },
+  {
+    "name": "User Notifications",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/notifications/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 5
+  },
+  {
+    "name": "Upgrade Requests",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/upgraderequests/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 1
+  },
+  {
+    "name": "Latest Approved",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/upgraderequests/latestapproved",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 0
+  },
+  {
+    "name": "Trip Requests",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/triprequests/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 2
+  },
+  {
+    "name": "Trip Requests Aggregate",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/triprequests/aggregate",
+    "status": 200,
+    "success": true,
+    "response_type": "array",
+    "sample_keys": null,
+    "data_count": 1
+  },
+  {
+    "name": "Trip Reports",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/tripreports/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 1
+  },
+  {
+    "name": "FCM Devices",
+    "method": "GET",
+    "url": "https://ap.ad4x4.com/api/device/fcm/",
+    "status": 200,
+    "success": true,
+    "response_type": "object",
+    "sample_keys": [
+      "count",
+      "next",
+      "previous",
+      "results"
+    ],
+    "data_count": 1
+  }
+]
