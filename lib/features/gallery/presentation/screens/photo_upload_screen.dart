@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import '../../../../data/repositories/gallery_api_repository.dart';
 import '../../../../core/providers/gallery_auth_provider.dart';
 import '../../../../shared/widgets/widgets.dart';
+import '../../../../core/services/error_log_service.dart';
 
 /// Photo Upload Screen
 /// 
@@ -68,7 +69,14 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
       );
       _sessionId = response['session_id'] as String;
       setState(() => _isCreatingSession = false);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Log error to error logging service
+      await ErrorLogService().logError(
+        message: 'Failed to create gallery upload session: $e',
+        stackTrace: stackTrace.toString(),
+        type: 'network',
+      );
+      
       setState(() => _isCreatingSession = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -230,7 +238,14 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
           progress: 1.0,
         );
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Log error to error logging service
+      await ErrorLogService().logError(
+        message: 'Gallery photo upload failed: ${item.fileName} - $e',
+        stackTrace: stackTrace.toString(),
+        type: 'network',
+      );
+      
       // Mark as failed
       setState(() {
         _uploadItems[index] = item.copyWith(
