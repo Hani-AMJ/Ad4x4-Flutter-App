@@ -243,6 +243,475 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "id": 10613,
+  "username": "Hani AMJ",
+  "email": "hani_janem@hotmail.com",
+  "firstName": "Hani",
+  "lastName": "AMJ",
+  "phone": "+971501166676",
+  "carBrand": "Jeep",
+  "carModel": "Gladiator",
+  "carYear": 2020,
+  "carColor": "Orange",
+  "carImage": null,
+  "dob": "1981-03-02",
+  "iceName": "Elle",
+  "icePhone": "+971506910354",
+  "level": {
+    "id": 9,
+    "name": "Board member",
+    "numericLevel": 800
+  },
+  "tripCount": 41,
+  "avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+  "permissions": [
+    {
+      "id": 1,
+      "levels": [
+        {
+          "id": 3,
+          "name": "Newbie",
+          "numericLevel": 10
+        }
+      ],
+      "action": "create_trip_with_approval"
+    },
+    {
+      "id": 3,
+      "levels": [],
+      "action": "create_meeting_points"
+    },
+    {
+      "id": 4,
+      "levels": [],
+      "action": "create_trip"
+    },
+    {
+      "id": 5,
+      "levels": [],
+      "action": "view_upgrade_req"
+    },
+    {
+      "id": 6,
+      "levels": [],
+      "action": "vote_upgrade_req"
+    },
+    {
+      "id": 7,
+      "levels": [],
+      "action": "create_comment_upgrade_req"
+    },
+    {
+      "id": 8,
+      "levels": [],
+      "action": "view_upgrade_req"
+    },
+    {
+      "id": 9,
+      "levels": [],
+      "action": "vote_upgrade_req"
+    },
+    {
+      "id": 10,
+      "levels": [],
+      "action": "create_comment_upgrade_req"
+    },
+    {
+      "id": 11,
+      "levels": [],
+      "action": "approve_upgrade_req"
+    },
+    {
+      "id": 12,
+      "levels": [],
+      "action": "override_waitlist"
+    },
+    {
+      "id": 13,
+      "levels": [],
+      "action": "view_upgrade_req"
+    },
+    {
+      "id": 14,
+      "levels": [],
+      "action": "vote_upgrade_req"
+    },
+    {
+      "id": 15,
+      "levels": [],
+      "action": "create_comment_upgrade_req"
+    },
+    {
+      "id": 16,
+      "levels": [],
+      "action": "edit_upgrade_req"
+    },
+    {
+      "id": 17,
+      "levels": [],
+      "action": "delete_upgrade_req"
+    },
+    {
+      "id": 18,
+      "levels": [],
+      "action": "delete_comment_upgrade_req"
+    },
+    {
+      "id": 19,
+      "levels": [],
+      "action": "edit_trips"
+    },
+    {
+      "id": 20,
+      "levels": [],
+      "action": "approve_trip"
+    },
+    {
+      "id": 21,
+      "levels": [],
+      "action": "delete_trips"
+    },
+    {
+      "id": 22,
+      "levels": [],
+      "action": "delete_trip_comments"
+    },
+    {
+      "id": 23,
+      "levels": [],
+      "action": "edit_trip_registrations"
+    },
+    {
+      "id": 24,
+      "levels": [],
+      "action": "create_trip"
+    },
+    {
+      "id": 25,
+      "levels": [],
+      "action": "override_waitlist"
+    },
+    {
+      "id": 26,
+      "levels": [],
+      "action": "edit_trip_media"
+    },
+    {
+      "id": 27,
+      "levels": [],
+      "action": "create_meeting_points"
+    },
+    {
+      "id": 28,
+      "levels": [],
+      "action": "edit_meeting_points"
+    },
+    {
+      "id": 29,
+      "levels": [],
+      "action": "delete_meeting_points"
+    },
+    {
+      "id": 30,
+      "levels": [],
+      "action": "create_trip"
+    },
+    {
+      "id": 31,
+      "levels": [],
+      "action": "create_trip_with_approval"
+    },
+    {
+      "id": 32,
+      "levels": [],
+      "action": "approve_trip"
+    },
+    {
+      "id": 33,
+      "levels": [],
+      "action": "override_waitlist"
+    },
+    {
+      "id": 34,
+      "levels": [],
+      "action": "edit_trips"
+    },
+    {
+      "id": 35,
+      "levels": [],
+      "action": "edit_trip_media"
+    },
+    {
+      "id": 36,
+      "levels": [],
+      "action": "edit_trip_registrations"
+    },
+    {
+      "id": 37,
+      "levels": [],
+      "action": "delete_trips"
+    },
+    {
+      "id": 38,
+      "levels": [],
+      "action": "delete_trip_comments"
+    },
+    {
+      "id": 39,
+      "levels": [],
+      "action": "create_meeting_points"
+    },
+    {
+      "id": 41,
+      "levels": [],
+      "action": "delete_meeting_points"
+    },
+    {
+      "id": 43,
+      "levels": [],
+      "action": "create_upgrade_req_for_other"
+    },
+    {
+      "id": 44,
+      "levels": [],
+      "action": "edit_upgrade_req"
+    },
+    {
+      "id": 45,
+      "levels": [],
+      "action": "approve_upgrade_req"
+    },
+    {
+      "id": 46,
+      "levels": [],
+      "action": "delete_upgrade_req"
+    },
+    {
+      "id": 47,
+      "levels": [],
+      "action": "view_upgrade_req"
+    },
+    {
+      "id": 48,
+      "levels": [],
+      "action": "vote_upgrade_req"
+    },
+    {
+      "id": 49,
+      "levels": [],
+      "action": "create_comment_upgrade_req"
+    },
+    {
+      "id": 50,
+      "levels": [],
+      "action": "delete_comment_upgrade_req"
+    },
+    {
+      "id": 51,
+      "levels": [],
+      "action": "edit_membership_payments"
+    },
+    {
+      "id": 52,
+      "levels": [],
+      "action": "approve_trip"
+    },
+    {
+      "id": 53,
+      "levels": [],
+      "action": "edit_trips"
+    },
+    {
+      "id": 54,
+      "levels": [],
+      "action": "edit_trips"
+    },
+    {
+      "id": 55,
+      "levels": [],
+      "action": "delete_trips"
+    },
+    {
+      "id": 56,
+      "levels": [],
+      "action": "delete_trips"
+    },
+    {
+      "id": 57,
+      "levels": [],
+      "action": "create_meeting_points"
+    },
+    {
+      "id": 40,
+      "levels": [],
+      "action": "edit_meeting_points"
+    },
+    {
+      "id": 42,
+      "levels": [],
+      "action": "create_upgrade_req_for_self"
+    },
+    {
+      "id": 61,
+      "levels": [],
+      "action": "bypass_level_req"
+    },
+    {
+      "id": 62,
+      "levels": [],
+      "action": "access_marshal_panel"
+    },
+    {
+      "id": 63,
+      "levels": [],
+      "action": "create_trip_report"
+    },
+    {
+      "id": 66,
+      "levels": [],
+      "action": "create_logbook_entries_superuser"
+    },
+    {
+      "id": 67,
+      "levels": [],
+      "action": "view_contact_info"
+    },
+    {
+      "id": 68,
+      "levels": [],
+      "action": "create_trip_report"
+    },
+    {
+      "id": 69,
+      "levels": [],
+      "action": "bypass_level_req"
+    },
+    {
+      "id": 70,
+      "levels": [],
+      "action": "create_upgrade_req_for_self"
+    },
+    {
+      "id": 71,
+      "levels": [],
+      "action": "create_logbook_entries"
+    },
+    {
+      "id": 72,
+      "levels": [],
+      "action": "sign_logbook_skills"
+    },
+    {
+      "id": 73,
+      "levels": [],
+      "action": "create_logbook_entries_superuser"
+    },
+    {
+      "id": 74,
+      "levels": [],
+      "action": "access_marshal_panel"
+    },
+    {
+      "id": 75,
+      "levels": [],
+      "action": "view_contact_info"
+    },
+    {
+      "id": 76,
+      "levels": [],
+      "action": "edit_ui_strings"
+    },
+    {
+      "id": 65,
+      "levels": [
+        {
+          "id": 4,
+          "name": "Intermediate",
+          "numericLevel": 100
+        },
+        {
+          "id": 5,
+          "name": "Advanced",
+          "numericLevel": 200
+        },
+        {
+          "id": 7,
+          "name": "Explorer",
+          "numericLevel": 400
+        },
+        {
+          "id": 6,
+          "name": "Expert",
+          "numericLevel": 300
+        }
+      ],
+      "action": "sign_logbook_skills"
+    },
+    {
+      "id": 64,
+      "levels": [
+        {
+          "id": 4,
+          "name": "Intermediate",
+          "numericLevel": 100
+        },
+        {
+          "id": 5,
+          "name": "Advanced",
+          "numericLevel": 200
+        },
+        {
+          "id": 7,
+          "name": "Explorer",
+          "numericLevel": 400
+        },
+        {
+          "id": 6,
+          "name": "Expert",
+          "numericLevel": 300
+        }
+      ],
+      "action": "create_logbook_entries"
+    },
+    {
+      "id": 2,
+      "levels": [
+        {
+          "id": 4,
+          "name": "Intermediate",
+          "numericLevel": 100
+        },
+        {
+          "id": 5,
+          "name": "Advanced",
+          "numericLevel": 200
+        },
+        {
+          "id": 7,
+          "name": "Explorer",
+          "numericLevel": 400
+        },
+        {
+          "id": 6,
+          "name": "Expert",
+          "numericLevel": 300
+        }
+      ],
+      "action": "create_trip"
+    }
+  ],
+  "paidMember": false,
+  "dateJoined": "2006-10-18T11:00:00",
+  "city": "Al Ain",
+  "gender": "M",
+  "nationality": "JO",
+  "title": "Founder & Webmaster"
+}
+```
+
 ---
 
 ### POST `/api/auth/profile/`
@@ -380,6 +849,20 @@ curl -X PATCH \
 curl -X GET \
   http://localhost:8000/api/auth/profile/notificationsettings \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "clubNewsEnabledEmail": true,
+  "clubNewsEnabledAppPush": true,
+  "newTripAlertsEnabledEmail": true,
+  "newTripAlertsEnabledAppPush": true,
+  "upgradeRequestReminderEmail": true,
+  "lastUserActivity": "2025-11-30",
+  "member": 10613,
+  "newTripAlertsLevelFilter": []
+}
 ```
 
 ---
@@ -645,6 +1128,33 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 4,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "value": "P",
+      "label": "Pending Approval"
+    },
+    {
+      "value": "A",
+      "label": "Approved"
+    },
+    {
+      "value": "R",
+      "label": "Rejected"
+    },
+    {
+      "value": "D",
+      "label": "Deleted"
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/choices/carbrand`
@@ -664,6 +1174,293 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/choices/carbrand \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 69,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "value": "AB",
+      "label": "Abarth"
+    },
+    {
+      "value": "AR",
+      "label": "Alfa Romeo"
+    },
+    {
+      "value": "AM",
+      "label": "Aston Martin"
+    },
+    {
+      "value": "AU",
+      "label": "Audi"
+    },
+    {
+      "value": "BE",
+      "label": "Bentley"
+    },
+    {
+      "value": "BM",
+      "label": "BMW"
+    },
+    {
+      "value": "BU",
+      "label": "Bugatti"
+    },
+    {
+      "value": "BY",
+      "label": "BYD"
+    },
+    {
+      "value": "CA",
+      "label": "Cadillac"
+    },
+    {
+      "value": "CH",
+      "label": "Chery"
+    },
+    {
+      "value": "CV",
+      "label": "Chevrolet"
+    },
+    {
+      "value": "CR",
+      "label": "Chrysler"
+    },
+    {
+      "value": "CI",
+      "label": "Citro\u00ebn"
+    },
+    {
+      "value": "DA",
+      "label": "Dacia"
+    },
+    {
+      "value": "DW",
+      "label": "Daewoo"
+    },
+    {
+      "value": "DH",
+      "label": "Daihatsu"
+    },
+    {
+      "value": "DO",
+      "label": "Dodge"
+    },
+    {
+      "value": "DN",
+      "label": "Donkervoort"
+    },
+    {
+      "value": "DS",
+      "label": "DS"
+    },
+    {
+      "value": "FE",
+      "label": "Ferrari"
+    },
+    {
+      "value": "FI",
+      "label": "Fiat"
+    },
+    {
+      "value": "FK",
+      "label": "Fisker"
+    },
+    {
+      "value": "FO",
+      "label": "Ford"
+    },
+    {
+      "value": "GE",
+      "label": "Geely"
+    },
+    {
+      "value": "HO",
+      "label": "Honda"
+    },
+    {
+      "value": "HU",
+      "label": "Hummer"
+    },
+    {
+      "value": "HY",
+      "label": "Hyundai"
+    },
+    {
+      "value": "IN",
+      "label": "Infiniti"
+    },
+    {
+      "value": "IV",
+      "label": "Iveco"
+    },
+    {
+      "value": "JA",
+      "label": "Jaguar"
+    },
+    {
+      "value": "JE",
+      "label": "Jeep"
+    },
+    {
+      "value": "JT",
+      "label": "Jetour"
+    },
+    {
+      "value": "KI",
+      "label": "Kia"
+    },
+    {
+      "value": "KT",
+      "label": "KTM"
+    },
+    {
+      "value": "LA",
+      "label": "Lada"
+    },
+    {
+      "value": "LM",
+      "label": "Lamborghini"
+    },
+    {
+      "value": "LN",
+      "label": "Lancia"
+    },
+    {
+      "value": "LR",
+      "label": "Land Rover"
+    },
+    {
+      "value": "LW",
+      "label": "Landwind"
+    },
+    {
+      "value": "LE",
+      "label": "Lexus"
+    },
+    {
+      "value": "LO",
+      "label": "Lotus"
+    },
+    {
+      "value": "MA",
+      "label": "Maserati"
+    },
+    {
+      "value": "MB",
+      "label": "Maybach"
+    },
+    {
+      "value": "MZ",
+      "label": "Mazda"
+    },
+    {
+      "value": "MC",
+      "label": "McLaren"
+    },
+    {
+      "value": "ME",
+      "label": "Mercedes-Benz"
+    },
+    {
+      "value": "MG",
+      "label": "MG"
+    },
+    {
+      "value": "MI",
+      "label": "Mini"
+    },
+    {
+      "value": "MT",
+      "label": "Mitsubishi"
+    },
+    {
+      "value": "MO",
+      "label": "Morgan"
+    },
+    {
+      "value": "NI",
+      "label": "Nissan"
+    },
+    {
+      "value": "OP",
+      "label": "Opel"
+    },
+    {
+      "value": "PE",
+      "label": "Peugeot"
+    },
+    {
+      "value": "PO",
+      "label": "Porsche"
+    },
+    {
+      "value": "RE",
+      "label": "Renault"
+    },
+    {
+      "value": "RR",
+      "label": "Rolls-Royce"
+    },
+    {
+      "value": "RO",
+      "label": "Rover"
+    },
+    {
+      "value": "SA",
+      "label": "Saab"
+    },
+    {
+      "value": "SE",
+      "label": "Seat"
+    },
+    {
+      "value": "SK",
+      "label": "Skoda"
+    },
+    {
+      "value": "SM",
+      "label": "Smart"
+    },
+    {
+      "value": "SS",
+      "label": "SsangYong"
+    },
+    {
+      "value": "SU",
+      "label": "Subaru"
+    },
+    {
+      "value": "SZ",
+      "label": "Suzuki"
+    },
+    {
+      "value": "TE",
+      "label": "Tesla"
+    },
+    {
+      "value": "TO",
+      "label": "Toyota"
+    },
+    {
+      "value": "VW",
+      "label": "Volkswagen"
+    },
+    {
+      "value": "VO",
+      "label": "Volvo"
+    },
+    {
+      "value": "OT",
+      "label": "Other"
+    }
+  ]
+}
 ```
 
 ---
@@ -687,6 +1484,969 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 238,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "value": "AF",
+      "label": "Afghanistan"
+    },
+    {
+      "value": "AL",
+      "label": "Albania"
+    },
+    {
+      "value": "DZ",
+      "label": "Algeria"
+    },
+    {
+      "value": "AS",
+      "label": "American Samoa"
+    },
+    {
+      "value": "AD",
+      "label": "Andorra"
+    },
+    {
+      "value": "AO",
+      "label": "Angola"
+    },
+    {
+      "value": "AI",
+      "label": "Anguilla"
+    },
+    {
+      "value": "AQ",
+      "label": "Antarctica"
+    },
+    {
+      "value": "AG",
+      "label": "Antigua and Barbuda"
+    },
+    {
+      "value": "AR",
+      "label": "Argentina"
+    },
+    {
+      "value": "AM",
+      "label": "Armenia"
+    },
+    {
+      "value": "AW",
+      "label": "Aruba"
+    },
+    {
+      "value": "AU",
+      "label": "Australia"
+    },
+    {
+      "value": "AT",
+      "label": "Austria"
+    },
+    {
+      "value": "AZ",
+      "label": "Azerbaijan"
+    },
+    {
+      "value": "BS",
+      "label": "Bahamas"
+    },
+    {
+      "value": "BH",
+      "label": "Bahrain"
+    },
+    {
+      "value": "BD",
+      "label": "Bangladesh"
+    },
+    {
+      "value": "BB",
+      "label": "Barbados"
+    },
+    {
+      "value": "BY",
+      "label": "Belarus"
+    },
+    {
+      "value": "BE",
+      "label": "Belgium"
+    },
+    {
+      "value": "BZ",
+      "label": "Belize"
+    },
+    {
+      "value": "BJ",
+      "label": "Benin"
+    },
+    {
+      "value": "BM",
+      "label": "Bermuda"
+    },
+    {
+      "value": "BT",
+      "label": "Bhutan"
+    },
+    {
+      "value": "BO",
+      "label": "Bolivia, Plurinational State of"
+    },
+    {
+      "value": "BQ",
+      "label": "Bonaire, Sint Eustatius and Saba"
+    },
+    {
+      "value": "BA",
+      "label": "Bosnia and Herzegovina"
+    },
+    {
+      "value": "BW",
+      "label": "Botswana"
+    },
+    {
+      "value": "BR",
+      "label": "Brazil"
+    },
+    {
+      "value": "IO",
+      "label": "British Indian Ocean Territory"
+    },
+    {
+      "value": "BN",
+      "label": "Brunei Darussalam"
+    },
+    {
+      "value": "BG",
+      "label": "Bulgaria"
+    },
+    {
+      "value": "BF",
+      "label": "Burkina Faso"
+    },
+    {
+      "value": "BI",
+      "label": "Burundi"
+    },
+    {
+      "value": "KH",
+      "label": "Cambodia"
+    },
+    {
+      "value": "CM",
+      "label": "Cameroon"
+    },
+    {
+      "value": "CA",
+      "label": "Canada"
+    },
+    {
+      "value": "CV",
+      "label": "Cape Verde"
+    },
+    {
+      "value": "KY",
+      "label": "Cayman Islands"
+    },
+    {
+      "value": "CF",
+      "label": "Central African Republic"
+    },
+    {
+      "value": "TD",
+      "label": "Chad"
+    },
+    {
+      "value": "CL",
+      "label": "Chile"
+    },
+    {
+      "value": "CN",
+      "label": "China"
+    },
+    {
+      "value": "CO",
+      "label": "Colombia"
+    },
+    {
+      "value": "KM",
+      "label": "Comoros"
+    },
+    {
+      "value": "CG",
+      "label": "Congo"
+    },
+    {
+      "value": "CD",
+      "label": "Congo, the Democratic Republic of the"
+    },
+    {
+      "value": "CK",
+      "label": "Cook Islands"
+    },
+    {
+      "value": "CR",
+      "label": "Costa Rica"
+    },
+    {
+      "value": "CI",
+      "label": "C\u00f4te d'Ivoire"
+    },
+    {
+      "value": "HR",
+      "label": "Croatia"
+    },
+    {
+      "value": "CU",
+      "label": "Cuba"
+    },
+    {
+      "value": "CW",
+      "label": "Cura\u00e7ao"
+    },
+    {
+      "value": "CY",
+      "label": "Cyprus"
+    },
+    {
+      "value": "CZ",
+      "label": "Czech Republic"
+    },
+    {
+      "value": "DK",
+      "label": "Denmark"
+    },
+    {
+      "value": "DJ",
+      "label": "Djibouti"
+    },
+    {
+      "value": "DM",
+      "label": "Dominica"
+    },
+    {
+      "value": "DO",
+      "label": "Dominican Republic"
+    },
+    {
+      "value": "EC",
+      "label": "Ecuador"
+    },
+    {
+      "value": "EG",
+      "label": "Egypt"
+    },
+    {
+      "value": "SV",
+      "label": "El Salvador"
+    },
+    {
+      "value": "GQ",
+      "label": "Equatorial Guinea"
+    },
+    {
+      "value": "ER",
+      "label": "Eritrea"
+    },
+    {
+      "value": "EE",
+      "label": "Estonia"
+    },
+    {
+      "value": "ET",
+      "label": "Ethiopia"
+    },
+    {
+      "value": "FK",
+      "label": "Falkland Islands (Malvinas)"
+    },
+    {
+      "value": "FO",
+      "label": "Faroe Islands"
+    },
+    {
+      "value": "FJ",
+      "label": "Fiji"
+    },
+    {
+      "value": "FI",
+      "label": "Finland"
+    },
+    {
+      "value": "FR",
+      "label": "France"
+    },
+    {
+      "value": "GF",
+      "label": "French Guiana"
+    },
+    {
+      "value": "PF",
+      "label": "French Polynesia"
+    },
+    {
+      "value": "GA",
+      "label": "Gabon"
+    },
+    {
+      "value": "GM",
+      "label": "Gambia"
+    },
+    {
+      "value": "GE",
+      "label": "Georgia"
+    },
+    {
+      "value": "DE",
+      "label": "Germany"
+    },
+    {
+      "value": "GH",
+      "label": "Ghana"
+    },
+    {
+      "value": "GI",
+      "label": "Gibraltar"
+    },
+    {
+      "value": "GR",
+      "label": "Greece"
+    },
+    {
+      "value": "GL",
+      "label": "Greenland"
+    },
+    {
+      "value": "GD",
+      "label": "Grenada"
+    },
+    {
+      "value": "GP",
+      "label": "Guadeloupe"
+    },
+    {
+      "value": "GU",
+      "label": "Guam"
+    },
+    {
+      "value": "GT",
+      "label": "Guatemala"
+    },
+    {
+      "value": "GG",
+      "label": "Guernsey"
+    },
+    {
+      "value": "GN",
+      "label": "Guinea"
+    },
+    {
+      "value": "GW",
+      "label": "Guinea-Bissau"
+    },
+    {
+      "value": "GY",
+      "label": "Guyana"
+    },
+    {
+      "value": "HT",
+      "label": "Haiti"
+    },
+    {
+      "value": "VA",
+      "label": "Holy See (Vatican City State)"
+    },
+    {
+      "value": "HN",
+      "label": "Honduras"
+    },
+    {
+      "value": "HK",
+      "label": "Hong Kong"
+    },
+    {
+      "value": "HU",
+      "label": "Hungary"
+    },
+    {
+      "value": "IS",
+      "label": "Iceland"
+    },
+    {
+      "value": "IN",
+      "label": "India"
+    },
+    {
+      "value": "ID",
+      "label": "Indonesia"
+    },
+    {
+      "value": "IR",
+      "label": "Iran, Islamic Republic of"
+    },
+    {
+      "value": "IQ",
+      "label": "Iraq"
+    },
+    {
+      "value": "IE",
+      "label": "Ireland"
+    },
+    {
+      "value": "IM",
+      "label": "Isle of Man"
+    },
+    {
+      "value": "IL",
+      "label": "Israel"
+    },
+    {
+      "value": "IT",
+      "label": "Italy"
+    },
+    {
+      "value": "JM",
+      "label": "Jamaica"
+    },
+    {
+      "value": "JP",
+      "label": "Japan"
+    },
+    {
+      "value": "JE",
+      "label": "Jersey"
+    },
+    {
+      "value": "JO",
+      "label": "Jordan"
+    },
+    {
+      "value": "KZ",
+      "label": "Kazakhstan"
+    },
+    {
+      "value": "KE",
+      "label": "Kenya"
+    },
+    {
+      "value": "KI",
+      "label": "Kiribati"
+    },
+    {
+      "value": "KP",
+      "label": "Korea, Democratic People's Republic of"
+    },
+    {
+      "value": "KR",
+      "label": "Korea, Republic of"
+    },
+    {
+      "value": "KW",
+      "label": "Kuwait"
+    },
+    {
+      "value": "KG",
+      "label": "Kyrgyzstan"
+    },
+    {
+      "value": "LA",
+      "label": "Lao People's Democratic Republic"
+    },
+    {
+      "value": "LV",
+      "label": "Latvia"
+    },
+    {
+      "value": "LB",
+      "label": "Lebanon"
+    },
+    {
+      "value": "LS",
+      "label": "Lesotho"
+    },
+    {
+      "value": "LR",
+      "label": "Liberia"
+    },
+    {
+      "value": "LY",
+      "label": "Libya"
+    },
+    {
+      "value": "LI",
+      "label": "Liechtenstein"
+    },
+    {
+      "value": "LT",
+      "label": "Lithuania"
+    },
+    {
+      "value": "LU",
+      "label": "Luxembourg"
+    },
+    {
+      "value": "MO",
+      "label": "Macao"
+    },
+    {
+      "value": "MK",
+      "label": "Macedonia, the Former Yugoslav Republic of"
+    },
+    {
+      "value": "MG",
+      "label": "Madagascar"
+    },
+    {
+      "value": "MW",
+      "label": "Malawi"
+    },
+    {
+      "value": "MY",
+      "label": "Malaysia"
+    },
+    {
+      "value": "MV",
+      "label": "Maldives"
+    },
+    {
+      "value": "ML",
+      "label": "Mali"
+    },
+    {
+      "value": "MT",
+      "label": "Malta"
+    },
+    {
+      "value": "MH",
+      "label": "Marshall Islands"
+    },
+    {
+      "value": "MQ",
+      "label": "Martinique"
+    },
+    {
+      "value": "MR",
+      "label": "Mauritania"
+    },
+    {
+      "value": "MU",
+      "label": "Mauritius"
+    },
+    {
+      "value": "YT",
+      "label": "Mayotte"
+    },
+    {
+      "value": "MX",
+      "label": "Mexico"
+    },
+    {
+      "value": "FM",
+      "label": "Micronesia, Federated States of"
+    },
+    {
+      "value": "MD",
+      "label": "Moldova, Republic of"
+    },
+    {
+      "value": "MC",
+      "label": "Monaco"
+    },
+    {
+      "value": "MN",
+      "label": "Mongolia"
+    },
+    {
+      "value": "ME",
+      "label": "Montenegro"
+    },
+    {
+      "value": "MS",
+      "label": "Montserrat"
+    },
+    {
+      "value": "MA",
+      "label": "Morocco"
+    },
+    {
+      "value": "MZ",
+      "label": "Mozambique"
+    },
+    {
+      "value": "MM",
+      "label": "Myanmar"
+    },
+    {
+      "value": "NA",
+      "label": "Namibia"
+    },
+    {
+      "value": "NP",
+      "label": "Nepal"
+    },
+    {
+      "value": "NL",
+      "label": "Netherlands"
+    },
+    {
+      "value": "NC",
+      "label": "New Caledonia"
+    },
+    {
+      "value": "NZ",
+      "label": "New Zealand"
+    },
+    {
+      "value": "NI",
+      "label": "Nicaragua"
+    },
+    {
+      "value": "NE",
+      "label": "Niger"
+    },
+    {
+      "value": "NG",
+      "label": "Nigeria"
+    },
+    {
+      "value": "NU",
+      "label": "Niue"
+    },
+    {
+      "value": "NF",
+      "label": "Norfolk Island"
+    },
+    {
+      "value": "MP",
+      "label": "Northern Mariana Islands"
+    },
+    {
+      "value": "NO",
+      "label": "Norway"
+    },
+    {
+      "value": "OM",
+      "label": "Oman"
+    },
+    {
+      "value": "PK",
+      "label": "Pakistan"
+    },
+    {
+      "value": "PW",
+      "label": "Palau"
+    },
+    {
+      "value": "PS",
+      "label": "Palestine, State of"
+    },
+    {
+      "value": "PA",
+      "label": "Panama"
+    },
+    {
+      "value": "PG",
+      "label": "Papua New Guinea"
+    },
+    {
+      "value": "PY",
+      "label": "Paraguay"
+    },
+    {
+      "value": "PE",
+      "label": "Peru"
+    },
+    {
+      "value": "PH",
+      "label": "Philippines"
+    },
+    {
+      "value": "PL",
+      "label": "Poland"
+    },
+    {
+      "value": "PT",
+      "label": "Portugal"
+    },
+    {
+      "value": "PR",
+      "label": "Puerto Rico"
+    },
+    {
+      "value": "QA",
+      "label": "Qatar"
+    },
+    {
+      "value": "RE",
+      "label": "R\u00e9union"
+    },
+    {
+      "value": "RO",
+      "label": "Romania"
+    },
+    {
+      "value": "RU",
+      "label": "Russian Federation"
+    },
+    {
+      "value": "RW",
+      "label": "Rwanda"
+    },
+    {
+      "value": "BL",
+      "label": "Saint Barth\u00e9lemy"
+    },
+    {
+      "value": "SH",
+      "label": "Saint Helena, Ascension and Tristan da Cunha"
+    },
+    {
+      "value": "KN",
+      "label": "Saint Kitts and Nevis"
+    },
+    {
+      "value": "LC",
+      "label": "Saint Lucia"
+    },
+    {
+      "value": "MF",
+      "label": "Saint Martin (French part)"
+    },
+    {
+      "value": "PM",
+      "label": "Saint Pierre and Miquelon"
+    },
+    {
+      "value": "VC",
+      "label": "Saint Vincent and the Grenadines"
+    },
+    {
+      "value": "WS",
+      "label": "Samoa"
+    },
+    {
+      "value": "SM",
+      "label": "San Marino"
+    },
+    {
+      "value": "ST",
+      "label": "Sao Tome and Principe"
+    },
+    {
+      "value": "SA",
+      "label": "Saudi Arabia"
+    },
+    {
+      "value": "SN",
+      "label": "Senegal"
+    },
+    {
+      "value": "RS",
+      "label": "Serbia"
+    },
+    {
+      "value": "SC",
+      "label": "Seychelles"
+    },
+    {
+      "value": "SL",
+      "label": "Sierra Leone"
+    },
+    {
+      "value": "SG",
+      "label": "Singapore"
+    },
+    {
+      "value": "SX",
+      "label": "Sint Maarten (Dutch part)"
+    },
+    {
+      "value": "SK",
+      "label": "Slovakia"
+    },
+    {
+      "value": "SI",
+      "label": "Slovenia"
+    },
+    {
+      "value": "SB",
+      "label": "Solomon Islands"
+    },
+    {
+      "value": "SO",
+      "label": "Somalia"
+    },
+    {
+      "value": "ZA",
+      "label": "South Africa"
+    },
+    {
+      "value": "SS",
+      "label": "South Sudan"
+    },
+    {
+      "value": "ES",
+      "label": "Spain"
+    },
+    {
+      "value": "LK",
+      "label": "Sri Lanka"
+    },
+    {
+      "value": "SD",
+      "label": "Sudan"
+    },
+    {
+      "value": "SR",
+      "label": "Suriname"
+    },
+    {
+      "value": "SJ",
+      "label": "Svalbard and Jan Mayen"
+    },
+    {
+      "value": "SZ",
+      "label": "Eswatini"
+    },
+    {
+      "value": "SE",
+      "label": "Sweden"
+    },
+    {
+      "value": "CH",
+      "label": "Switzerland"
+    },
+    {
+      "value": "SY",
+      "label": "Syrian Arab Republic"
+    },
+    {
+      "value": "TW",
+      "label": "Taiwan, Province of China"
+    },
+    {
+      "value": "TJ",
+      "label": "Tajikistan"
+    },
+    {
+      "value": "TZ",
+      "label": "Tanzania, United Republic of"
+    },
+    {
+      "value": "TH",
+      "label": "Thailand"
+    },
+    {
+      "value": "TL",
+      "label": "Timor-Leste"
+    },
+    {
+      "value": "TG",
+      "label": "Togo"
+    },
+    {
+      "value": "TO",
+      "label": "Tonga"
+    },
+    {
+      "value": "TT",
+      "label": "Trinidad and Tobago"
+    },
+    {
+      "value": "TN",
+      "label": "Tunisia"
+    },
+    {
+      "value": "TR",
+      "label": "Turkey"
+    },
+    {
+      "value": "TM",
+      "label": "Turkmenistan"
+    },
+    {
+      "value": "TC",
+      "label": "Turks and Caicos Islands"
+    },
+    {
+      "value": "UG",
+      "label": "Uganda"
+    },
+    {
+      "value": "UA",
+      "label": "Ukraine"
+    },
+    {
+      "value": "AE",
+      "label": "United Arab Emirates"
+    },
+    {
+      "value": "GB",
+      "label": "United Kingdom"
+    },
+    {
+      "value": "US",
+      "label": "United States"
+    },
+    {
+      "value": "UY",
+      "label": "Uruguay"
+    },
+    {
+      "value": "UZ",
+      "label": "Uzbekistan"
+    },
+    {
+      "value": "VU",
+      "label": "Vanuatu"
+    },
+    {
+      "value": "VE",
+      "label": "Venezuela, Bolivarian Republic of"
+    },
+    {
+      "value": "VN",
+      "label": "Viet Nam"
+    },
+    {
+      "value": "VG",
+      "label": "Virgin Islands, British"
+    },
+    {
+      "value": "VI",
+      "label": "Virgin Islands, U.S."
+    },
+    {
+      "value": "WF",
+      "label": "Wallis and Futuna"
+    },
+    {
+      "value": "EH",
+      "label": "Western Sahara"
+    },
+    {
+      "value": "YE",
+      "label": "Yemen"
+    },
+    {
+      "value": "ZM",
+      "label": "Zambia"
+    },
+    {
+      "value": "ZW",
+      "label": "Zimbabwe"
+    },
+    {
+      "value": "XX",
+      "label": "Other"
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/choices/emirates`
@@ -708,6 +2468,45 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 7,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "value": "AU",
+      "label": "Abu Dhabi"
+    },
+    {
+      "value": "DU",
+      "label": "Dubai"
+    },
+    {
+      "value": "SH",
+      "label": "Sharjah"
+    },
+    {
+      "value": "RK",
+      "label": "Ras Al Khaimah"
+    },
+    {
+      "value": "UQ",
+      "label": "Umm al-Quwain"
+    },
+    {
+      "value": "FU",
+      "label": "Fujairah"
+    },
+    {
+      "value": "AJ",
+      "label": "Ajman"
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/choices/gender`
@@ -727,6 +2526,29 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/choices/gender \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "value": "M",
+      "label": "Male"
+    },
+    {
+      "value": "F",
+      "label": "Female"
+    },
+    {
+      "value": "O",
+      "label": "Other"
+    }
+  ]
+}
 ```
 
 ---
@@ -769,6 +2591,37 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/choices/timeofday \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 5,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "value": "MOR",
+      "label": "Morning"
+    },
+    {
+      "value": "MID",
+      "label": "Mid-day"
+    },
+    {
+      "value": "AFT",
+      "label": "Afternoon"
+    },
+    {
+      "value": "EVE",
+      "label": "Evening"
+    },
+    {
+      "value": "ANY",
+      "label": "Any"
+    }
+  ]
+}
 ```
 
 ---
@@ -860,6 +2713,35 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 3,
+  "next": "https://ap.ad4x4.com/api/clubnews/?page=2&pageSize=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 4,
+      "title": "AD4x4 2025/2026 Season Opening Main Event",
+      "content": "Event Highlights\r\nDesert Convoy Drive \u2014 all levels welcome\r\nDesert Camp Celebration \u2014 family-friendly and fun\r\nLive Shows: Belly Dance \u2022 Tanura \u2022 Sufi \u2022 Fire Dance\r\nCamel Rides \u2022 Henna Art \u2022 Sandboarding\r\nCommon Sheesha Area & Tea Lounge\r\nDinner Buffet under the Stars \u2022 Music, Games & Kids\u2019 Activities",
+      "submitDate": "2025-11-01T00:49:53.383555",
+      "status": "SENT",
+      "levels": [],
+      "image": "https://ap.ad4x4.com/uploads/club_news/2025/11/we_are_fun_7131353a.jpg"
+    },
+    {
+      "id": 3,
+      "title": "AD4x4 2025/2026 Season Opening Main Event",
+      "content": "Event Highlights\r\nDesert Convoy Drive \u2014 all levels welcome\r\nDesert Camp Celebration \u2014 family-friendly and fun\r\nLive Shows: Belly Dance \u2022 Tanura \u2022 Sufi \u2022 Fire Dance\r\nCamel Rides \u2022 Henna Art \u2022 Sandboarding\r\nCommon Sheesha Area & Tea Lounge\r\nDinner Buffet under the Stars \u2022 Music, Games & Kids\u2019 Activities",
+      "submitDate": "2025-11-01T00:49:07.870293",
+      "status": "SENT",
+      "levels": [],
+      "image": "https://ap.ad4x4.com/uploads/club_news/2025/11/11314809_ec59e125.webp"
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/clubnews/{id}/`
@@ -905,6 +2787,26 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/device/fcm/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 13,
+      "name": null,
+      "registrationId": "fMFK_RhPsU9uuGjoo87VA_:APA91bHI5hyRPhQK8doget0UYwAsOxpPy2P873blBj_kNWM4MGoBO0WfpCpvffcwxnUXHJSX-ROpAU61Rfhy9hYYGMw3qSP2ScMwQ4bcLOduhVVHOMEetCc",
+      "deviceId": "5C6C5B1B-42D3-475B-996E-BEEE5C695951",
+      "active": true,
+      "dateCreated": "2025-11-06T23:31:44.732693",
+      "type": "ios"
+    }
+  ]
+}
 ```
 
 ---
@@ -1060,6 +2962,36 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+[
+  {
+    "id": 1,
+    "question": "How do I reset my password?",
+    "answer": "Go to Menu > My Profile > Reset Password and follow the steps.",
+    "order": 1
+  },
+  {
+    "id": 2,
+    "question": "Can I change my username?",
+    "answer": "Usernames are permanent and cannot be changed once set.",
+    "order": 2
+  },
+  {
+    "id": 3,
+    "question": "How to contact support?",
+    "answer": "Use the 'Help & Support' section in the main menu to contact us.",
+    "order": 3
+  },
+  {
+    "id": 5,
+    "question": "More Q",
+    "answer": "Answer",
+    "order": 4
+  }
+]
+```
+
 ---
 
 ### GET `/api/faqs/{id}/`
@@ -1130,6 +3062,67 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+[
+  {
+    "enableAutoUpgradeOnCheckin": true,
+    "emailSupportAddress": "support@ad4x4.com",
+    "forceWaitlist": false,
+    "hereMapsEnabled": true,
+    "hereMapsApiBaseUrl": "https://revgeocode.search.hereapi.com/v1/revgeocode",
+    "hereMapsSelectedFields": [
+      "city",
+      "district"
+    ],
+    "hereMapsMaxFields": 2,
+    "hereMapsCacheDuration": 1440,
+    "hereMapsRequestTimeout": 10,
+    "hereMapsAvailableFields": [
+      {
+        "name": "title",
+        "displayName": "Place Name"
+      },
+      {
+        "name": "district",
+        "displayName": "District"
+      },
+      {
+        "name": "city",
+        "displayName": "City"
+      },
+      {
+        "name": "county",
+        "displayName": "County"
+      },
+      {
+        "name": "countryName",
+        "displayName": "Country"
+      },
+      {
+        "name": "postalCode",
+        "displayName": "Postal Code"
+      },
+      {
+        "name": "label",
+        "displayName": "Full Address"
+      },
+      {
+        "name": "categoryName",
+        "displayName": "Category"
+      }
+    ],
+    "galleryApiUrl": "https://media.ad4x4.com",
+    "galleryApiTimeout": 30,
+    "enableGallerySystem": true,
+    "autoCreateTripGallery": true,
+    "allowManualGalleryCreation": true,
+    "autoUpgradeSourceLevel": 2,
+    "autoUpgradeTargetLevel": 3
+  }
+]
+```
+
 ---
 
 ## Groups
@@ -1154,6 +3147,82 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/groups/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 13,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 14,
+      "name": "ANIT",
+      "permissions": []
+    },
+    {
+      "id": 4,
+      "name": "Advanced",
+      "permissions": []
+    },
+    {
+      "id": 8,
+      "name": "Board members",
+      "permissions": []
+    },
+    {
+      "id": 5,
+      "name": "Experts",
+      "permissions": []
+    },
+    {
+      "id": 6,
+      "name": "Explorers",
+      "permissions": []
+    },
+    {
+      "id": 3,
+      "name": "Intermediates",
+      "permissions": []
+    },
+    {
+      "id": 7,
+      "name": "Marshals",
+      "permissions": []
+    },
+    {
+      "id": 11,
+      "name": "Media managers",
+      "permissions": []
+    },
+    {
+      "id": 10,
+      "name": "Meeting point managers",
+      "permissions": []
+    },
+    {
+      "id": 2,
+      "name": "Newbies",
+      "permissions": []
+    },
+    {
+      "id": 13,
+      "name": "Site admins",
+      "permissions": []
+    },
+    {
+      "id": 9,
+      "name": "Trip managers",
+      "permissions": []
+    },
+    {
+      "id": 12,
+      "name": "Upgrade request managers",
+      "permissions": []
+    }
+  ]
+}
 ```
 
 ---
@@ -1210,6 +3279,80 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 9,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Club Event",
+      "numericLevel": 5,
+      "displayName": "Club Event",
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "Newbie",
+      "numericLevel": 10,
+      "displayName": "Newbie",
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "ANIT",
+      "numericLevel": 10,
+      "displayName": "ANIT",
+      "active": true
+    },
+    {
+      "id": 4,
+      "name": "Intermediate",
+      "numericLevel": 100,
+      "displayName": "Intermediate",
+      "active": true
+    },
+    {
+      "id": 5,
+      "name": "Advanced",
+      "numericLevel": 200,
+      "displayName": "Advance",
+      "active": true
+    },
+    {
+      "id": 6,
+      "name": "Expert",
+      "numericLevel": 300,
+      "displayName": "Expert",
+      "active": false
+    },
+    {
+      "id": 7,
+      "name": "Explorer",
+      "numericLevel": 400,
+      "displayName": "Explorer",
+      "active": true
+    },
+    {
+      "id": 8,
+      "name": "Marshal",
+      "numericLevel": 600,
+      "displayName": "Marshal",
+      "active": true
+    },
+    {
+      "id": 9,
+      "name": "Board member",
+      "numericLevel": 800,
+      "displayName": "Board member",
+      "active": true
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/levels/{id}/`
@@ -1255,6 +3398,40 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/logbookentries/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 3,
+  "next": "https://ap.ad4x4.com/api/logbookentries/?page=2&pageSize=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 5,
+      "comment": null,
+      "trip": 6295,
+      "member": 11932,
+      "signedBy": 10613,
+      "skillsVerified": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": 6,
+      "comment": null,
+      "trip": 6295,
+      "member": 11932,
+      "signedBy": 10613,
+      "skillsVerified": [
+        1
+      ]
+    }
+  ]
+}
 ```
 
 ---
@@ -1577,6 +3754,157 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 22,
+  "next": "https://ap.ad4x4.com/api/logbookskills/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Clear Communication",
+      "description": "Member demonstrates clear and controlled \r\ncommunication skills including proper radio discipline.",
+      "order": 10,
+      "levelRequirement": 4
+    },
+    {
+      "id": 2,
+      "name": "Cresting Small Dunes",
+      "description": "Member can safely crest small dunes straight with \r\nproper amount of power and control (without jumping or launching)",
+      "order": 20,
+      "levelRequirement": 4
+    },
+    {
+      "id": 3,
+      "name": "Cresting Medium Dunes",
+      "description": "Member can safely crest medium dunes straight \r\non with proper amount of power and control (without jumping or launching)",
+      "order": 30,
+      "levelRequirement": 4
+    },
+    {
+      "id": 4,
+      "name": "Descend Small Slip-face",
+      "description": "Member can safely descend a small slip-face in \r\na controlled manner.",
+      "order": 40,
+      "levelRequirement": 4
+    },
+    {
+      "id": 5,
+      "name": "Descend Medium Slipface",
+      "description": "Member can safely descend a medium sized \r\nslipface in a controlled manner.",
+      "order": 50,
+      "levelRequirement": 4
+    },
+    {
+      "id": 6,
+      "name": "Basic Side Sloping",
+      "description": "Member can safely side slope small dunes in a \r\ncontrolled manner and know when to turn down - not fighting gravity.",
+      "order": 60,
+      "levelRequirement": 4
+    },
+    {
+      "id": 7,
+      "name": "Basic Recovery",
+      "description": "Perform basic snatch recovery under the supervision of a Marshal demonstrating proper position, clear communication, safe equipment uses and vehicle control.",
+      "order": 70,
+      "levelRequirement": 5
+    },
+    {
+      "id": 8,
+      "name": "Crest and Descend Large dunes",
+      "description": "Member can safely crest large dunes and descend large slipface with proper amount of power and control.",
+      "order": 80,
+      "levelRequirement": 5
+    },
+    {
+      "id": 9,
+      "name": "Side Cresting Small Dunes",
+      "description": "Member can safely crest a dune at an angle other than straight on in a variety of different scenarios in a safe and controlled manner appropriate for their vehicle.",
+      "order": 90,
+      "levelRequirement": 5
+    },
+    {
+      "id": 10,
+      "name": "Enter and Exit Bowls",
+      "description": "Member can safely enter and exit small and large bowls with proper amount of power and control.",
+      "order": 100,
+      "levelRequirement": 5
+    },
+    {
+      "id": 11,
+      "name": "Side Sloping",
+      "description": "Member can safely side slope in a controlled manner and know when to turn down - not fighting gravity.",
+      "order": 110,
+      "levelRequirement": 5
+    },
+    {
+      "id": 12,
+      "name": "GPS",
+      "description": "Member can record waypoints on their GPS.",
+      "order": 120,
+      "levelRequirement": 5
+    },
+    {
+      "id": 13,
+      "name": "Fix Pop out",
+      "description": "Member can safely manage the repair of a tire Pop out.",
+      "order": 130,
+      "levelRequirement": 5
+    },
+    {
+      "id": 14,
+      "name": "Introduction to Night Drive",
+      "description": "Member to be able to drive safely at night (after sunset)",
+      "order": 140,
+      "levelRequirement": 5
+    },
+    {
+      "id": 15,
+      "name": "Side Cresting Big Dunes",
+      "description": "Member can safely crest a dune at an angle other than straight on in a variety of different scenarios in a safe and controlled manner appropriate for their vehicle.",
+      "order": 150,
+      "levelRequirement": 7
+    },
+    {
+      "id": 16,
+      "name": "Advance Recovery",
+      "description": "Member can safely manage all aspects of an advance recovery under the supervision of a Marshal demonstrating proper safety assessment and position, clear communication, safe equipment uses and vehicle control. An Advance Recovery is a recovery that cannot be pulled straight on or is performed on a steep slope or angle.",
+      "order": 160,
+      "levelRequirement": 7
+    },
+    {
+      "id": 17,
+      "name": "Winch Recovery",
+      "description": "Member can safely manage all aspects of a winch recovery and/or support winch recovery under the supervision of a Marshal demonstrating proper safety assessment and position, clear communication and safe equipment use.",
+      "order": 170,
+      "levelRequirement": 7
+    },
+    {
+      "id": 18,
+      "name": "Navigation",
+      "description": "Member can confidently and safely navigate using (GAIA/Garmin or others) to define points and a safe exit point during day or night drives, program waypoints into their GPS (different format) and use the GPS to navigate to a waypoint (Pass \u201cGPS Trip\u201d).",
+      "order": 180,
+      "levelRequirement": 7
+    },
+    {
+      "id": 19,
+      "name": "Second Leading",
+      "description": "Member can safely perform the role of second lead in various levels, stopping the convoy if the leading Marshal discovers an unknown hazard, rerouting the convoy at the leading marshal\u2019s direction and assisting the leading Marshal with managing the convoy.",
+      "order": 190,
+      "levelRequirement": 7
+    },
+    {
+      "id": 20,
+      "name": "Sweeping",
+      "description": "Member can safely perform the role of sweeper in a trip, \r\nkeeping the leading Marshal aware of any problems or stuck in the convoy and \r\ncoordinating any recoveries with the leading Marshal.",
+      "order": 200,
+      "levelRequirement": 7
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/logbookskills/{id}/`
@@ -1629,6 +3957,177 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/meetingpoints/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 108,
+  "next": "https://ap.ad4x4.com/api/meetingpoints/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 142,
+      "name": "2nd December Cafeteria",
+      "lat": "25.041051",
+      "lon": "55.729863",
+      "link": "https://maps.google.com/?q=25.041051,55.729863",
+      "area": "DXB"
+    },
+    {
+      "id": 162,
+      "name": "ADNOC # 128 - Al Razeen",
+      "lat": "24.207018",
+      "lon": "54.833224",
+      "link": "https://maps.google.com/?q=24.207018,54.833224",
+      "area": "AUH"
+    },
+    {
+      "id": 131,
+      "name": "ADNOC AL FAYA",
+      "lat": "24.217905",
+      "lon": "54.852711",
+      "link": "https://maps.google.com/?q=24.217905,54.852711",
+      "area": "AUH"
+    },
+    {
+      "id": 170,
+      "name": "ADNOC Al Fayadha",
+      "lat": "23.650299",
+      "lon": "54.401383",
+      "link": "https://maps.google.com/?q=23.650299,54.401383",
+      "area": "AUH"
+    },
+    {
+      "id": 180,
+      "name": "ADNOC Madinat Zayed - LIWA",
+      "lat": "23.141813",
+      "lon": "53.796438",
+      "link": "https://maps.google.com/?q=23.141813,53.796438",
+      "area": "LIW"
+    },
+    {
+      "id": 177,
+      "name": "ADNOC Service Station | Mazyed",
+      "lat": "24.030188",
+      "lon": "55.844938",
+      "link": "https://maps.google.com/?q=24.030188,55.844938",
+      "area": "AAN"
+    },
+    {
+      "id": 155,
+      "name": "ADNOC Wathba New economy one",
+      "lat": "24.206465",
+      "lon": "54.836759",
+      "link": "https://maps.google.com/?q=24.206465,54.836759",
+      "area": "AUH"
+    },
+    {
+      "id": 110,
+      "name": "Adnoc Al Khatim",
+      "lat": "24.190768",
+      "lon": "54.993638",
+      "link": "https://maps.google.com/?q=24.190768,54.993638",
+      "area": "AUH"
+    },
+    {
+      "id": 192,
+      "name": "Adnoc meread",
+      "lat": "24.434313",
+      "lon": "54.832310",
+      "link": "https://maps.google.com/?q=24.434313,54.832310",
+      "area": "AUH"
+    },
+    {
+      "id": 209,
+      "name": "Al Ain Zoo",
+      "lat": "24.173757",
+      "lon": "55.735982",
+      "link": "https://maps.google.com/?q=24.173757,55.735982",
+      "area": "AAN"
+    },
+    {
+      "id": 116,
+      "name": "Al Faqa East Petrol Station",
+      "lat": "24.697341",
+      "lon": "55.631389",
+      "link": "https://maps.google.com/?q=24.697341,55.631389",
+      "area": "AAN"
+    },
+    {
+      "id": 119,
+      "name": "Al Faqa West Meeting Point",
+      "lat": "24.716972",
+      "lon": "55.620361",
+      "link": "https://maps.google.com/?q=24.716972,55.620361",
+      "area": "AAN"
+    },
+    {
+      "id": 134,
+      "name": "Al Faqa West Petrol Station",
+      "lat": "24.691043",
+      "lon": "55.632959",
+      "link": "https://maps.google.com/?q=24.691043,55.632959",
+      "area": "AAN"
+    },
+    {
+      "id": 186,
+      "name": "Al Faqa to Al Qudra meeting point",
+      "lat": "24.725243",
+      "lon": "55.556450",
+      "link": "https://maps.google.com/?q=24.725243,55.556450",
+      "area": "DXB"
+    },
+    {
+      "id": 214,
+      "name": "Al Faqaa DXB",
+      "lat": "24.639624",
+      "lon": "55.489447",
+      "link": "https://maps.google.com/?q=24.639624,55.489447",
+      "area": "AAN"
+    },
+    {
+      "id": 216,
+      "name": "Al Faqaa Meeting point",
+      "lat": "24.639050",
+      "lon": "55.490250",
+      "link": "https://maps.google.com/?q=24.639050,55.490250",
+      "area": "AAN"
+    },
+    {
+      "id": 206,
+      "name": "Al Faya Deflation Point - AUH",
+      "lat": "24.232362",
+      "lon": "54.900973",
+      "link": "https://maps.google.com/?q=24.232362,54.900973",
+      "area": "AUH"
+    },
+    {
+      "id": 160,
+      "name": "Al Faya Meeting Point",
+      "lat": "24.232510",
+      "lon": "54.901081",
+      "link": "https://maps.google.com/?q=24.232510,54.901081",
+      "area": "AUH"
+    },
+    {
+      "id": 210,
+      "name": "Al Faya North (Entrance to Abdulla Farm)",
+      "lat": "24.395520",
+      "lon": "55.006307",
+      "link": "https://maps.google.com/?q=24.395520,55.006307",
+      "area": "AUH"
+    },
+    {
+      "id": 195,
+      "name": "Al Faya North (Heavy Vehicle)",
+      "lat": "24.381513",
+      "lon": "54.987626",
+      "link": "https://maps.google.com/?q=24.381513,54.987626",
+      "area": "AUH"
+    }
+  ]
+}
 ```
 
 ---
@@ -2126,6 +4625,62 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 10587,
+  "next": "https://ap.ad4x4.com/api/members/?page=2&pageSize=3",
+  "previous": null,
+  "results": [
+    {
+      "id": 10554,
+      "username": "Admin",
+      "firstName": "Admin",
+      "lastName": "AD4x4",
+      "phone": "+971502218532",
+      "level": "ANIT",
+      "tripCount": 0,
+      "carBrand": "Other",
+      "carModel": "Cherokee",
+      "carColor": null,
+      "carImage": null,
+      "email": "admin@ad4x4.com",
+      "paidMember": false
+    },
+    {
+      "id": 10555,
+      "username": "MegaMoe",
+      "firstName": "Mohammed",
+      "lastName": "Hunaidi",
+      "phone": "+971506213955",
+      "level": "Board member",
+      "tripCount": 3,
+      "carBrand": "Other",
+      "carModel": "Porsche Cayenne Turbo S",
+      "carColor": null,
+      "carImage": null,
+      "email": "mohammedhunaidi@hotmail.com",
+      "paidMember": false
+    },
+    {
+      "id": 10556,
+      "username": "khaiwi",
+      "firstName": "Abdulrahman",
+      "lastName": "Khaiwi",
+      "phone": "+971506229266",
+      "level": "Board member",
+      "tripCount": 154,
+      "carBrand": "Jeep",
+      "carModel": "JLUR",
+      "carColor": null,
+      "carImage": null,
+      "email": "akhaiwi@eim.ae",
+      "paidMember": false
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/members/{id}/`
@@ -2384,6 +4939,57 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+
+
+**Example Response**:
+```json
+{
+  "count": 12,
+  "next": "https://ap.ad4x4.com/api/members/10613/triphistory?page=2&pageSize=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 6295,
+      "title": "Int Test Trip",
+      "description": "Testing Inter Access Level. Testing Inter Access Level.",
+      "startTime": "2025-11-28T12:06:00",
+      "endTime": "2025-11-28T13:06:00",
+      "lead": {
+        "id": 10613,
+        "username": "Hani AMJ"
+      },
+      "level": {
+        "id": 4,
+        "name": "Intermediate",
+        "numericLevel": 100,
+        "displayName": "Intermediate",
+        "active": true
+      },
+      "checkedIn": true
+    },
+    {
+      "id": 6294,
+      "title": "Newbie Test Trip",
+      "description": "Testing Newbies Access Level. Testing Newbies Access Level.",
+      "startTime": "2025-11-28T12:01:00",
+      "endTime": "2025-11-28T12:16:00",
+      "lead": {
+        "id": 10613,
+        "username": "Hani AMJ"
+      },
+      "level": {
+        "id": 3,
+        "name": "Newbie",
+        "numericLevel": 10,
+        "displayName": "Newbie",
+        "active": true
+      },
+      "checkedIn": true
+    }
+  ]
+}
+```
+
 ---
 
 ### GET `/api/members/{id}/triprequests`
@@ -2453,6 +5059,57 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+[
+  {
+    "id": 10613,
+    "username": "Hani AMJ",
+    "firstName": "Hani",
+    "lastName": "AMJ",
+    "phone": "+971501166676",
+    "level": "Board member",
+    "tripCount": 41,
+    "carBrand": "Jeep",
+    "carModel": "Gladiator",
+    "carColor": "Orange",
+    "carImage": null,
+    "email": "hani_janem@hotmail.com",
+    "paidMember": false
+  },
+  {
+    "id": 17877,
+    "username": "Redbeard",
+    "firstName": "Mikkel",
+    "lastName": "Madsen",
+    "phone": "+971502031826",
+    "level": "Explorer",
+    "tripCount": 100,
+    "carBrand": "Toyota",
+    "carModel": "FJ",
+    "carColor": "Orange",
+    "carImage": null,
+    "email": "mikkel3@gmail.com",
+    "paidMember": false
+  },
+  {
+    "id": 19888,
+    "username": "Abu Makram",
+    "firstName": "Mohssen",
+    "lastName": "Kansou",
+    "phone": "+971504740800",
+    "level": "Marshal",
+    "tripCount": 120,
+    "carBrand": "Jeep",
+    "carModel": "Jeeb wrangler",
+    "carColor": "White",
+    "carImage": null,
+    "email": "Mohssen@grakonet.com",
+    "paidMember": false
+  }
+]
+```
+
 ---
 
 ### GET `/api/members/leadsearch`
@@ -2497,6 +5154,35 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/notifications/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 20,
+  "next": "https://ap.ad4x4.com/api/notifications/?page=2&pageSize=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 648,
+      "title": "New Intermediate trip on Sat 06 Dec 18:09",
+      "body": "\"Swriahan Winter Surfing\" - by Abu Makram",
+      "timestamp": "2025-11-29T18:11:13.920427",
+      "type": "NEW_TRIP",
+      "relatedObjectId": 6307,
+      "relatedObjectType": "Trip"
+    },
+    {
+      "id": 623,
+      "title": "New Intermediate trip on Sat 06 Dec 15:00",
+      "body": "\"Winter Dunes Surfing\" - by Abu Makram",
+      "timestamp": "2025-11-29T17:12:16.356141",
+      "type": "NEW_TRIP",
+      "relatedObjectId": 6306,
+      "relatedObjectType": "Trip"
+    }
+  ]
+}
 ```
 
 ---
@@ -2544,6 +5230,144 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/permissionmatrix/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 73,
+  "next": "https://ap.ad4x4.com/api/permissionmatrix/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "action": "create_trip_with_approval",
+      "group": 6,
+      "levels": [
+        3
+      ]
+    },
+    {
+      "id": 2,
+      "action": "create_trip",
+      "group": 6,
+      "levels": [
+        4,
+        5,
+        7,
+        6
+      ]
+    },
+    {
+      "id": 3,
+      "action": "create_meeting_points",
+      "group": 6,
+      "levels": []
+    },
+    {
+      "id": 4,
+      "action": "create_trip",
+      "group": 7,
+      "levels": []
+    },
+    {
+      "id": 5,
+      "action": "view_upgrade_req",
+      "group": 7,
+      "levels": []
+    },
+    {
+      "id": 6,
+      "action": "vote_upgrade_req",
+      "group": 7,
+      "levels": []
+    },
+    {
+      "id": 7,
+      "action": "create_comment_upgrade_req",
+      "group": 7,
+      "levels": []
+    },
+    {
+      "id": 8,
+      "action": "view_upgrade_req",
+      "group": 8,
+      "levels": []
+    },
+    {
+      "id": 9,
+      "action": "vote_upgrade_req",
+      "group": 8,
+      "levels": []
+    },
+    {
+      "id": 10,
+      "action": "create_comment_upgrade_req",
+      "group": 8,
+      "levels": []
+    },
+    {
+      "id": 11,
+      "action": "approve_upgrade_req",
+      "group": 8,
+      "levels": []
+    },
+    {
+      "id": 12,
+      "action": "override_waitlist",
+      "group": 8,
+      "levels": []
+    },
+    {
+      "id": 13,
+      "action": "view_upgrade_req",
+      "group": 12,
+      "levels": []
+    },
+    {
+      "id": 14,
+      "action": "vote_upgrade_req",
+      "group": 12,
+      "levels": []
+    },
+    {
+      "id": 15,
+      "action": "create_comment_upgrade_req",
+      "group": 12,
+      "levels": []
+    },
+    {
+      "id": 16,
+      "action": "edit_upgrade_req",
+      "group": 12,
+      "levels": []
+    },
+    {
+      "id": 17,
+      "action": "delete_upgrade_req",
+      "group": 12,
+      "levels": []
+    },
+    {
+      "id": 18,
+      "action": "delete_comment_upgrade_req",
+      "group": 12,
+      "levels": []
+    },
+    {
+      "id": 19,
+      "action": "edit_trips",
+      "group": 9,
+      "levels": []
+    },
+    {
+      "id": 20,
+      "action": "approve_trip",
+      "group": 9,
+      "levels": []
+    }
+  ]
+}
 ```
 
 ---
@@ -2617,6 +5441,75 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+[
+  {
+    "id": 2,
+    "title": "Qaruoty Car Service",
+    "description": "Qaruoty Car Service - Offroad Tuning",
+    "priority": 100,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Qaruoty_f623d96e.png"
+  },
+  {
+    "id": 3,
+    "title": "ARB Emirates",
+    "description": "ARB Emirates 4x4 Accessories",
+    "priority": 200,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/ARB_58008bcb.png"
+  },
+  {
+    "id": 4,
+    "title": "Car Care",
+    "description": "Car Care",
+    "priority": 300,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Car_care_848c8734.png"
+  },
+  {
+    "id": 5,
+    "title": "Central Motors & Equipment",
+    "description": "Central Motors & Equipment LLC (CM&E) is a Member of ALFAHIM Automotive, providing diversified range of products, services & solutions to cater the dynamic market needs of the UAE whether in retail or wholesales through its exclusive distribution rights of world renowned brands such as Bosch, Michelin, Osram, Knorr-Bremse, Valeo, Dremel, TIGAR and many more in the country with its purpose built and state of the art facilities.",
+    "priority": 400,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/CME_22af07df.png"
+  },
+  {
+    "id": 6,
+    "title": "Eastern Motors",
+    "description": "Alfahim introduced Eastern Motors to be the first ever automotive mall concept in the Emirate of Abu Dhabi. Located in the oasis city of Al Ain, and strategically located in Al Saniya District, Eastern Motors provides clients with an all-round automotive experience which includes Mercedes-Benz, Jeep, Fiat, Mopar, Michelin, Tyre Plus and Bosch.",
+    "priority": 500,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/E_M_LLC_d14963d6.png"
+  },
+  {
+    "id": 7,
+    "title": "Fury Automotive Dubai",
+    "description": "We provide auto detailing, maintenance, oil changes, and diagnostics to keep your vehicle in top shape.",
+    "priority": 600,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Fury_bcc76bc2.png"
+  },
+  {
+    "id": 8,
+    "title": "Qaruoty Car Service",
+    "description": "Qaruoty Car Service - Offroad Tuning",
+    "priority": 700,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Qaruoty_258aadee.png"
+  },
+  {
+    "id": 9,
+    "title": "Qwaider Al Nabulsi Restaurant & Sweets",
+    "description": "Qwaider Al Nabulsi Restaurant & Sweets",
+    "priority": 800,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Qwaider_b832ac16.png"
+  },
+  {
+    "id": 10,
+    "title": "Sama AlMoheet Seafood & Grill Restaurant",
+    "description": "Sama AlMoheet Seafood & Grill Restaurant",
+    "priority": 1000,
+    "image": "https://ap.ad4x4.com/uploads/avatars/2025/10/Sama_95480d0a.png"
+  }
+]
+```
+
 ---
 
 ### GET `/api/sponsors/{id}/`
@@ -2655,6 +5548,13 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/systemtime/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "currentTime": "2025-11-30T00:36:09.993365"
+}
 ```
 
 ---
@@ -2842,6 +5742,24 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 4,
+      "trip": 6279,
+      "title": "Trip Report",
+      "trackFile": null,
+      "trackImage": null
+    }
+  ]
+}
+```
+
 ---
 
 ### POST `/api/tripreports/`
@@ -3020,6 +5938,61 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 16,
+      "timeOfDay": "Afternoon",
+      "area": "Abu Dhabi",
+      "level": "Newbie",
+      "date": "2025-11-29",
+      "member": {
+        "id": 16997,
+        "username": "303Mike",
+        "firstName": "",
+        "lastName": "",
+        "phone": "+971565241492",
+        "level": "Newbie",
+        "tripCount": 1,
+        "carBrand": "Other",
+        "carModel": "Toyota FJ Cruiser",
+        "carColor": null,
+        "carImage": null,
+        "email": "lovatjjo572@hotmail.com",
+        "paidMember": false
+      }
+    },
+    {
+      "id": 17,
+      "timeOfDay": "Any",
+      "area": null,
+      "level": null,
+      "date": "2025-12-04",
+      "member": {
+        "id": 11932,
+        "username": "259",
+        "firstName": "Kate",
+        "lastName": "Jolly",
+        "phone": "+971527000003",
+        "level": "Advanced",
+        "tripCount": 2,
+        "carBrand": "Other",
+        "carModel": "Mercedes G",
+        "carColor": "Black",
+        "carImage": null,
+        "email": "ameeris@hotmail.com",
+        "paidMember": false
+      }
+    }
+  ]
+}
+```
+
 ---
 
 ### POST `/api/triprequests/`
@@ -3124,6 +6097,15 @@ curl -X DELETE \
 curl -X GET \
   http://localhost:8000/api/triprequests/aggregate \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+[
+  {
+    "voteCount": 2
+  }
+]
 ```
 
 ---
@@ -3233,6 +6215,134 @@ curl -X POST \
 curl -X GET \
   http://localhost:8000/api/trips/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 3160,
+  "next": "https://ap.ad4x4.com/api/trips/?page=2&pageSize=3",
+  "previous": null,
+  "results": [
+    {
+      "id": 3151,
+      "lead": {
+        "id": 14777,
+        "username": "Carlo"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 117,
+        "name": "Badayer shops",
+        "lat": "24.954864",
+        "lon": "55.714139",
+        "link": "https://maps.google.com/?q=24.954864,55.714139",
+        "area": ""
+      },
+      "level": {
+        "id": 3,
+        "name": "Newbie",
+        "numericLevel": 10,
+        "displayName": "Newbie",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 8,
+      "image": "https://ap.ad4x4.com/uploads/trips_images/Carlo/img-20181010-wa0043.jpg",
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": true,
+      "isWaitlisted": false,
+      "created": "2018-10-10T19:33:35",
+      "title": "The beauty of Badayer",
+      "description": "",
+      "startTime": "2018-10-12T09:00:00",
+      "endTime": "2018-10-12T13:30:00",
+      "cutOff": "2018-10-12T00:00:00",
+      "capacity": 10,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    },
+    {
+      "id": 3143,
+      "lead": {
+        "id": 15515,
+        "username": "EmDoc"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 111,
+        "name": "Razeen Street ",
+        "lat": "23.756237",
+        "lon": "54.782426",
+        "link": "https://maps.google.com/?q=23.756237,54.782426",
+        "area": ""
+      },
+      "level": {
+        "id": 5,
+        "name": "Advanced",
+        "numericLevel": 200,
+        "displayName": "Advance",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 5,
+      "image": "https://ap.ad4x4.com/uploads/trips_images/FidoDido/UMOSHH.jpg",
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": false,
+      "isWaitlisted": false,
+      "created": "2018-10-09T08:14:16",
+      "title": "Sand Surfing in Um Al Oush: 12/10/2018am",
+      "description": "<p>A Friday morning cruise around the spectacular sands of Umm al Oush to practice and develop Advance level skills.</p>\r\n<p>Dear Members, Please be reminded that as an Advance drive this is trip is NOT open to any driver below the advance level.</p>\r\n<p>Trip limited to a maximum of 5 Advance drivers.</p>",
+      "startTime": "2018-10-12T09:30:00",
+      "endTime": "2018-10-12T13:30:00",
+      "cutOff": "2018-10-12T09:30:00",
+      "capacity": 0,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    },
+    {
+      "id": 3146,
+      "lead": {
+        "id": 10556,
+        "username": "khaiwi"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 112,
+        "name": "wadi Shawka",
+        "lat": "25.080557",
+        "lon": "56.027811",
+        "link": "https://maps.google.com/?q=25.080557,56.027811",
+        "area": ""
+      },
+      "level": {
+        "id": 3,
+        "name": "Newbie",
+        "numericLevel": 10,
+        "displayName": "Newbie",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 6,
+      "image": "https://ap.ad4x4.com/uploads/trips_images/khaiwi/dsc_0356.jpg",
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": false,
+      "isWaitlisted": false,
+      "created": "2018-10-08T21:55:13",
+      "title": "Wadi Shwaka Revisited",
+      "description": "<p>Relaxing and relatively moderate to easy rock crawling trip in Wadi Shawka area for those who like such type of terrain.</p>\r\n<p>Be ready for a full day of a different type of fun.</p>\r\n<p>Please bring enough food and drinks for you and your passengers, your camera and garbage bags so we do not throw our garbage on the trail.\u00a0</p>\r\n<p>\u00a0</p>\r\n<p>Meeting will be ADNOC Sharjah Kalba Road\u00a0 found on the following link</p>\r\n<p><a href=\"https://goo.gl/maps/UqctvfKtRBn\">https://goo.gl/maps/UqctvfKtRBn</a></p>\r\n<p>\u00a0</p>",
+      "startTime": "2018-10-12T12:00:00",
+      "endTime": "2018-10-12T20:00:00",
+      "cutOff": "2018-10-12T15:00:00",
+      "capacity": 0,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    }
+  ]
+}
 ```
 
 ---
@@ -3355,6 +6465,95 @@ curl -X DELETE \
 curl -X GET \
   http://localhost:8000/api/trips/{id}/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "id": 6307,
+  "lead": {
+    "id": 19888,
+    "username": "Abu Makram",
+    "firstName": "Mohssen",
+    "lastName": "Kansou",
+    "phone": "+971504740800",
+    "level": "Marshal",
+    "tripCount": 120,
+    "carBrand": "Jeep",
+    "carModel": "Jeeb wrangler",
+    "carColor": "White",
+    "carImage": null,
+    "email": "Mohssen@grakonet.com",
+    "paidMember": false
+  },
+  "deputyLeads": [],
+  "meetingPoint": {
+    "id": 142,
+    "name": "2nd December Cafeteria",
+    "lat": "25.041051",
+    "lon": "55.729863",
+    "link": "https://maps.google.com/?q=25.041051,55.729863",
+    "area": "DXB"
+  },
+  "level": {
+    "id": 4,
+    "name": "Intermediate",
+    "numericLevel": 100,
+    "displayName": "Intermediate",
+    "active": true
+  },
+  "waitlistCount": 0,
+  "registeredCount": 1,
+  "registered": [
+    {
+      "id": 54837,
+      "member": {
+        "id": 11932,
+        "username": "259",
+        "firstName": "Kate",
+        "lastName": "Jolly",
+        "phone": "+971527000003",
+        "level": "Advanced",
+        "tripCount": 2,
+        "carBrand": "Other",
+        "carModel": "Mercedes G",
+        "carColor": "Black",
+        "carImage": null,
+        "email": "ameeris@hotmail.com",
+        "paidMember": false
+      },
+      "registrationDate": "2025-11-29T19:15:12.432807",
+      "checkedIn": false
+    }
+  ],
+  "waitlist": [],
+  "image": null,
+  "approvedBy": {
+    "id": 19888,
+    "username": "Abu Makram",
+    "firstName": "Mohssen",
+    "lastName": "Kansou",
+    "phone": "+971504740800",
+    "level": "Marshal",
+    "tripCount": 120,
+    "carBrand": "Jeep",
+    "carModel": "Jeeb wrangler",
+    "carColor": "White",
+    "carImage": null,
+    "email": "Mohssen@grakonet.com",
+    "paidMember": false
+  },
+  "galleryId": "c06766ea-fc14-4bb9-bdd2-db0c66c2533a",
+  "created": "2025-11-29T18:10:30.271121",
+  "title": "Swriahan Winter Surfing",
+  "description": "8 hours day drive for intermediates drivers. Lets go",
+  "startTime": "2025-12-06T18:09:00",
+  "endTime": "2025-12-06T20:34:00",
+  "cutOff": "2025-12-05T18:09:00",
+  "capacity": 20,
+  "approvalStatus": "D",
+  "allowWaitlist": true
+}
 ```
 
 ---
@@ -3839,6 +7038,64 @@ curl -X GET \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
 ```
 
+**Example Response**:
+```json
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 11,
+      "finalApprover": {
+        "id": 10613,
+        "username": "Hani AMJ",
+        "firstName": "Hani",
+        "lastName": "AMJ",
+        "level": {
+          "id": 9,
+          "name": "Board member",
+          "numericLevel": 800
+        },
+        "tripCount": 41,
+        "avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "title": "Founder & Webmaster"
+      },
+      "applicant": {
+        "id": 16997,
+        "username": "303Mike",
+        "firstName": "",
+        "lastName": "",
+        "level": {
+          "id": 3,
+          "name": "Newbie",
+          "numericLevel": 10
+        },
+        "tripCount": 1,
+        "avatar": null,
+        "title": null
+      },
+      "targetLevel": {
+        "id": 4,
+        "name": "Intermediate",
+        "numericLevel": 100
+      },
+      "yesVoters": 1,
+      "noVoters": 0,
+      "deferVoters": 1,
+      "nominatedVoters": [],
+      "status": "Declined",
+      "created": "2025-11-16T15:32:38.356287",
+      "applicantStr": "303Mike",
+      "applicantReason": "please upgrade me. I have completed my skills. Thank Hani you.",
+      "verdictDate": "2025-11-16T19:33:50.501612",
+      "verdictReason": "Log book not attached",
+      "attachment": null
+    }
+  ]
+}
+```
+
 ---
 
 ### POST `/api/upgraderequests/`
@@ -4119,6 +7376,16 @@ curl -X GET \
 curl -X GET \
   http://localhost:8000/api/upgraderequests/latestapproved \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+```
+
+**Example Response**:
+```json
+{
+  "count": 0,
+  "next": null,
+  "previous": null,
+  "results": []
+}
 ```
 
 ---
@@ -5253,6 +8520,52 @@ curl -X GET "https://ap.ad4x4.com/api/members/deletion-request" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
+**Example Response**:
+```json
+{
+  "enabled": true,
+  "selectedFields": [
+    "city",
+    "district"
+  ],
+  "maxFields": 2,
+  "availableFields": [
+    {
+      "name": "title",
+      "displayName": "Place Name"
+    },
+    {
+      "name": "district",
+      "displayName": "District"
+    },
+    {
+      "name": "city",
+      "displayName": "City"
+    },
+    {
+      "name": "county",
+      "displayName": "County"
+    },
+    {
+      "name": "countryName",
+      "displayName": "Country"
+    },
+    {
+      "name": "postalCode",
+      "displayName": "Postal Code"
+    },
+    {
+      "name": "label",
+      "displayName": "Full Address"
+    },
+    {
+      "name": "categoryName",
+      "displayName": "Category"
+    }
+  ]
+}
+```
+
 ---
 
 ### POST `/api/members/cancel-deletion`
@@ -5574,7 +8887,15 @@ curl -X GET "https://ap.ad4x4.com/api/ENDPOINT/" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
-**Important**: Use `Bearer` prefix, NOT `Token`.
+**Example Response**:
+```json
+{
+  "count": 0,
+  "next": null,
+  "previous": null,
+  "results": []
+}
+```
 
 ---
 
