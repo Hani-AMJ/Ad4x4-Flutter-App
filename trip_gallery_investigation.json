@@ -1,0 +1,401 @@
+{
+  "trips": [
+    {
+      "id": 3151,
+      "lead": {
+        "id": 14777,
+        "username": "Carlo"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 117,
+        "name": "Badayer shops",
+        "lat": "24.954864",
+        "lon": "55.714139",
+        "link": "https://maps.google.com/?q=24.954864,55.714139",
+        "area": ""
+      },
+      "level": {
+        "id": 3,
+        "name": "Newbie",
+        "numericLevel": 10,
+        "displayName": "Newbie",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 8,
+      "image": "https://ap.ad4x4.com/uploads/trips_images/Carlo/img-20181010-wa0043.jpg",
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": true,
+      "isWaitlisted": false,
+      "created": "2018-10-10T19:33:35",
+      "title": "The beauty of Badayer",
+      "description": "",
+      "startTime": "2018-10-12T09:00:00",
+      "endTime": "2018-10-12T13:30:00",
+      "cutOff": "2018-10-12T00:00:00",
+      "capacity": 10,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    },
+    {
+      "id": 3143,
+      "lead": {
+        "id": 15515,
+        "username": "EmDoc"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 111,
+        "name": "Razeen Street ",
+        "lat": "23.756237",
+        "lon": "54.782426",
+        "link": "https://maps.google.com/?q=23.756237,54.782426",
+        "area": ""
+      },
+      "level": {
+        "id": 5,
+        "name": "Advanced",
+        "numericLevel": 200,
+        "displayName": "Advance",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 5,
+      "image": "https://ap.ad4x4.com/uploads/trips_images/FidoDido/UMOSHH.jpg",
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": false,
+      "isWaitlisted": false,
+      "created": "2018-10-09T08:14:16",
+      "title": "Sand Surfing in Um Al Oush: 12/10/2018am",
+      "description": "<p>A Friday morning cruise around the spectacular sands of Umm al Oush to practice and develop Advance level skills.</p>\r\n<p>Dear Members, Please be reminded that as an Advance drive this is trip is NOT open to any driver below the advance level.</p>\r\n<p>Trip limited to a maximum of 5 Advance drivers.</p>",
+      "startTime": "2018-10-12T09:30:00",
+      "endTime": "2018-10-12T13:30:00",
+      "cutOff": "2018-10-12T09:30:00",
+      "capacity": 0,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    },
+    {
+      "id": 3146,
+      "lead": {
+        "id": 10556,
+        "username": "khaiwi"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 112,
+        "name": "wadi Shawka",
+        "lat": "25.080557",
+        "lon": "56.027811",
+        "link": "https://maps.google.com/?q=25.080557,56.027811",
+        "area": ""
+      },
+      "level": {
+        "id": 3,
+        "name": "Newbie",
+        "numericLevel": 10,
+        "displayName": "Newbie",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 6,
+      "image": "https://ap.ad4x4.com/uploads/trips_images/khaiwi/dsc_0356.jpg",
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": false,
+      "isWaitlisted": false,
+      "created": "2018-10-08T21:55:13",
+      "title": "Wadi Shwaka Revisited",
+      "description": "<p>Relaxing and relatively moderate to easy rock crawling trip in Wadi Shawka area for those who like such type of terrain.</p>\r\n<p>Be ready for a full day of a different type of fun.</p>\r\n<p>Please bring enough food and drinks for you and your passengers, your camera and garbage bags so we do not throw our garbage on the trail.\u00a0</p>\r\n<p>\u00a0</p>\r\n<p>Meeting will be ADNOC Sharjah Kalba Road\u00a0 found on the following link</p>\r\n<p><a href=\"https://goo.gl/maps/UqctvfKtRBn\">https://goo.gl/maps/UqctvfKtRBn</a></p>\r\n<p>\u00a0</p>",
+      "startTime": "2018-10-12T12:00:00",
+      "endTime": "2018-10-12T20:00:00",
+      "cutOff": "2018-10-12T15:00:00",
+      "capacity": 0,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    },
+    {
+      "id": 3145,
+      "lead": {
+        "id": 17454,
+        "username": "Francis"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 114,
+        "name": "Nahel Adnoc",
+        "lat": "24.518098",
+        "lon": "55.515042",
+        "link": "https://maps.google.com/?q=24.518098,55.515042",
+        "area": ""
+      },
+      "level": {
+        "id": 3,
+        "name": "Newbie",
+        "numericLevel": 10,
+        "displayName": "Newbie",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 11,
+      "image": "https://ap.ad4x4.com/uploads/trips_images/Francis/lets-rock-newbies.jpg",
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": false,
+      "isWaitlisted": false,
+      "created": "2018-10-08T13:08:48",
+      "title": "Lets Rock Newbies!",
+      "description": "<p style=\"margin-right: 0in; margin-left: 0in; font-size: 10pt; font-family: 'Times New Roman'; caret-color: #000000; color: #000000;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #444444;\">Lets drive this Friday to one of our most favorite area. This is going to be a Newbie trip and provided everyone is doing well then we will push up the level a notch up :) Who have driven with me know what I mean :D</span></p>\r\n<p style=\"margin-right: 0in; margin-left: 0in; font-size: 10pt; font-family: 'Times New Roman'; caret-color: #000000; color: #000000;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #444444;\">Make sure to leave your full name, car model and mobile number in the comments when you register for the event.</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Meeting Date: Friday 12th Oct 2018</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Meeting Time: 1:30PM</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Depart: 1:45PM</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Meeting Location: https://goo.gl/maps/35qMXk52ez92</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">GPS Coordinates: 24\u00b031'05.3\"N 55\u00b030'52.5\"E</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #e4af0a;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Nearest Mosque: <span class=\"apple-converted-space\">\u00a0 </span><a style=\"color: purple;\" href=\"https://goo.gl/maps/VrUxQ8sDEw62\"><span style=\"color: #e4af0a;\">https://goo.gl/maps/VrUxQ8sDEw62</span></a></span><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #e4af0a;\"></span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Drive Level: Newbie</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Drive end: Sundown</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545; min-height: 14px;\"></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">Lead: Francis-F150<span class=\"apple-converted-space\"></span></span><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #e4af0a;\"><a>0552231008</a></span><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\"></span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">1: Please be on time!</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">2: A full tank of Fuel is a must</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">3: Its imperative that you carry a compatible Radio tuned with FRS frequency used in AD4X4</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">4: Ensure your 4X4 is in perfect condition with front and back recovery points.</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">5: Carry all necessary offroad/recovery gear according to your level</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">6: Carry enough water/refreshments/food for yourself and for your passenger</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">7: Please go through Trips 101 on AD4X4 website</span></p>\r\n<p style=\"margin: 0px; font-stretch: normal; font-size: 12px; line-height: normal; font-family: 'Helvetica Neue'; color: #454545;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #454545;\">AD4X4 Indemnity &amp; Rules Apply.</span></p>\r\n<p style=\"margin-right: 0in; margin-left: 0in; font-size: 10pt; font-family: 'Times New Roman'; color: #000000;\"><span style=\"font-size: 14pt; font-family: 'Helvetica Neue'; color: #444444;\">See you all with a big SMILE</span></p>",
+      "startTime": "2018-10-12T15:30:00",
+      "endTime": "2018-10-12T20:00:00",
+      "cutOff": "2018-10-12T15:00:00",
+      "capacity": 15,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    },
+    {
+      "id": 3152,
+      "lead": {
+        "id": 16822,
+        "username": "Flaghunter"
+      },
+      "deputyLeads": [],
+      "meetingPoint": {
+        "id": 118,
+        "name": "Khazna Deflation Point",
+        "lat": "24.302289",
+        "lon": "55.126729",
+        "link": "https://maps.google.com/?q=24.302289,55.126729",
+        "area": ""
+      },
+      "level": {
+        "id": 5,
+        "name": "Advanced",
+        "numericLevel": 200,
+        "displayName": "Advance",
+        "active": true
+      },
+      "waitlistCount": 0,
+      "registeredCount": 4,
+      "image": null,
+      "approvedBy": null,
+      "galleryId": null,
+      "isRegistered": false,
+      "isWaitlisted": false,
+      "created": "2018-10-15T07:24:17",
+      "title": "Shaving the Crests of Khazna (Fri 19/10 AM ADV)",
+      "description": "<p>Let's shave off every crest in the Khazna playground dunes.\u00a0</p>\r\n<p>Please *note meeting point*: 24\u00b018'09.0\"N 55\u00b007'35.5\"E (24.302501, 55.126516)</p>\r\n<p>Meeting time at 7:15am sharp, we will start driving 7:30am. AD4x4 rules apply. We will have fun, practice side cresting, and try to finish by 11:15am so that people can still make it to Faqa for the Pink drive.\u00a0</p>\r\n<p>Lead: Flaghunter (Michal) - JK - 0544727447</p>",
+      "startTime": "2018-10-19T09:15:00",
+      "endTime": "2018-10-19T13:15:00",
+      "cutOff": "2018-10-19T09:15:00",
+      "capacity": 5,
+      "approvalStatus": "A",
+      "allowWaitlist": true
+    }
+  ],
+  "galleries": [
+    {
+      "id": "c06766ea-fc14-4bb9-bdd2-db0c66c2533a",
+      "name": "Swriahan Winter Surfing",
+      "description": "Auto-created gallery for trip: Swriahan Winter Surfing",
+      "created_by": 19888,
+      "created_by_username": "Abu Makram",
+      "created_by_avatar": null,
+      "trip_level": 4,
+      "is_public": 1,
+      "created_at": "2025-11-29T14:10:31.029Z",
+      "updated_at": "2025-11-29T14:10:31.029Z",
+      "soft_deleted_at": null,
+      "source_trip_id": "6307.0",
+      "auto_created": 1,
+      "trip_level_name": "Intermediate",
+      "photo_count": 2,
+      "latest_photo_date": "2025-11-29 16:44:52",
+      "sample_photos": [
+        "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+        "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg"
+      ],
+      "sample_metadata": {
+        "filename": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+        "date_taken": null,
+        "camera_make": null,
+        "camera_model": null,
+        "iso": null,
+        "aperture": null,
+        "shutter_speed": null,
+        "focal_length": null,
+        "latitude": null,
+        "longitude": null,
+        "location_name": null,
+        "file_size": null,
+        "width": 3840,
+        "height": 2880
+      }
+    },
+    {
+      "id": "dcf6f61b-0eaa-47a6-8123-510257bcfa1a",
+      "name": "23Nov-DXB",
+      "description": "",
+      "created_by": 20170,
+      "created_by_username": "Mota3m",
+      "created_by_avatar": null,
+      "trip_level": 4,
+      "is_public": 1,
+      "created_at": "2025-11-28 10:43:50",
+      "updated_at": "2025-11-28 10:43:50",
+      "soft_deleted_at": null,
+      "source_trip_id": null,
+      "auto_created": 0,
+      "trip_level_name": "Intermediate",
+      "photo_count": 1,
+      "latest_photo_date": "2025-11-28 10:44:49",
+      "sample_photos": [
+        "e95898b1-94d3-40f8-8f1f-3ebe99b89c32.jpg"
+      ],
+      "sample_metadata": {
+        "filename": "e95898b1-94d3-40f8-8f1f-3ebe99b89c32.jpg",
+        "date_taken": "2025-11-23T16:15:19.000Z",
+        "camera_make": "samsung",
+        "camera_model": "Galaxy Z Fold6",
+        "iso": "25",
+        "aperture": "f/2.4",
+        "shutter_speed": "1/2140s",
+        "focal_length": "7mm",
+        "latitude": null,
+        "longitude": null,
+        "location_name": null,
+        "file_size": null,
+        "width": 3840,
+        "height": 2162
+      }
+    },
+    {
+      "id": "94d6a048-1925-4810-bfdd-674d425a4787",
+      "name": "Mercedes Dunes Drive 2025 ",
+      "description": "",
+      "created_by": 10613,
+      "created_by_username": "Hani AMJ",
+      "created_by_avatar": null,
+      "trip_level": 1,
+      "is_public": 1,
+      "created_at": "2025-11-22 18:14:37",
+      "updated_at": "2025-11-22 18:14:37",
+      "soft_deleted_at": null,
+      "source_trip_id": null,
+      "auto_created": 0,
+      "trip_level_name": "Club Event",
+      "photo_count": 7,
+      "latest_photo_date": "2025-11-22 18:15:17",
+      "sample_photos": [
+        "11827965-b6fb-4981-be8d-869c27a238b1.jpg",
+        "10e36f4d-1800-412e-8d13-bf107034010b.jpg",
+        "4f097cb5-47f9-42a5-9af8-b09655f035cb.jpg",
+        "2a4f0f9a-e7a0-4afc-9f4d-a2e383203c82.jpg"
+      ],
+      "sample_metadata": {
+        "filename": "11827965-b6fb-4981-be8d-869c27a238b1.jpg",
+        "date_taken": "2025-11-22T15:20:58.000Z",
+        "camera_make": "Apple",
+        "camera_model": "iPhone 15 Pro Max",
+        "iso": "50",
+        "aperture": "f/2.2",
+        "shutter_speed": "1/2342s",
+        "focal_length": "2.220000028611935mm",
+        "latitude": 24.415794444444444,
+        "longitude": 55.19635833333333,
+        "location_name": "Ramlat Sweihan, United Arab Emirates",
+        "file_size": null,
+        "width": 3840,
+        "height": 2880
+      }
+    },
+    {
+      "id": "10205a13-07ec-4224-84ad-69fd9b1a0a95",
+      "name": "Bu Tais",
+      "description": "Intermediate drive",
+      "created_by": 18901,
+      "created_by_username": "Dirtdiver",
+      "created_by_avatar": null,
+      "trip_level": 4,
+      "is_public": 1,
+      "created_at": "2025-11-09 10:22:41",
+      "updated_at": "2025-11-09 10:22:41",
+      "soft_deleted_at": null,
+      "source_trip_id": null,
+      "auto_created": 0,
+      "trip_level_name": "Intermediate",
+      "photo_count": 4,
+      "latest_photo_date": "2025-11-09 10:34:18",
+      "sample_photos": [
+        "b5d0ab89-f1fe-49c2-b561-218f5002457a.jpg",
+        "e5828d72-6c4a-4398-9be8-1a1736eeabc5.jpg",
+        "4037d5be-c968-4ab8-91c1-30664d7d5bc8.jpg",
+        "f22c9c8e-8707-4171-95a7-5e4f31195616.jpg"
+      ],
+      "sample_metadata": {
+        "filename": "b5d0ab89-f1fe-49c2-b561-218f5002457a.jpg",
+        "date_taken": null,
+        "camera_make": null,
+        "camera_model": null,
+        "iso": null,
+        "aperture": null,
+        "shutter_speed": null,
+        "focal_length": null,
+        "latitude": null,
+        "longitude": null,
+        "location_name": null,
+        "file_size": null,
+        "width": 3024,
+        "height": 4032
+      }
+    },
+    {
+      "id": "ad5cca82-ef30-46cc-9ae5-163ce2112067",
+      "name": "Season Opening 2025",
+      "description": "2025 2026",
+      "created_by": 10613,
+      "created_by_username": "Hani AMJ",
+      "created_by_avatar": null,
+      "trip_level": 1,
+      "is_public": 1,
+      "created_at": "2025-11-04 22:21:18",
+      "updated_at": "2025-11-04 22:21:18",
+      "soft_deleted_at": null,
+      "source_trip_id": null,
+      "auto_created": 0,
+      "trip_level_name": "Club Event",
+      "photo_count": 127,
+      "latest_photo_date": "2025-11-09 10:16:19",
+      "sample_photos": [
+        "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+        "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+        "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg"
+      ],
+      "sample_metadata": {
+        "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "date_taken": null,
+        "camera_make": null,
+        "camera_model": null,
+        "iso": null,
+        "aperture": null,
+        "shutter_speed": null,
+        "focal_length": null,
+        "latitude": null,
+        "longitude": null,
+        "location_name": null,
+        "file_size": null,
+        "width": 1200,
+        "height": 1600
+      }
+    }
+  ],
+  "analysis": {
+    "trips_count": 5,
+    "galleries_count": 5,
+    "user_id": 10613
+  }
+}
