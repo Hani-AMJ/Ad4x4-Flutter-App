@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import 'package:flutter/foundation.dart'; // V2 - Clean implementation
 import '../../../../shared/widgets/widgets.dart';
 import '../../../../data/repositories/main_api_repository.dart'; // ✅ NEW
+import '../../../../core/services/deletion_state_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -16,6 +18,9 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // ✅ NEW: Repository for backend API calls
   final _repository = MainApiRepository();
+  
+  // GDPR Account Deletion State
+  DeletionStateService? _deletionService;
   
   // ✅ UPDATED: Backend-synced notification settings
   bool _clubNewsEmail = true;
@@ -36,7 +41,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeDeletionService();
     _loadNotificationSettings();
+  }
+  
+  Future<void> _initializeDeletionService() async {
+    final prefs = await SharedPreferences.getInstance();
+    // CRITICAL: Get current user ID to make deletion state user-specific
+    final userId = prefs.getString('user_id');
+    setState(() {
+      _deletionService = DeletionStateService(prefs, userId: userId);
+    });
+    
+    // Debug logging
+    // ignore: avoid_print
+    print('🔧 [DeletionService] Initialized for user: $userId');
   }
 
   /// ✅ NEW: Load notification settings from backend
@@ -117,6 +136,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             // Account Section
             _SectionHeader(title: 'Account'),
+            
+            // Deletion Warning Banner
+            if (_deletionService?.isDeletionRequested == true) ...[
+              _buildDeletionWarningBanner(),
+              const SizedBox(height: 16),
+            ],
+            
             _SettingsTile(
               icon: Icons.person_outline,
               title: 'Edit Profile',
@@ -345,17 +371,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () {
-                      _showDeleteAccountDialog(context);
-                    },
+                    onPressed: _deletionService?.isDeletionRequested == true
+                        ? null  // Disable button if deletion already requested
+                        : () {
+                            _showDeleteAccountDialog(context);
+                          },
                     child: Text(
                       'Delete Account',
                       style: TextStyle(
-                        color: colors.error,
+                        color: _deletionService?.isDeletionRequested == true
+                            ? colors.onSurface.withValues(alpha: 0.3)  // Gray out when disabled
+                            : colors.error,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
+                  // Show hint text when button is disabled
+                  if (_deletionService?.isDeletionRequested == true)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+                      child: Text(
+                        'Account deletion already requested. See orange banner above to cancel.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colors.onSurface.withValues(alpha: 0.6),
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -539,20 +583,379 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // TODO: Implement account deletion
+            onPressed: () async {
+              // Close confirmation dialog
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
+              if (!context.mounted) return;
+              
+              // CRITICAL: Capture ScaffoldMessenger BEFORE async operations
+              // This ensures we can dismiss the loading SnackBar even if widget unmounts
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              
+              // Show loading using SnackBar (not Dialog - avoids Navigator.pop issues)
+              scaffoldMessenger.showSnackBar(
                 const SnackBar(
-                  content: Text('Account deletion requested'),
+                  content: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Text('Processing deletion request...'),
+                    ],
+                  ),
+                  duration: Duration(hours: 1), // Will be dismissed manually
                 ),
               );
+              
+              try {
+                final result = await _repository.requestAccountDeletion();
+                
+                // Production-safe logging
+                // ignore: avoid_print
+                print('🔍 [DeleteAccount] Backend response: $result');
+                // ignore: avoid_print
+                print('   Dismissing loading SnackBar...');
+                
+                // ALWAYS dismiss loading, even if widget unmounted
+                scaffoldMessenger.hideCurrentSnackBar();
+                
+                // ignore: avoid_print
+                print('   Loading dismissed!');
+                
+                // Parse response
+                final success = result['success'] == true;
+                final message = result['message']?.toString() ?? '';
+                final isAlreadyExists = message.contains('already') || 
+                                       message == 'deletion_request_already_exists';
+                
+                // ignore: avoid_print
+                print('   success=$success, isAlreadyExists=$isAlreadyExists');
+                // ignore: avoid_print
+                print('   context.mounted=${context.mounted}');
+                
+                if (success || isAlreadyExists) {
+                  // Update local state (suppress errors - backend is source of truth)
+                  try {
+                    if (_deletionService != null) {
+                      await _deletionService!.setDeletionRequested();
+                      // ignore: avoid_print
+                      print('   ✅ Local deletion state updated');
+                    }
+                  } catch (e) {
+                    // ignore: avoid_print
+                    print('⚠️ [DeleteAccount] Failed to update local state: $e');
+                  }
+                  
+                  // CRITICAL: Force UI refresh to show/hide cancel button
+                  // Use postFrameCallback to ensure safe timing
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {});
+                      // ignore: avoid_print
+                      print('   ✅ UI refreshed - cancel button should now appear');
+                    }
+                  });
+                  
+                  // CRITICAL: Show success message EVEN IF WIDGET UNMOUNTED
+                  // ScaffoldMessenger persists across route changes
+                  final snackBarMessage = isAlreadyExists
+                      ? 'A deletion request is already active. You can cancel it below.'
+                      : 'Account deletion requested. Your account will be deleted in 30 days.';
+                  
+                  // ignore: avoid_print
+                  print('   📩 Showing success SnackBar: $snackBarMessage');
+                  
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(snackBarMessage),
+                      backgroundColor: Colors.orange,
+                      duration: const Duration(seconds: 5),
+                      action: SnackBarAction(
+                        label: 'OK',
+                        textColor: Colors.white,
+                        onPressed: () {},
+                      ),
+                    ),
+                  );
+                } else {
+                  // Handle error - show message EVEN IF WIDGET UNMOUNTED
+                  final errorMessage = message.isNotEmpty ? message : 'Unknown error occurred';
+                  
+                  // ignore: avoid_print
+                  print('   ❌ Showing error SnackBar: $errorMessage');
+                  
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to request deletion: $errorMessage'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 5),
+                    ),
+                  );
+                }
+              } catch (e, stackTrace) {
+                // Catch ANY unexpected errors
+                // ignore: avoid_print
+                print('❌ [DeleteAccount] Unexpected error: $e');
+                // ignore: avoid_print
+                print('   Stack trace: $stackTrace');
+                
+                // ALWAYS dismiss loading, even if widget unmounted
+                scaffoldMessenger.hideCurrentSnackBar();
+                
+                if (!context.mounted) return;
+                
+                // Show error to user
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Unexpected error: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: colors.error,
               foregroundColor: Colors.white,
             ),
             child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDeletionWarningBanner() {
+    final colors = Theme.of(context).colorScheme;
+    final daysLeft = _deletionService?.daysUntilDeletion;
+    final scheduledDate = _deletionService?.formattedDeletionDate;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.orange.shade300,
+          width: 2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.orange.shade900,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Account Deletion Scheduled',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange.shade900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            scheduledDate != null
+                ? 'Your account will be permanently deleted on $scheduledDate.'
+                : 'Your account is scheduled for deletion.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.orange.shade800,
+            ),
+          ),
+          if (daysLeft != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              daysLeft <= 0
+                  ? 'Deletion is overdue. Please contact support.'
+                  : daysLeft == 1
+                      ? '1 day remaining'
+                      : '$daysLeft days remaining',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: daysLeft <= 7 ? Colors.red.shade700 : Colors.orange.shade700,
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                _showCancelDeletionDialog(context);
+              },
+              icon: const Icon(Icons.cancel),
+              label: const Text('Cancel Deletion'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showCancelDeletionDialog(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Account Deletion'),
+        content: const Text(
+          'Are you sure you want to cancel the account deletion request? '
+          'Your account will remain active.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('No, Keep Deletion'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Close confirmation dialog
+              Navigator.pop(context);
+              if (!context.mounted) return;
+              
+              // CRITICAL: Capture ScaffoldMessenger BEFORE async operations
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              
+              // Show loading using SnackBar
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(
+                  content: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Text('Cancelling deletion request...'),
+                    ],
+                  ),
+                  duration: Duration(hours: 1),
+                ),
+              );
+              
+              try {
+                final result = await _repository.cancelAccountDeletion();
+                
+                // Production-safe logging
+                // ignore: avoid_print
+                print('🔍 [CancelDeletion] Backend response: $result');
+                
+                // ALWAYS dismiss loading
+                scaffoldMessenger.hideCurrentSnackBar();
+                
+                // Parse response
+                final success = result['success'] == true;
+                final message = result['message']?.toString() ?? '';
+                final notFound = message == 'deletion_request_not_found';
+                
+                if (success || notFound) {
+                  // Clear deletion state
+                  try {
+                    if (_deletionService != null) {
+                      await _deletionService!.clearDeletionState();
+                      // ignore: avoid_print
+                      print('   ✅ Local deletion state cleared');
+                    }
+                  } catch (e) {
+                    // ignore: avoid_print
+                    print('⚠️ [CancelDeletion] Failed to clear local state: $e');
+                  }
+                  
+                  // CRITICAL: Force UI refresh to hide cancel button and enable delete button
+                  // Use postFrameCallback to ensure safe timing
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {});
+                      // ignore: avoid_print
+                      print('   ✅ UI refreshed - cancel button should now disappear');
+                    }
+                  });
+                  
+                  // Show success message EVEN IF UNMOUNTED
+                  final snackBarMessage = notFound
+                      ? 'No active deletion request found'
+                      : 'Account deletion cancelled successfully';
+                  final snackBarColor = notFound ? Colors.orange : Colors.green;
+                  
+                  // ignore: avoid_print
+                  print('   📩 Showing success SnackBar: $snackBarMessage');
+                  
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(snackBarMessage),
+                      backgroundColor: snackBarColor,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                } else {
+                  // Handle error - show message EVEN IF UNMOUNTED
+                  final errorMessage = message.isNotEmpty ? message : 'Unknown error occurred';
+                  
+                  // ignore: avoid_print
+                  print('   ❌ Showing error SnackBar: $errorMessage');
+                  
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to cancel deletion: $errorMessage'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 5),
+                    ),
+                  );
+                }
+              } catch (e, stackTrace) {
+                // Catch ANY unexpected errors
+                // ignore: avoid_print
+                print('❌ [CancelDeletion] Unexpected error: $e');
+                // ignore: avoid_print
+                print('   Stack trace: $stackTrace');
+                
+                // ALWAYS dismiss loading
+                scaffoldMessenger.hideCurrentSnackBar();
+                
+                // Show error to user EVEN IF UNMOUNTED
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to cancel deletion: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Yes, Cancel Deletion'),
           ),
         ],
       ),

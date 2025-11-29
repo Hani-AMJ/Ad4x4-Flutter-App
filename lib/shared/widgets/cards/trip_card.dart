@@ -20,6 +20,8 @@ class TripCard extends StatelessWidget {
   final bool isEligible; // ✅ NEW: User meets level requirement
   final bool isLocked; // ✅ NEW: User doesn't meet level requirement
   final bool isLead; // ✅ NEW: User is the trip lead
+  final String? galleryId; // ✅ GALLERY: Trip gallery ID (UUID)
+  final int? photoCount; // ✅ GALLERY: Number of photos in gallery
 
   const TripCard({
     super.key,
@@ -40,6 +42,8 @@ class TripCard extends StatelessWidget {
     this.isEligible = true, // ✅ NEW: Default eligible
     this.isLocked = false, // ✅ NEW: Default not locked
     this.isLead = false, // ✅ NEW: Default not lead
+    this.galleryId, // ✅ GALLERY: Optional gallery ID
+    this.photoCount, // ✅ GALLERY: Optional photo count
   });
 
   // Get icon and color using LevelDisplayHelper
@@ -111,6 +115,14 @@ class TripCard extends StatelessWidget {
                     bottom: 8,
                     right: 8,
                     child: _buildLeadBadge(context),
+                  ),
+                
+                // ✅ GALLERY: Photo count badge (bottom-left corner)
+                if (galleryId != null && photoCount != null && photoCount! > 0)
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: _buildGalleryBadge(context, photoCount!),
                   ),
               ],
             ),
@@ -458,6 +470,45 @@ class TripCard extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             'Lead',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// ✅ GALLERY: Build gallery badge showing photo count
+  Widget _buildGalleryBadge(BuildContext context, int count) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE91E63).withValues(alpha: 0.95), // Pink for gallery
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.photo_library,
+            size: 14,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '$count',
             style: theme.textTheme.bodySmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w600,

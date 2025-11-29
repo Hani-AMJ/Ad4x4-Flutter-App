@@ -25,8 +25,15 @@
 
 ## 📌 Project Status & Quick Links
 
-**Current Version:** 1.5.2 (November 2024)  
-**Next Release:** v2.0 - Gallery Integration (Target: December 2024)
+**Current Version:** 1.6.2 (November 2024)  
+**Latest Release:** Trip Statistics & Level Filtering Enhancement
+
+### 🆕 Latest Updates (v1.6.2)
+- **Enhanced Profile Statistics** - Detailed trip counts and level breakdown with interactive filtering
+- **Filtered Trips View** - Filter trips by completion status and difficulty level
+- **GDPR Compliance** - Account deletion request feature in settings
+- **Bug Fixes** - Trip level parsing for backend API inconsistencies (String vs Object)
+- **App Rebranding** - Official "AD4x4" app name across all platforms
 
 ### 🔗 Essential Links
 - **📋 Task Board:** [GitHub Issues](https://github.com/Hani-AMJ/Ad4x4-Flutter-App/issues)

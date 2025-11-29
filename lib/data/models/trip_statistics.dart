@@ -36,21 +36,75 @@ class TripStatistics {
   });
 
   /// Create TripStatistics from JSON response
+  /// 
+  /// Backend returns:
+  /// {
+  ///   "member": {"id": 123, "username": "John Doe"},
+  ///   "tripStats": [
+  ///     {"levelName": "ANIT", "levelNumeric": 10, "count": 11},
+  ///     {"levelName": "Newbie", "levelNumeric": 10, "count": 7},
+  ///     {"levelName": "Intermediate", "levelNumeric": 100, "count": 2},
+  ///     {"levelName": "Advanced", "levelNumeric": 200, "count": 6},
+  ///     {"levelName": "Expert", "levelNumeric": 300, "count": 2},
+  ///     {"levelName": "Club Event", "levelNumeric": 5, "count": 22}
+  ///   ]
+  /// }
   factory TripStatistics.fromJson(Map<String, dynamic> json) {
+    // Parse tripStats array if present
+    final tripStatsArray = json['tripStats'] as List<dynamic>?;
+    
+    int totalTripsCount = 0;
+    // Map to UI display order (as per LevelDisplayHelper.getTripLevelLabel):
+    // Level 1 in UI = Club Event (levelNumeric: 5)
+    // Level 2 in UI = Newbie/ANIT (levelNumeric: 10)
+    // Level 3 in UI = Intermediate (levelNumeric: 100)
+    // Level 4 in UI = Advanced (levelNumeric: 200)
+    // Level 5 in UI = Expert (levelNumeric: 300)
+    int level1Count = 0;  // Club Event (levelNumeric: 5)
+    int level2Count = 0;  // Newbie/ANIT (levelNumeric: 10)
+    int level3Count = 0;  // Intermediate (levelNumeric: 100)
+    int level4Count = 0;  // Advanced (levelNumeric: 200)
+    int level5Count = 0;  // Expert (levelNumeric: 300)
+    
+    if (tripStatsArray != null) {
+      for (final stat in tripStatsArray) {
+        if (stat is Map<String, dynamic>) {
+          final levelNumeric = _parseInt(stat['levelNumeric']);
+          final count = _parseInt(stat['count']);
+          
+          // Map levelNumeric to UI levels (matching LevelDisplayHelper)
+          if (levelNumeric == 5) {
+            level1Count += count; // Club Event
+          } else if (levelNumeric == 10) {
+            level2Count += count; // Newbie/ANIT
+          } else if (levelNumeric == 100) {
+            level3Count += count; // Intermediate
+          } else if (levelNumeric == 200) {
+            level4Count += count; // Advanced
+          } else if (levelNumeric == 300) {
+            level5Count += count; // Expert
+          }
+          
+          // Count total trips (including club events)
+          totalTripsCount += count;
+        }
+      }
+    }
+    
     return TripStatistics(
-      totalTrips: _parseInt(json['totalTrips'] ?? json['total_trips'] ?? json['total'] ?? 0),
+      totalTrips: totalTripsCount,
       upcomingTrips: _parseInt(json['upcomingTrips'] ?? json['upcoming_trips'] ?? json['upcoming'] ?? 0),
-      completedTrips: _parseInt(json['completedTrips'] ?? json['completed_trips'] ?? json['completed'] ?? 0),
+      completedTrips: totalTripsCount, // All trips in tripStats are completed (checked-in)
       cancelledTrips: _parseInt(json['cancelledTrips'] ?? json['cancelled_trips'] ?? json['cancelled'] ?? 0),
       asLeadTrips: _parseInt(json['asLeadTrips'] ?? json['as_lead_trips'] ?? json['asLead'] ?? json['as_lead'] ?? 0),
       asMarshalTrips: _parseInt(json['asMarshalTrips'] ?? json['as_marshal_trips'] ?? json['asMarshal'] ?? json['as_marshal'] ?? 0),
-      level1Trips: _parseInt(json['level1Trips'] ?? json['level_1_trips'] ?? json['level1'] ?? 0),
-      level2Trips: _parseInt(json['level2Trips'] ?? json['level_2_trips'] ?? json['level2'] ?? 0),
-      level3Trips: _parseInt(json['level3Trips'] ?? json['level_3_trips'] ?? json['level3'] ?? 0),
-      level4Trips: _parseInt(json['level4Trips'] ?? json['level_4_trips'] ?? json['level4'] ?? 0),
-      level5Trips: _parseInt(json['level5Trips'] ?? json['level_5_trips'] ?? json['level5'] ?? 0),
+      level1Trips: level1Count, // Club Event
+      level2Trips: level2Count, // Newbie
+      level3Trips: level3Count, // Intermediate
+      level4Trips: level4Count, // Advanced
+      level5Trips: level5Count, // Expert
       mostFrequentArea: json['mostFrequentArea'] as String? ?? json['most_frequent_area'] as String?,
-      checkedInCount: _parseInt(json['checkedInCount'] ?? json['checked_in_count'] ?? json['checkedIn'] ?? 0),
+      checkedInCount: totalTripsCount, // All trips in tripStats represent checked-in trips
       attendanceRate: _parseDouble(json['attendanceRate'] ?? json['attendance_rate'] ?? 0.0),
     );
   }

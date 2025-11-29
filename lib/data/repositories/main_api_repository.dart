@@ -843,6 +843,131 @@ class MainApiRepository {
     return response.data;
   }
 
+  // ==========================================
+  // === GDPR COMPLIANCE - ACCOUNT DELETION ===
+  // ==========================================
+
+  /// Request account deletion (GDPR "Right to be Forgotten")
+  /// 
+  /// This submits a request to delete the user's account. The backend will
+  /// schedule the account for deletion (typically 30 days from request).
+  /// User can cancel the deletion before it's processed.
+  /// 
+  /// **Backend Behavior:**
+  /// - On success: Returns `{"success": true, "message": "deletion_request_submitted"}`
+  /// - If duplicate: Returns `{"success": false, "message": "deletion_request_already_exists"}`
+  /// - Deletion status NOT returned in member profile (tracked server-side only)
+  /// 
+  /// **Important Notes:**
+  /// - Backend does NOT expose deletion status in member profile response
+  /// - Frontend must track deletion state locally (SharedPreferences)
+  /// - Calculate deletion date as: request_date + 30 days
+  /// 
+  /// **Returns:**
+  /// - `success` (bool): Whether request was successful
+  /// - `message` (String): Response message key
+  /// 
+  /// **Example Usage:**
+  /// ```dart
+  /// try {
+  ///   final result = await repository.requestAccountDeletion();
+  ///   if (result['success'] == true) {
+  ///     // Store locally: deletion_requested = true, date = now
+  ///     // Show success message with 30-day timeline
+  ///     // Display warning banner in settings
+  ///   } else if (result['message'] == 'deletion_request_already_exists') {
+  ///     // Set local state to deletion requested
+  ///     // Show message: "Deletion request already active"
+  ///   }
+  /// } catch (e) {
+  ///   // Show error message
+  /// }
+  /// ```
+  Future<Map<String, dynamic>> requestAccountDeletion() async {
+    try {
+      final response = await _apiClient.post(
+        MainApiEndpoints.requestAccountDeletion,
+        data: {},
+      );
+      return response.data;
+    } catch (e) {
+      // Handle ApiException and extract error message
+      if (e is ApiException) {
+        return {
+          'success': false,
+          'message': e.message,
+          'error': e.message,
+          'statusCode': e.statusCode,
+        };
+      }
+      // Return error in expected format instead of throwing
+      return {
+        'success': false,
+        'message': e.toString(),
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Cancel pending account deletion request
+  /// 
+  /// Allows user to cancel a deletion request before it's processed.
+  /// Only works if deletion hasn't been executed yet (within 30-day window).
+  /// 
+  /// **Backend Behavior:**
+  /// - On success: Returns `{"success": true, "message": "deletion_request_cancelled"}`
+  /// - If no request: Returns `{"success": false, "message": "deletion_request_not_found"}`
+  /// 
+  /// **Important Notes:**
+  /// - Clear local deletion state on successful cancellation
+  /// - If returns "not_found", also clear local state (sync issue resolved)
+  /// 
+  /// **Returns:**
+  /// - `success` (bool): Whether cancellation was successful
+  /// - `message` (String): Response message key
+  /// 
+  /// **Example Usage:**
+  /// ```dart
+  /// try {
+  ///   final result = await repository.cancelAccountDeletion();
+  ///   if (result['success'] == true) {
+  ///     // Clear local deletion state
+  ///     // Hide warning banner
+  ///     // Show success message
+  ///   } else if (result['message'] == 'deletion_request_not_found') {
+  ///     // Clear local state anyway (was out of sync)
+  ///     // Show message: "No active deletion request found"
+  ///   }
+  /// } catch (e) {
+  ///   // Show error message
+  /// }
+  /// ```
+  Future<Map<String, dynamic>> cancelAccountDeletion() async {
+    try {
+      final response = await _apiClient.post(
+        MainApiEndpoints.cancelAccountDeletion,
+        data: {},
+      );
+      return response.data;
+    } catch (e) {
+      // Handle ApiException and extract error message
+      if (e is ApiException) {
+        return {
+          'success': false,
+          'message': e.message,
+          'error': e.message,
+          'statusCode': e.statusCode,
+        };
+      }
+      // Return error in expected format instead of throwing
+      return {
+        'success': false,
+        'message': e.toString(),
+        'error': e.toString(),
+      };
+    }
+  }
+
   /// Get member trip history
   /// [checkedIn] - Optional filter to include only trips where member is checked in
   Future<Map<String, dynamic>> getMemberTripHistory({

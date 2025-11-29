@@ -329,6 +329,55 @@ class Trip {
   // Check if trip is full
   bool get isFull => registeredCount >= capacity;
 
+  /// Helper to parse level field which can be String or Map
+  static TripLevel _parseTripLevel(dynamic levelData) {
+    if (levelData is Map<String, dynamic>) {
+      return TripLevel.fromJson(levelData);
+    } else if (levelData is String) {
+      // Backend returned just a string name - create a basic TripLevel
+      // Map common level names to numeric values
+      int numericLevel = 0;
+      switch (levelData) {
+        case 'Club Event':
+        case 'CLUB EVENT':
+          numericLevel = 5;
+          break;
+        case 'Newbie':
+        case 'NEWBIE':
+        case 'ANIT':
+          numericLevel = 10;
+          break;
+        case 'Intermediate':
+        case 'INTERMEDIATE':
+          numericLevel = 100;
+          break;
+        case 'Advanced':
+        case 'ADVANCED':
+        case 'Advance':  // Backend variation without 'd'
+        case 'ADVANCE':
+          numericLevel = 200;
+          break;
+        case 'Expert':
+        case 'EXPERT':
+          numericLevel = 300;
+          break;
+      }
+      
+      return TripLevel(
+        id: 0, // Unknown ID
+        name: levelData,
+        numericLevel: numericLevel,
+      );
+    } else {
+      // Fallback for unexpected data types
+      return TripLevel(
+        id: 0,
+        name: 'Unknown',
+        numericLevel: 0,
+      );
+    }
+  }
+
   factory Trip.fromJson(Map<String, dynamic> json) {
     // Handle date fields safely
     final startTimeStr = json['start_time'] as String? ?? json['startTime'] as String? ?? DateTime.now().toIso8601String();
@@ -348,7 +397,7 @@ class Trip {
                 (json['meetingPoint'] != null ? (json['meetingPoint'] as Map<String, dynamic>)['name'] as String? : null) ?? 
                 (json['meeting_point'] != null ? (json['meeting_point'] as Map<String, dynamic>)['name'] as String? : null) ?? 
                 'TBA',
-      level: TripLevel.fromJson(json['level'] as Map<String, dynamic>),
+      level: _parseTripLevel(json['level']),
       capacity: json['capacity'] as int? ?? 0,  // Handle null capacity
       registeredCount: json['registered_count'] as int? ?? json['registeredCount'] as int? ?? 0,
       waitlistCount: json['waitlist_count'] as int? ?? json['waitlistCount'] as int? ?? 0,

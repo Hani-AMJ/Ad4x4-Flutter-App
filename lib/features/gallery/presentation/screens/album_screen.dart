@@ -70,23 +70,61 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
   Future<void> _loadAlbumPhotos() async {
     setState(() => _isLoading = true);
 
+    // Step 1: Get or create album object
+    Album? album;
     try {
       print('📸 [AlbumScreen] Loading album photos...');
       print('   Album ID (UUID): ${widget.albumId}');
       
       // Use pre-loaded album if available (passed from gallery list)
       // This avoids calling the non-existent gallery detail API endpoint
-      Album album;
       if (widget.album != null) {
         print('✅ [AlbumScreen] Using pre-loaded album data');
         album = widget.album!;
       } else {
-        print('⚠️ [AlbumScreen] No pre-loaded album, attempting detail API call...');
-        // Fallback: Try detail API (will likely fail as endpoint doesn't exist)
-        final albumResponse = await _galleryRepository.getGalleryDetail(widget.albumId);
-        album = Album.fromJson(albumResponse['data'] ?? albumResponse['gallery'] ?? albumResponse);
+        print('⚠️ [AlbumScreen] No pre-loaded album, creating minimal album object...');
+        // The Gallery API doesn't have a detail endpoint, so create minimal album
+        // The photos API call below will provide the actual data we need
+        album = Album(
+          id: widget.albumId,
+          title: 'Trip Gallery', // Generic title for trip galleries
+          description: '',
+          coverImageUrl: null,
+          photoCount: 0,
+          createdAt: DateTime.now(),
+          createdBy: '',
+          tripId: null,
+          tripTitle: null,
+          samplePhotos: [],
+        );
       }
       
+      // Set album first so UI can display even if photos fail
+      setState(() {
+        _album = album;
+      });
+    } catch (e) {
+      print('❌ [AlbumScreen] Error creating album object: $e');
+      setState(() {
+        _album = null;
+        _photos = [];
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Invalid album data'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+      return;
+    }
+    
+    // Step 2: Load photos (separate try-catch to keep album if photos fail)
+    try {
       // Fetch photos with sorting
       final photosResponse = await _galleryRepository.getGalleryPhotos(
         galleryId: widget.albumId,
@@ -115,26 +153,39 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
 
       print('✅ [AlbumScreen] Loaded album with ${photos.length} photos');
       setState(() {
-        _album = album;
         _photos = photos;
         _isLoading = false;
       });
     } catch (e) {
-      print('❌ [AlbumScreen] Error loading album: $e');
+      print('❌ [AlbumScreen] Error loading photos: $e');
       print('   Album ID: ${widget.albumId}');
       print('   Error type: ${e.runtimeType}');
       
-      // Show error state (no mock data for UUIDs)
+      // Keep album, just show no photos
       setState(() {
-        _album = null;
         _photos = [];
         _isLoading = false;
       });
       
       if (mounted) {
+        // Provide helpful error message for photo loading failures
+        String errorMessage = 'Failed to load photos';
+        if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+          errorMessage = 'Please log in again to view photos';
+        } else if (e.toString().contains('404') || e.toString().contains('Not Found')) {
+          errorMessage = 'Photos not found';
+        } else {
+          // For empty galleries, don't show error - it's expected
+          if (_photos.isEmpty) {
+            print('ℹ️ [AlbumScreen] No photos in gallery (expected for new galleries)');
+            return; // Don't show error snackbar for empty galleries
+          }
+          errorMessage = 'Failed to load photos: ${e.toString()}';
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ Failed to load album: ${e.toString()}'),
+            content: Text('❌ $errorMessage'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
             action: SnackBarAction(

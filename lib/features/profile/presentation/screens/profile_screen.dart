@@ -10,6 +10,7 @@ import '../../../../core/utils/level_display_helper.dart';
 import '../../../../core/services/vehicle_modifications_cache_service.dart';
 import '../../../../data/models/feedback.dart' as feedback_model;
 import '../../../../data/models/trip_statistics.dart';
+import '../../../../data/models/user_model.dart';
 import '../../../../data/models/vehicle_modifications_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../shared/widgets/widgets.dart';
@@ -103,19 +104,47 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     });
     
     try {
+      // Step 1: Get trip counts (checked-in trips by level)
       final response = await _repository.getMemberTripCounts(userId);
+      
+      // 🔍 DEBUG: Log raw backend response
+      print('🔍 [TripStats] Backend Response for user $userId:');
+      print('   Full response: $response');
       
       // Handle both direct data and nested data structures
       final data = response['data'] ?? response['results'] ?? response;
+      print('   Extracted data: $data');
+      
+      // Step 2: Get upcoming registered trips count
+      // Use triphistory endpoint to count registered trips where checkedIn=false
+      int upcomingCount = 0;
+      try {
+        final tripHistoryResponse = await _repository.getMemberTripHistory(
+          memberId: userId,
+          checkedIn: false, // Only get trips NOT checked in
+          page: 1,
+          pageSize: 1, // We only need the count, not all trips
+        );
+        upcomingCount = tripHistoryResponse['count'] ?? 0;
+        print('   Upcoming (registered, not checked-in) trips: $upcomingCount');
+      } catch (e) {
+        print('   ⚠️ Failed to fetch upcoming trips count: $e');
+      }
       
       setState(() {
         _tripStats = TripStatistics.fromJson(data is Map<String, dynamic> ? data : {});
+        // Override upcomingTrips with actual count of registered non-checked-in trips
+        _tripStats = _tripStats!.copyWith(upcomingTrips: upcomingCount);
+        
+        print('   ✅ Final parsed stats:');
+        print('      Completed (checked-in): ${_tripStats!.completedTrips}');
+        print('      Upcoming (registered, not checked-in): ${_tripStats!.upcomingTrips}');
+        print('      Level breakdown: L1=${_tripStats!.level1Trips}, L2=${_tripStats!.level2Trips}, L3=${_tripStats!.level3Trips}, L4=${_tripStats!.level4Trips}, L5=${_tripStats!.level5Trips}');
+        print('      Check-in count: ${_tripStats!.checkedInCount}, Attendance rate: ${_tripStats!.attendanceRate}%');
         _isLoadingStats = false;
       });
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Error loading trip statistics: $e');
-      }
+      print('❌ [TripStats] Error loading trip statistics: $e');
       setState(() {
         _statsError = 'Failed to load statistics';
         _isLoadingStats = false;
@@ -401,7 +430,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     // Extract user data
     final userName = user.displayName;
     final userEmail = user.email;
-    final userPhone = user.phoneNumber ?? 'Not provided';
+    // FIXED: Check both phoneNumber and phone fields (backend might send either)
+    final userPhone = user.phoneNumber ?? user.phone ?? 'Not provided';
     final memberSince = user.dateJoined != null && user.dateJoined!.isNotEmpty
         ? 'Member since ${user.dateJoined!.substring(0, 4)}'
         : 'Member';
@@ -615,7 +645,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                 const Divider(height: 1),
 
               // ✅ NEW: Enhanced Trip Statistics Section
-              _buildEnhancedStatsSection(context, theme, colors),
+              _buildEnhancedStatsSection(context, theme, colors, user),
 
               const Divider(height: 1),
 
@@ -668,7 +698,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       title: 'My Gallery',
                       subtitle: 'Your photo albums',
                       iconColor: const Color(0xFFE53935),
-                      onTap: () => context.push('/gallery'),
+                      // FIXED: Pass filter=my to show only user's albums
+                      onTap: () => context.push('/gallery?filter=my'),
                     ),
                     const SizedBox(height: 12),
                     InfoCard(
@@ -719,7 +750,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
 
   /// Build enhanced statistics section
   /// ✅ NEW: Phase A Task #5 - Detailed trip statistics
-  Widget _buildEnhancedStatsSection(BuildContext context, ThemeData theme, ColorScheme colors) {
+  Widget _buildEnhancedStatsSection(BuildContext context, ThemeData theme, ColorScheme colors, UserModel user) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -764,6 +795,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                     label: 'Completed',
                     value: _tripStats!.completedTrips.toString(),
                     color: Colors.green,
+                    onTap: () {
+                      context.push(
+                        '/trips/filtered/${user.id}?filterType=completed&title=Completed Trips (${_tripStats!.completedTrips})',
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -773,6 +809,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                     label: 'Upcoming',
                     value: _tripStats!.upcomingTrips.toString(),
                     color: Colors.blue,
+                    onTap: () {
+                      context.push(
+                        '/trips/filtered/${user.id}?filterType=upcoming&title=Upcoming Trips (${_tripStats!.upcomingTrips})',
+                      );
+                    },
                   ),
                 ),
               ],
@@ -823,20 +864,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       final level = index + 1;
                       final count = _tripStats!.getTripCountByLevel(level);
                       final levelLabel = LevelDisplayHelper.getTripLevelLabel(level);
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(levelLabel),
-                            Text(
-                              count.toString(),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: colors.primary,
+                      
+                      // Map level index to numeric level for backend filtering
+                      int? levelNumeric;
+                      switch (level) {
+                        case 1:
+                          levelNumeric = 5; // Club Event
+                          break;
+                        case 2:
+                          levelNumeric = 10; // Newbie/ANIT
+                          break;
+                        case 3:
+                          levelNumeric = 100; // Intermediate
+                          break;
+                        case 4:
+                          levelNumeric = 200; // Advanced
+                          break;
+                        case 5:
+                          levelNumeric = 300; // Expert
+                          break;
+                      }
+                      
+                      return InkWell(
+                        onTap: count > 0 && levelNumeric != null
+                            ? () {
+                                context.push(
+                                  '/trips/filtered/${user.id}?filterType=level&levelNumeric=$levelNumeric&title=$levelLabel Trips ($count)',
+                                );
+                              }
+                            : null,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                levelLabel,
+                                style: TextStyle(
+                                  color: count > 0 ? colors.onSurface : colors.onSurface.withValues(alpha: 0.5),
+                                ),
                               ),
-                            ),
-                          ],
+                              Row(
+                                children: [
+                                  Text(
+                                    count.toString(),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: count > 0 ? colors.primary : colors.onSurface.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  if (count > 0) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 14,
+                                      color: colors.primary.withValues(alpha: 0.6),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }),
@@ -1227,12 +1316,14 @@ class _StatsCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final VoidCallback? onTap;
 
   const _StatsCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.color,
+    this.onTap,
   });
 
   @override
@@ -1241,26 +1332,30 @@ class _StatsCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 32),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

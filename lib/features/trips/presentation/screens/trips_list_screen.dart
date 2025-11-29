@@ -327,6 +327,8 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
               isEligible: isEligible, // ✅ NEW: User eligibility status
               isLocked: isLocked, // ✅ NEW: Show lock badge for ineligible trips
               isLead: isLead, // ✅ NEW: User is the trip lead
+              galleryId: trip.galleryId, // ✅ GALLERY: Pass gallery ID for badge display
+              photoCount: null, // ✅ GALLERY: Will be fetched lazily if needed
               onTap: () => context.push('/trips/${trip.id}'),
             ),
           );

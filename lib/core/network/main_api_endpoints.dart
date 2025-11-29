@@ -71,6 +71,10 @@ class MainApiEndpoints {
   static String memberTripRequests(int id) => '/api/members/$id/triprequests';
   static String memberUpgradeRequests(int id) => '/api/members/$id/upgraderequests';
   static String memberPayments(int id) => '/api/members/$id/payments';
+  
+  // GDPR Compliance - Account Deletion
+  static const String requestAccountDeletion = '/api/members/request-deletion';
+  static const String cancelAccountDeletion = '/api/members/cancel-deletion';
 
   // Logbook endpoints
   static const String logbookEntries = '/api/logbookentries/';

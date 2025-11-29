@@ -163,6 +163,20 @@ class AuthNotifierV2 extends StateNotifier<AuthStateV2> {
     try {
       final prefs = await SharedPreferences.getInstance();
       
+      // Get user ID before clearing (for deletion state cleanup)
+      final userId = prefs.getString(_kUserId);
+      
+      // CRITICAL: Clear user-specific deletion state to prevent cross-user leakage
+      // This must be imported at the top of the file
+      if (userId != null) {
+        await prefs.remove('deletion_requested_$userId');
+        await prefs.remove('deletion_request_date_$userId');
+        print('🧹 [AuthV2] Cleared deletion state for user: $userId');
+      }
+      // Also clear global keys (backward compatibility)
+      await prefs.remove('deletion_requested');
+      await prefs.remove('deletion_request_date');
+      
       // Clear auth data
       await prefs.remove(_kAuthToken);
       await prefs.remove(_kUserId);

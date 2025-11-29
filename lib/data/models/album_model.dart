@@ -58,10 +58,27 @@ class Album {
                  json['createdBy'] as String? ?? 
                  'Unknown',
       createdById: json['created_by'] as int?,
-      tripId: json['trip_id'] as int? ?? json['tripId'] as int? ?? json['source_trip_id'] as int?,
+      // Handle source_trip_id as either string or int (webhook returns string)
+      tripId: _parseTripId(json),
       tripTitle: json['trip_title'] as String? ?? json['tripTitle'] as String?,
       samplePhotos: samplePhotos,
     );
+  }
+
+  /// Parse trip ID from various field formats (string or int)
+  static int? _parseTripId(Map<String, dynamic> json) {
+    // Try trip_id field
+    final tripIdValue = json['trip_id'] ?? json['tripId'] ?? json['source_trip_id'];
+    if (tripIdValue == null) return null;
+    
+    // Handle both string and int types
+    if (tripIdValue is int) {
+      return tripIdValue;
+    } else if (tripIdValue is String) {
+      return int.tryParse(tripIdValue);
+    }
+    
+    return null;
   }
 
   /// Parse datetime from Gallery API format ("2025-11-09 10:22:41")

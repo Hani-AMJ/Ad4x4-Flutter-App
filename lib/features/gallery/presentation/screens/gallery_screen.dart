@@ -23,11 +23,22 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   bool _isLoading = true;
   String _sortBy = 'recent-photo';  // recent-photo, name, newest, oldest, photo-count
   String? _tripLevelFilter;  // null = all
+  String? _userFilter;  // 'my' = user's albums only, 'all' or null = all albums
 
   @override
   void initState() {
     super.initState();
-    _loadAlbums();
+    // Get filter parameter from route query parameters
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final uri = GoRouterState.of(context).uri;
+      final filterParam = uri.queryParameters['filter'];
+      if (filterParam == 'my') {
+        setState(() {
+          _userFilter = 'my';
+        });
+      }
+      _loadAlbums();
+    });
   }
 
   Future<void> _loadAlbums() async {
@@ -35,6 +46,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
 
     try {
       print('📸 [GalleryScreen] Fetching galleries from API...');
+      print('   Filter: ${_userFilter ?? "all"}');
       
       // Try to fetch from API with sorting and filtering
       final response = await _galleryRepository.getGalleries(
@@ -42,6 +54,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
         limit: 20,
         sortBy: _sortBy,
         tripLevel: _tripLevelFilter,
+        filter: _userFilter,  // FIXED: Pass user filter to API
       );
       
       // Parse response - Gallery API format: { "success": true, "galleries": [...] }

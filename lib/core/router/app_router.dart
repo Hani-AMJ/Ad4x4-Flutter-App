@@ -20,6 +20,7 @@ import '../../features/trips/presentation/screens/create_trip_screen.dart';
 import '../../features/trips/presentation/screens/trip_chat_screen.dart';
 import '../../features/trips/presentation/screens/trip_requests_screen.dart';
 import '../../features/trips/presentation/screens/manage_registrants_screen.dart';
+import '../../features/trips/presentation/screens/filtered_trips_screen.dart';
 import '../../features/events/presentation/screens/events_list_screen.dart';
 import '../../features/events/presentation/screens/event_details_screen.dart';
 import '../../features/gallery/presentation/screens/gallery_screen.dart';
@@ -255,6 +256,24 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final tripId = state.pathParameters['id']!;
           final tripTitle = state.uri.queryParameters['title'] ?? 'Trip Chat';
           return TripChatScreen(tripId: tripId, tripTitle: tripTitle);
+        },
+      ),
+      GoRoute(
+        path: '/trips/filtered/:memberId',
+        name: 'filtered-trips',
+        builder: (context, state) {
+          final memberId = int.parse(state.pathParameters['memberId']!);
+          final filterType = state.uri.queryParameters['filterType'] ?? 'completed';
+          final levelNumericStr = state.uri.queryParameters['levelNumeric'];
+          final levelNumeric = levelNumericStr != null ? int.tryParse(levelNumericStr) : null;
+          final title = state.uri.queryParameters['title'] ?? 'Trips';
+          
+          return FilteredTripsScreen(
+            memberId: memberId,
+            filterType: filterType,
+            levelNumeric: levelNumeric,
+            title: title,
+          );
         },
       ),
       GoRoute(

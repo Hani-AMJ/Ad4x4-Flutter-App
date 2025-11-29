@@ -226,6 +226,14 @@ class ApiClient {
 
   /// Handle Dio errors
   ApiException _handleError(DioException error) {
+    // Enhanced debug logging for API errors
+    if (kDebugMode) {
+      debugPrint('❌ [ApiClient] API Error: ${error.type}');
+      debugPrint('   Status Code: ${error.response?.statusCode}');
+      debugPrint('   Response Data: ${error.response?.data}');
+      debugPrint('   Error Message: ${error.message}');
+    }
+    
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
@@ -235,9 +243,24 @@ class ApiClient {
           statusCode: 408,
         );
       case DioExceptionType.badResponse:
+        // Enhanced error message extraction
+        final responseData = error.response?.data;
+        String errorMessage = 'Something went wrong';
+        
+        if (responseData is Map<String, dynamic>) {
+          // Try multiple common error message fields
+          errorMessage = responseData['message'] ?? 
+                        responseData['error'] ?? 
+                        responseData['detail'] ?? 
+                        errorMessage;
+        } else if (responseData is String) {
+          errorMessage = responseData;
+        }
+        
         return ApiException(
-          message: error.response?.data['message'] ?? 'Something went wrong',
+          message: errorMessage,
           statusCode: error.response?.statusCode ?? 500,
+          data: responseData, // Include full response data for debugging
         );
       case DioExceptionType.cancel:
         return ApiException(

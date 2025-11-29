@@ -20,6 +20,7 @@ import '../../../../shared/widgets/admin/trip_status_badge.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../widgets/trip_logbook_section.dart';
 import '../../../../data/models/trip_model.dart';
+import '../../../../data/repositories/gallery_api_repository.dart';
 
 /// Optimistic registration state provider
 /// Tracks local registration changes immediately without waiting for API
@@ -1065,51 +1066,7 @@ class TripDetailsScreen extends ConsumerWidget {
   Widget _buildGallerySection(BuildContext context, dynamic trip, ColorScheme colors) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.photo_library, color: const Color(0xFFE91E63)),  // ✅ Pink for Gallery
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Trip Gallery',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'View and share photos from this trip',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colors.onSurface.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () {
-                    context.push('/gallery/album/${trip.galleryId}');
-                  },
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text('View Trip Gallery'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      child: _GallerySectionWidget(trip: trip, colors: colors),
     );
   }
 
@@ -2676,3 +2633,147 @@ class _CheckinDialogState extends State<_CheckinDialog> {
     }
   }
 }  // End of _CheckinDialogState class
+
+/// ✅ GALLERY: Enhanced Gallery Section Widget with Stats
+class _GallerySectionWidget extends StatefulWidget {
+  final dynamic trip;
+  final ColorScheme colors;
+
+  const _GallerySectionWidget({required this.trip, required this.colors});
+
+  @override
+  State<_GallerySectionWidget> createState() => _GallerySectionWidgetState();
+}
+
+class _GallerySectionWidgetState extends State<_GallerySectionWidget> {
+  final _galleryRepository = GalleryApiRepository();
+  bool _isLoading = true;
+  int? _photoCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGalleryStats();
+  }
+
+  Future<void> _loadGalleryStats() async {
+    if (widget.trip.galleryId == null) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final stats = await _galleryRepository.getGalleryStats(widget.trip.galleryId);
+      if (mounted) {
+        setState(() {
+          _photoCount = stats['stats']?['photo_count'] ?? 0;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ [GallerySection] Error loading stats: $e');
+      }
+      if (mounted) {
+        setState(() {
+          _photoCount = 0;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.photo_library, color: Color(0xFFE91E63)), // Pink for Gallery
+                const SizedBox(width: 8),
+                const Text(
+                  'Trip Gallery',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                if (_isLoading)
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else if (_photoCount != null && _photoCount! > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE91E63).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.photo,
+                          size: 14,
+                          color: Color(0xFFE91E63),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$_photoCount',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFE91E63),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _isLoading
+                  ? 'Loading gallery information...'
+                  : _photoCount != null && _photoCount! > 0
+                      ? 'View and share $_photoCount photo${_photoCount! > 1 ? 's' : ''} from this trip'
+                      : 'Be the first to share photos from this trip!',
+              style: TextStyle(
+                fontSize: 14,
+                color: widget.colors.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  context.push('/gallery/album/${widget.trip.galleryId}');
+                },
+                icon: Icon(_photoCount != null && _photoCount! > 0 
+                    ? Icons.photo_library 
+                    : Icons.add_photo_alternate),
+                label: Text(_photoCount != null && _photoCount! > 0 
+                    ? 'View Trip Gallery' 
+                    : 'Upload Photos'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFE91E63),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
