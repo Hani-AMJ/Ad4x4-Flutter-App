@@ -1,0 +1,70 @@
+{
+  "test_timestamp": "2025-11-29T20:56:54.063913",
+  "credentials_used": {
+    "username": "Hani AMJ",
+    "note": "Admin user - Hani AMJ"
+  },
+  "endpoints_tested": [
+    {
+      "endpoint": "POST /api/galleries",
+      "purpose": "Create new gallery/album",
+      "status_code": 201,
+      "success": true,
+      "request": {
+        "name": "\ud83e\uddea API Test Album",
+        "description": "Test album created by API testing script - Safe to delete",
+        "visibility": "public",
+        "allowComments": true
+      },
+      "response": {
+        "success": true,
+        "gallery": {
+          "id": "6d468411-fdc4-4238-a00e-590f120148e7",
+          "name": "\ud83e\uddea API Test Album",
+          "description": "Test album created by API testing script - Safe to delete",
+          "created_by": 10613,
+          "created_by_username": "Hani AMJ",
+          "created_by_avatar": null,
+          "trip_level": null,
+          "is_public": 1,
+          "created_at": "2025-11-29 20:56:56",
+          "updated_at": "2025-11-29 20:56:56",
+          "soft_deleted_at": null,
+          "source_trip_id": null,
+          "auto_created": 0
+        }
+      }
+    },
+    {
+      "endpoint": "POST /api/galleries/6d468411-fdc4-4238-a00e-590f120148e7/rename",
+      "purpose": "Rename existing gallery/album",
+      "status_code": 200,
+      "success": true,
+      "request": {
+        "name": "\ud83e\uddea API Test Album (RENAMED)"
+      },
+      "response": {
+        "success": true,
+        "message": "Gallery renamed successfully",
+        "gallery": {
+          "id": "6d468411-fdc4-4238-a00e-590f120148e7",
+          "name": "\ud83e\uddea API Test Album (RENAMED)",
+          "updated_at": "2025-11-29T20:57:28.243Z"
+        }
+      }
+    },
+    {
+      "endpoint": "DELETE /api/galleries/6d468411-fdc4-4238-a00e-590f120148e7",
+      "purpose": "Soft delete gallery/album",
+      "status_code": 200,
+      "success": true,
+      "request": null,
+      "response": {
+        "success": true,
+        "message": "Gallery deleted successfully (30-day restore window)",
+        "deleted_at": "2025-11-29T20:57:28.923Z",
+        "restore_until": "2025-12-29T20:57:28.932Z"
+      }
+    }
+  ]
+}

@@ -715,6 +715,390 @@ Authorization: Bearer {token}
 
 ### Public Settings
 
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "quick_stats": {
+      "total_photos": 129,
+      "total_galleries": 20,
+      "active_members": 3,
+      "photos_this_month": 129
+    },
+    "recent_photos": [
+      {
+        "id": "95c03008-a958-4c52-9251-ad983776c0de",
+        "filename": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+        "date_taken": null,
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+        "filename": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+        "date_taken": null,
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+        "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "date_taken": null,
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Artur2020",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+        "filename": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+        "date_taken": "2025-11-01T20:21:55.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+        "filename": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+        "date_taken": "2025-11-01T20:21:51.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "75d21ff4-5978-4e51-94f3-34c530d4faa7",
+        "filename": "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg",
+        "date_taken": "2025-11-01T20:19:08.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49",
+        "filename": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49.jpg",
+        "date_taken": "2025-11-01T17:49:33.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "f184c17d-aef3-4bd0-905c-2b0227c7da87",
+        "filename": "f184c17d-aef3-4bd0-905c-2b0227c7da87.jpg",
+        "date_taken": "2025-11-01T15:38:12.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "673bc2a6-e310-4e6a-bcfe-e986cc85287a",
+        "filename": "673bc2a6-e310-4e6a-bcfe-e986cc85287a.jpg",
+        "date_taken": "2025-11-01T20:27:23.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "389510d2-cae0-4c0a-9f3c-8bc69a875837",
+        "filename": "389510d2-cae0-4c0a-9f3c-8bc69a875837.jpg",
+        "date_taken": "2025-11-01T20:24:26.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "8e8f5414-568d-4bc3-bfd8-52d65e854963",
+        "filename": "8e8f5414-568d-4bc3-bfd8-52d65e854963.jpg",
+        "date_taken": "2025-11-01T18:28:46.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "113a9e32-dfb1-485f-895c-88a2a09a014a",
+        "filename": "113a9e32-dfb1-485f-895c-88a2a09a014a.jpg",
+        "date_taken": "2025-11-01T19:57:40.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      }
+    ],
+    "top_uploaders": [
+      {
+        "user_id": 10613,
+        "username": "Hani AMJ",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "upload_count": 122
+      },
+      {
+        "user_id": 17877,
+        "username": "Redbeard",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "upload_count": 4
+      },
+      {
+        "user_id": 10613,
+        "username": "Hani AMJ",
+        "avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "upload_count": 2
+      },
+      {
+        "user_id": 18144,
+        "username": "Artur2020",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "upload_count": 1
+      }
+    ],
+    "top_downloads": [
+      {
+        "id": "06783a09-9d08-4ee8-b3ae-0dee331f3673",
+        "filename": "06783a09-9d08-4ee8-b3ae-0dee331f3673.jpg",
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 9,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+        "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "uploaded_by_username": "Artur2020",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 2,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+        "filename": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 1,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "95c03008-a958-4c52-9251-ad983776c0de",
+        "filename": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 0,
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+        "filename": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 0,
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+        "filename": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 0,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "75d21ff4-5978-4e51-94f3-34c530d4faa7",
+        "filename": "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 0,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49",
+        "filename": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 0,
+        "gallery_name": "Season Opening 2025"
+      }
+    ],
+    "photo_locations": [
+      {
+        "latitude": 24.43071388888889,
+        "longitude": 55.165863888888886,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      },
+      {
+        "latitude": 24.431133333333335,
+        "longitude": 55.16623333333333,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      },
+      {
+        "latitude": 24.431205555555557,
+        "longitude": 55.16605277777778,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      },
+      {
+        "latitude": 24.431208333333334,
+        "longitude": 55.16605277777778,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      }
+    ],
+    "featured_galleries": [
+      {
+        "id": "c06766ea-fc14-4bb9-bdd2-db0c66c2533a",
+        "name": "Swriahan Winter Surfing",
+        "description": "Auto-created gallery for trip: Swriahan Winter Surfing",
+        "created_by": 19888,
+        "created_by_username": "Abu Makram",
+        "created_by_avatar": null,
+        "trip_level": 4,
+        "is_public": 1,
+        "created_at": "2025-11-29T14:10:31.029Z",
+        "updated_at": "2025-11-29T19:15:58.256Z",
+        "soft_deleted_at": "2025-11-29T19:15:58.256Z",
+        "source_trip_id": "6307.0",
+        "auto_created": 1,
+        "photo_count": 2,
+        "cover_photo": "95c03008-a958-4c52-9251-ad983776c0de.jpg"
+      },
+      {
+        "id": "ad5cca82-ef30-46cc-9ae5-163ce2112067",
+        "name": "Season Opening 2025",
+        "description": "2025 2026",
+        "created_by": 10613,
+        "created_by_username": "Hani AMJ",
+        "created_by_avatar": null,
+        "trip_level": 1,
+        "is_public": 1,
+        "created_at": "2025-11-04 22:21:18",
+        "updated_at": "2025-11-04 22:21:18",
+        "soft_deleted_at": null,
+        "source_trip_id": null,
+        "auto_created": 0,
+        "photo_count": 127,
+        "cover_photo": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg"
+      }
+    ],
+    "recent_activity": [
+      {
+        "username": "Hani AMJ",
+        "avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "photo_count": 2,
+        "gallery_name": "Swriahan Winter Surfing",
+        "activity_time": "2025-11-29 16:44:52"
+      },
+      {
+        "username": "Artur2020",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "photo_count": 1,
+        "gallery_name": "Season Opening 2025",
+        "activity_time": "2025-11-09 10:16:19"
+      },
+      {
+        "username": "Redbeard",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 4,
+        "gallery_name": "Season Opening 2025",
+        "activity_time": "2025-11-09 09:31:39"
+      },
+      {
+        "username": "Hani AMJ",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "photo_count": 122,
+        "gallery_name": "Season Opening 2025",
+        "activity_time": "2025-11-06 22:20:06"
+      }
+    ]
+  },
+  "settings": {
+    "recent_photos_count": 12,
+    "top_downloads_count": 8,
+    "top_uploaders_count": 10
+  }
+}
+```
+
 #### GET `/api/settings/public`
 
 Get public system settings (no authentication required).
@@ -743,6 +1127,16 @@ GET /api/settings/public
 ---
 
 ### Galleries Management
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "settings": {}
+}
+```
 
 #### GET `/api/galleries`
 
@@ -831,6 +1225,62 @@ Authorization: Bearer {token}
 
 ---
 
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "galleries": [
+    {
+      "id": "ad5cca82-ef30-46cc-9ae5-163ce2112067",
+      "name": "Season Opening 2025",
+      "description": "2025 2026",
+      "created_by": 10613,
+      "created_by_username": "Hani AMJ",
+      "created_by_avatar": null,
+      "trip_level": 1,
+      "is_public": 1,
+      "created_at": "2025-11-04 22:21:18",
+      "updated_at": "2025-11-04 22:21:18",
+      "soft_deleted_at": null,
+      "source_trip_id": null,
+      "auto_created": 0,
+      "trip_level_name": "Club Event",
+      "photo_count": 127,
+      "latest_photo_date": "2025-11-09 10:16:19",
+      "sample_photos": [
+        "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+        "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+        "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg"
+      ],
+      "sample_metadata": {
+        "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "date_taken": null,
+        "camera_make": null,
+        "camera_model": null,
+        "iso": null,
+        "aperture": null,
+        "shutter_speed": null,
+        "focal_length": null,
+        "latitude": null,
+        "longitude": null,
+        "location_name": null,
+        "file_size": null,
+        "width": 1200,
+        "height": 1600
+      }
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "count": 1
+  }
+}
+```
+
 #### POST `/api/galleries`
 
 Create a new gallery.
@@ -888,6 +1338,30 @@ Content-Type: application/json
 - Gallery ID is auto-generated UUID
 
 ---
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "gallery": {
+    "id": "6d468411-fdc4-4238-a00e-590f120148e7",
+    "name": "\ud83e\uddea API Test Album",
+    "description": "Test album created by API testing script - Safe to delete",
+    "created_by": 10613,
+    "created_by_username": "Hani AMJ",
+    "created_by_avatar": null,
+    "trip_level": null,
+    "is_public": 1,
+    "created_at": "2025-11-29 20:56:56",
+    "updated_at": "2025-11-29 20:56:56",
+    "soft_deleted_at": null,
+    "source_trip_id": null,
+    "auto_created": 0
+  }
+}
+```
 
 #### GET `/api/galleries/:galleryId/stats`
 
@@ -984,6 +1458,21 @@ Content-Type: application/json
 
 ---
 
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "Gallery renamed successfully",
+  "gallery": {
+    "id": "6d468411-fdc4-4238-a00e-590f120148e7",
+    "name": "\ud83e\uddea API Test Album (RENAMED)",
+    "updated_at": "2025-11-29T20:57:28.243Z"
+  }
+}
+```
+
 #### DELETE `/api/galleries/:galleryId`
 
 Soft delete a gallery (30-day restore window). Requires ownership or Board member permission.
@@ -1021,6 +1510,18 @@ Authorization: Bearer {token}
 ---
 
 ## Photos Management
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "Gallery deleted successfully (30-day restore window)",
+  "deleted_at": "2025-11-29T20:57:28.923Z",
+  "restore_until": "2025-12-29T20:57:28.932Z"
+}
+```
 
 #### GET `/api/photos/gallery/:galleryId`
 
@@ -2026,6 +2527,47 @@ Authorization: Bearer {token}
 
 ---
 
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "themes": [
+    {
+      "id": 1,
+      "name": "dark",
+      "is_active": 1,
+      "primary_color": "#ffa500",
+      "secondary_color": "#9aa0a6",
+      "accent_color": "#ff9500",
+      "text_color": "#e8eaed",
+      "background_color": "#202124",
+      "card_color": "#292a2d",
+      "hover_color": "#35363a",
+      "border_color": "#3c4043",
+      "created_at": "2025-11-05 21:22:47",
+      "updated_at": "2025-11-05 21:22:47"
+    },
+    {
+      "id": 2,
+      "name": "light",
+      "is_active": 0,
+      "primary_color": "#ffa500",
+      "secondary_color": "#4a5568",
+      "accent_color": "#ff9500",
+      "text_color": "#1a1a1a",
+      "background_color": "#f8f9fa",
+      "card_color": "#e8e8e8",
+      "hover_color": "#f0f0f0",
+      "border_color": "#dee2e6",
+      "created_at": "2025-11-05 21:22:47",
+      "updated_at": "2025-11-05 21:22:47"
+    }
+  ]
+}
+```
+
 #### PUT `/api/admin/themes/:themeId`
 
 Update a theme preset's colors (Board members only).
@@ -2158,6 +2700,97 @@ Authorization: Bearer {token}
 
 ---
 
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "activities": [
+    {
+      "id": "95c03008-a958-4c52-9251-ad983776c0de",
+      "filename": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-29 16:44:52",
+      "gallery_name": "Swriahan Winter Surfing",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+      "filename": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-29 16:44:50",
+      "gallery_name": "Swriahan Winter Surfing",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+      "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+      "username": "Artur2020",
+      "created_at": "2025-11-09 10:16:19",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+      "filename": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:39",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+      "filename": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:38",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "75d21ff4-5978-4e51-94f3-34c530d4faa7",
+      "filename": "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:37",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49",
+      "filename": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:36",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "f184c17d-aef3-4bd0-905c-2b0227c7da87",
+      "filename": "f184c17d-aef3-4bd0-905c-2b0227c7da87.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-06 22:20:06",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "673bc2a6-e310-4e6a-bcfe-e986cc85287a",
+      "filename": "673bc2a6-e310-4e6a-bcfe-e986cc85287a.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-06 22:20:05",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "389510d2-cae0-4c0a-9f3c-8bc69a875837",
+      "filename": "389510d2-cae0-4c0a-9f3c-8bc69a875837.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-06 22:20:03",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    }
+  ]
+}
+```
+
 #### GET `/api/admin/analytics`
 
 Get detailed analytics data.
@@ -2210,6 +2843,52 @@ Authorization: Bearer {token}
 ---
 
 ### Content Management
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "logs": [
+    {
+      "id": "95c03008-a958-4c52-9251-ad983776c0de",
+      "username": "Hani AMJ",
+      "action": "Photo Upload",
+      "details": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+      "timestamp": "2025-11-29 16:44:52"
+    },
+    {
+      "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+      "username": "Hani AMJ",
+      "action": "Photo Upload",
+      "details": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+      "timestamp": "2025-11-29 16:44:50"
+    },
+    {
+      "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+      "username": "Artur2020",
+      "action": "Photo Upload",
+      "details": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+      "timestamp": "2025-11-09 10:16:19"
+    },
+    {
+      "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+      "username": "Redbeard",
+      "action": "Photo Upload",
+      "details": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+      "timestamp": "2025-11-09 09:31:39"
+    },
+    {
+      "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+      "username": "Redbeard",
+      "action": "Photo Upload",
+      "details": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+      "timestamp": "2025-11-09 09:31:38"
+    }
+  ]
+}
+```
 
 #### GET `/api/admin/content/galleries`
 
