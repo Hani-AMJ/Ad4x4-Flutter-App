@@ -189,6 +189,7 @@ class GalleryApiRepository {
   /// Upload photo (multipart)
   Future<Map<String, dynamic>> uploadPhoto({
     required String sessionId,
+    required String galleryId,  // Required by API
     required String filePath,
     List<int>? fileBytes,  // For web platform
     String? fileName,  // For web platform
@@ -214,6 +215,7 @@ class GalleryApiRepository {
     
     final formData = FormData.fromMap({
       'session_id': sessionId,
+      'gallery_id': galleryId,  // Required by API
       'photos': multipartFile,  // API expects 'photos' not 'file'
       if (caption != null) 'caption': caption,
     });

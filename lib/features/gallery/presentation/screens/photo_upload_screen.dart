@@ -229,6 +229,7 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
       
       await _galleryRepository.uploadPhoto(
         sessionId: _sessionId!,
+        galleryId: widget.galleryId,  // Pass gallery ID to API
         filePath: item.file.path,
         fileBytes: fileBytes,  // Pass bytes for web
         fileName: item.fileName,
