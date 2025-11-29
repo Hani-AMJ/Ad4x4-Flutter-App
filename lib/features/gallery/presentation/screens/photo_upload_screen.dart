@@ -101,6 +101,7 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
       final newItems = images.map((image) {
         return UploadItem(
           file: File(image.path),
+          xFile: image,  // Store XFile for web compatibility
           fileName: image.name,
           status: UploadStatus.pending,
           progress: 0.0,
@@ -138,6 +139,7 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
 
       final newItem = UploadItem(
         file: File(image.path),
+        xFile: image,  // Store XFile for web compatibility
         fileName: image.name,
         status: UploadStatus.pending,
         progress: 0.0,
@@ -219,9 +221,17 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
     });
 
     try {
+      // Read file bytes for web platform
+      List<int>? fileBytes;
+      if (item.xFile != null) {
+        fileBytes = await item.xFile!.readAsBytes();
+      }
+      
       await _galleryRepository.uploadPhoto(
         sessionId: _sessionId!,
         filePath: item.file.path,
+        fileBytes: fileBytes,  // Pass bytes for web
+        fileName: item.fileName,
         caption: item.caption,
         onProgress: (count, total) {
           final progress = count / total;
@@ -859,6 +869,7 @@ class _UploadItemCardState extends State<_UploadItemCard> {
 /// Upload Item Model
 class UploadItem {
   final File file;
+  final XFile? xFile;  // For web platform compatibility
   final String fileName;
   final UploadStatus status;
   final double progress;
@@ -867,6 +878,7 @@ class UploadItem {
 
   const UploadItem({
     required this.file,
+    this.xFile,
     required this.fileName,
     required this.status,
     required this.progress,
@@ -876,6 +888,7 @@ class UploadItem {
 
   UploadItem copyWith({
     File? file,
+    XFile? xFile,
     String? fileName,
     UploadStatus? status,
     double? progress,
@@ -884,6 +897,7 @@ class UploadItem {
   }) {
     return UploadItem(
       file: file ?? this.file,
+      xFile: xFile ?? this.xFile,
       fileName: fileName ?? this.fileName,
       status: status ?? this.status,
       progress: progress ?? this.progress,

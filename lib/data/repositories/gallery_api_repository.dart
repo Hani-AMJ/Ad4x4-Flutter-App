@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../core/config/api_config.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/gallery_api_endpoints.dart';
@@ -189,13 +190,31 @@ class GalleryApiRepository {
   Future<Map<String, dynamic>> uploadPhoto({
     required String sessionId,
     required String filePath,
+    List<int>? fileBytes,  // For web platform
+    String? fileName,  // For web platform
     String? caption,
     ProgressCallback? onProgress,
   }) async {
     final options = await _getAuthOptions();
+    
+    // Web platform: Use bytes directly (no file system access)
+    // Mobile platform: Use file path
+    final MultipartFile multipartFile;
+    if (kIsWeb) {
+      if (fileBytes == null) {
+        throw Exception('File bytes required for web platform upload');
+      }
+      multipartFile = MultipartFile.fromBytes(
+        fileBytes,
+        filename: fileName ?? 'upload.jpg',
+      );
+    } else {
+      multipartFile = await MultipartFile.fromFile(filePath);
+    }
+    
     final formData = FormData.fromMap({
       'session_id': sessionId,
-      'file': await MultipartFile.fromFile(filePath),
+      'file': multipartFile,
       if (caption != null) 'caption': caption,
     });
 
