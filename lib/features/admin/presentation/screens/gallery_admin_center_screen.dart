@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../providers/gallery_admin_provider.dart';
 import '../providers/gallery_admin_activity_provider.dart';
+import '../providers/gallery_content_manager_provider.dart';
 
 /// Gallery Admin Center Screen
 ///
@@ -532,64 +534,334 @@ class _DashboardTab extends ConsumerWidget {
 }
 
 /// Content Manager Tab - Photo/Gallery management
-class _ContentManagerTab extends ConsumerWidget {
+class _ContentManagerTab extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+  ConsumerState<_ContentManagerTab> createState() => _ContentManagerTabState();
+}
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Content Management',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
+class _ContentManagerTabState extends ConsumerState<_ContentManagerTab> {
+  @override
+  void initState() {
+    super.initState();
+    // Load data when tab is first opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recentPhotosProvider.notifier).loadPhotos(limit: 20);
+      ref.read(galleriesListProvider.notifier).loadGalleries(limit: 20);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final photosState = ref.watch(recentPhotosProvider);
+    final galleriesState = ref.watch(galleriesListProvider);
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Future.wait([
+          ref.read(recentPhotosProvider.notifier).refresh(),
+          ref.read(galleriesListProvider.notifier).refresh(),
+        ]);
+      },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Recent Photos Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Recent Photos',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (!photosState.isLoading)
+                  TextButton.icon(
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('Refresh'),
+                    onPressed: () =>
+                        ref.read(recentPhotosProvider.notifier).refresh(),
+                  ),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Photo and gallery management features coming soon',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.construction,
-                      size: 64,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Under Development',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Photo grid and gallery list will be added here',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.7,
+            const SizedBox(height: 12),
+
+            // Photos Grid
+            if (photosState.isLoading && photosState.photos.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (photosState.error != null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: colors.error),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          photosState.error!,
+                          style: TextStyle(color: colors.error),
                         ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                      TextButton(
+                        onPressed: () =>
+                            ref.read(recentPhotosProvider.notifier).refresh(),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
                 ),
+              )
+            else if (photosState.photos.isEmpty)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.photo_library,
+                          size: 48,
+                          color: colors.outline,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No photos found',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1,
+                ),
+                itemCount: photosState.photos.length,
+                itemBuilder: (context, index) {
+                  return _PhotoGridItem(
+                    photo: photosState.photos[index],
+                    onDelete: () =>
+                        _handleDeletePhoto(context, photosState.photos[index]),
+                  );
+                },
               ),
+
+            const SizedBox(height: 32),
+
+            // All Galleries Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'All Galleries',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (!galleriesState.isLoading)
+                  TextButton.icon(
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('Refresh'),
+                    onPressed: () =>
+                        ref.read(galleriesListProvider.notifier).refresh(),
+                  ),
+              ],
             ),
+            const SizedBox(height: 12),
+
+            // Galleries List
+            if (galleriesState.isLoading && galleriesState.galleries.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (galleriesState.error != null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: colors.error),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          galleriesState.error!,
+                          style: TextStyle(color: colors.error),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            ref.read(galleriesListProvider.notifier).refresh(),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (galleriesState.galleries.isEmpty)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(Icons.folder, size: 48, color: colors.outline),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No galleries found',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: galleriesState.galleries.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  return _GalleryListItem(
+                    gallery: galleriesState.galleries[index],
+                    onDelete: () => _handleDeleteGallery(
+                      context,
+                      galleriesState.galleries[index],
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleDeletePhoto(BuildContext context, PhotoItem photo) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Photo?'),
+        content: Text(
+          'Delete "${photo.filename}"?\n\nThis action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
     );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(recentPhotosProvider.notifier).deletePhoto(photo.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDeleteGallery(
+    BuildContext context,
+    GalleryItem gallery,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Gallery?'),
+        content: Text(
+          'Delete "${gallery.name}"?\n\n'
+          'This gallery contains ${gallery.photoCount} photo${gallery.photoCount == 1 ? '' : 's'}.\n\n'
+          'This will be a soft delete - the gallery can be recovered within 30 days.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(galleriesListProvider.notifier).deleteGallery(gallery.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gallery deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete gallery: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -765,5 +1037,152 @@ class _ActivityListTile extends StatelessWidget {
     } catch (e) {
       return Colors.grey;
     }
+  }
+}
+
+/// Photo Grid Item Widget
+class _PhotoGridItem extends StatelessWidget {
+  final PhotoItem photo;
+  final VoidCallback onDelete;
+
+  const _PhotoGridItem({required this.photo, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Photo thumbnail
+          if (photo.thumbnailUrl.isNotEmpty)
+            Image.network(
+              photo.thumbnailUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: Icon(
+                    Icons.broken_image,
+                    size: 48,
+                    color: theme.colorScheme.outline,
+                  ),
+                );
+              },
+            )
+          else
+            Container(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: Icon(
+                Icons.image,
+                size: 48,
+                color: theme.colorScheme.outline,
+              ),
+            ),
+
+          // Gallery name badge
+          if (photo.galleryName != null)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  photo.galleryName!,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+
+          // Delete button
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Material(
+              color: Colors.black.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(20),
+              child: InkWell(
+                onTap: onDelete,
+                borderRadius: BorderRadius.circular(20),
+                child: const Padding(
+                  padding: EdgeInsets.all(6),
+                  child: Icon(Icons.delete, size: 18, color: Colors.white),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Gallery List Item Widget
+class _GalleryListItem extends StatelessWidget {
+  final GalleryItem gallery;
+  final VoidCallback onDelete;
+
+  const _GalleryListItem({required this.gallery, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dateFormat = DateFormat('MMM d, yyyy');
+
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(Icons.folder, size: 28, color: theme.colorScheme.primary),
+        ),
+        title: Text(
+          gallery.name,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              '${gallery.photoCount} photo${gallery.photoCount == 1 ? '' : 's'}',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Created: ${dateFormat.format(gallery.createdAt)}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete),
+          color: theme.colorScheme.error,
+          onPressed: onDelete,
+          tooltip: 'Delete gallery',
+        ),
+      ),
+    );
   }
 }
