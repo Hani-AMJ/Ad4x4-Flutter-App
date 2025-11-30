@@ -224,21 +224,64 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.title,
-              style: TextStyle(
-                color: colors.onSurface,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                if (widget.filterType == 'level' && widget.levelNumeric != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: _getLevelColor(widget.levelNumeric!).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.terrain,
+                      size: 18,
+                      color: _getLevelColor(widget.levelNumeric!),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(
+                      color: colors.onSurface,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
             if (!_isLoading)
-              Text(
-                '${_trips.length} trip${_trips.length != 1 ? 's' : ''}',
-                style: TextStyle(
-                  color: colors.onSurface.withValues(alpha: 0.6),
-                  fontSize: 14,
-                ),
+              Row(
+                children: [
+                  Text(
+                    '${_trips.length} trip${_trips.length != 1 ? 's' : ''}',
+                    style: TextStyle(
+                      color: colors.onSurface.withValues(alpha: 0.6),
+                      fontSize: 14,
+                    ),
+                  ),
+                  if (_trips.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${_trips.length}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: colors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
           ],
         ),
@@ -255,17 +298,43 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.event_busy,
-                            size: 64,
-                            color: colors.onSurface.withValues(alpha: 0.3),
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: widget.filterType == 'level' && widget.levelNumeric != null
+                                  ? _getLevelColor(widget.levelNumeric!).withValues(alpha: 0.1)
+                                  : colors.primary.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              widget.filterType == 'level'
+                                  ? Icons.terrain
+                                  : Icons.event_busy,
+                              size: 48,
+                              color: widget.filterType == 'level' && widget.levelNumeric != null
+                                  ? _getLevelColor(widget.levelNumeric!)
+                                  : colors.onSurface.withValues(alpha: 0.4),
+                            ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 24),
                           Text(
-                            'No trips found',
+                            widget.filterType == 'level' && widget.levelNumeric != null
+                                ? 'No ${_getLevelName(widget.levelNumeric!)} trips yet'
+                                : 'No trips found',
                             style: TextStyle(
                               fontSize: 18,
-                              color: colors.onSurface.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w600,
+                              color: colors.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.filterType == 'level'
+                                ? 'Try checking other difficulty levels'
+                                : 'Check back later for updates',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colors.onSurface.withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -318,14 +387,25 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
     final levelColor = _getLevelColor(levelNumeric);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 14),
+      elevation: 3,
+      shadowColor: levelColor.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => context.push('/trips/$id'),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border(
+            left: BorderSide(
+              color: levelColor,
+              width: 4,
+            ),
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => context.push('/trips/$id'),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -337,52 +417,73 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
                     child: Text(
                       title,
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
                         color: colors.onSurface,
+                        height: 1.3,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: levelColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: levelColor.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: levelColor.withValues(alpha: 0.4),
+                        width: 1.5,
+                      ),
                     ),
                     child: Text(
                       levelName,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: levelColor,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               
               // Date and Time
               Row(
                 children: [
-                  Icon(Icons.calendar_today, size: 16, color: colors.primary),
-                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(Icons.calendar_today, size: 14, color: colors.primary),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     DateFormat('MMM dd, yyyy').format(startTime),
                     style: TextStyle(
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                       color: colors.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.access_time, size: 16, color: colors.primary),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 20),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: colors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(Icons.access_time, size: 14, color: colors.primary),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     DateFormat('hh:mm a').format(startTime),
                     style: TextStyle(
                       fontSize: 14,
+                      fontWeight: FontWeight.w500,
                       color: colors.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
@@ -391,17 +492,33 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
               
               // Checked-in Status
               if (checkedIn) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
+                Container(
+                  height: 1,
+                  color: colors.onSurface.withValues(alpha: 0.08),
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
-                    Icon(Icons.check_circle, size: 16, color: Colors.green),
-                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check_circle,
+                        size: 14,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
                       'Checked In',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.green,
+                        color: Colors.green.shade700,
                       ),
                     ),
                   ],
@@ -411,6 +528,7 @@ class _FilteredTripsScreenState extends ConsumerState<FilteredTripsScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

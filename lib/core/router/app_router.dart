@@ -100,6 +100,7 @@ import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/meeting_points/presentation/screens/meeting_points_screen.dart';
 import '../../features/meeting_points/presentation/screens/meeting_point_detail_screen.dart';
 import '../../data/models/meeting_point_model.dart';
+import '../../shared/widgets/navigation/app_shell.dart';
 
 /// 🔄 V2: Clean Riverpod-based Router with Simplified Auth Guards
 final goRouterProvider = Provider<GoRouter>((ref) {
@@ -207,18 +208,55 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
 
-      // Main App Routes (Protected)
-      GoRoute(
-        path: '/',
-        name: 'home',
-        builder: (context, state) => const HomeScreen(),
+      // Main App Shell with persistent bottom navigation
+      ShellRoute(
+        builder: (context, state, child) => AppShell(
+          state: state,
+          child: child,
+        ),
+        routes: [
+          // Home Route
+          GoRoute(
+            path: '/',
+            name: 'home',
+            builder: (context, state) => const HomeScreen(),
+          ),
+
+          // Trip Routes (Main list within shell)
+          GoRoute(
+            path: '/trips',
+            name: 'trips',
+            builder: (context, state) => const TripsListScreen(),
+          ),
+
+          // Gallery Routes (Main list within shell)
+          GoRoute(
+            path: '/gallery',
+            name: 'gallery',
+            builder: (context, state) => const GalleryScreen(),
+          ),
+
+          // Logbook Route (Main screen within shell)
+          GoRoute(
+            path: '/logbook',
+            name: 'logbook',
+            builder: (context, state) => const LogbookHomeScreen(),
+          ),
+
+          // Profile Route (Main screen within shell)
+          GoRoute(
+            path: '/profile',
+            name: 'profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+        ],
       ),
 
-      // Trip Routes
+      // Detail/Secondary Routes (Outside shell - full screen)
       GoRoute(
-        path: '/trips',
-        name: 'trips',
-        builder: (context, state) => const TripsListScreen(),
+        path: '/trips/create',
+        name: 'create-trip',
+        builder: (context, state) => const CreateTripScreen(),
       ),
       GoRoute(
         path: '/trips/create',
@@ -329,12 +367,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // Gallery Routes
-      GoRoute(
-        path: '/gallery',
-        name: 'gallery',
-        builder: (context, state) => const GalleryScreen(),
-      ),
+      // Gallery Detail Routes (Outside shell)
       GoRoute(
         path: '/gallery/album/:albumId',
         name: 'album',
@@ -377,12 +410,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // Profile Routes
-      GoRoute(
-        path: '/profile',
-        name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
-      ),
+      // Profile Detail Routes (Outside shell)
       GoRoute(
         path: '/profile/edit',
         name: 'edit-profile',
@@ -401,12 +429,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // Logbook Routes
-      GoRoute(
-        path: '/logbook',
-        name: 'logbook',
-        builder: (context, state) => const LogbookHomeScreen(),
-      ),
+      // Logbook Detail Routes (Outside shell)
       GoRoute(
         path: '/logbook/entries',
         name: 'logbook-entries',

@@ -1511,7 +1511,7 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close dialog
-              context.go('/trips'); // Go to trips list
+              context.go('/'); // ✅ FIXED: Go to home (with navigation shell)
             },
             child: const Text('Done'),
           ),
