@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/models/comment_moderation_model.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/error_log_service.dart';
 
 // ============================================================================
 // ALL COMMENTS STATE
@@ -121,8 +122,17 @@ class AllCommentsNotifier extends StateNotifier<AllCommentsState> {
         hasMore: commentsResponse.next != null,
         isLoading: false,
       );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load comments: ${e.toString()}';
+      state = state.copyWith(isLoading: false, error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'comment_moderation',
+        context: 'AllCommentsNotifier.loadComments',
+      );
     }
   }
 
@@ -249,8 +259,17 @@ class PendingCommentsNotifier extends StateNotifier<PendingCommentsState> {
         hasMore: commentsResponse.next != null,
         isLoading: false,
       );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load pending comments: ${e.toString()}';
+      state = state.copyWith(isLoading: false, error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'comment_moderation',
+        context: 'PendingCommentsNotifier.loadPending',
+      );
     }
   }
 
@@ -354,8 +373,17 @@ class FlaggedCommentsNotifier extends StateNotifier<FlaggedCommentsState> {
         hasMore: commentsResponse.next != null,
         isLoading: false,
       );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load flagged comments: ${e.toString()}';
+      state = state.copyWith(isLoading: false, error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'comment_moderation',
+        context: 'FlaggedCommentsNotifier.loadFlagged',
+      );
     }
   }
 
@@ -410,8 +438,16 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
       _ref.read(allCommentsProvider.notifier).refresh();
 
       state = false;
-    } catch (e) {
+    } catch (e, stackTrace) {
       state = false;
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: 'Failed to approve comment $commentId: ${e.toString()}',
+        stackTrace: stackTrace.toString(),
+        type: 'comment_moderation',
+        context: 'CommentModerationActionsNotifier.approveComment',
+      );
       rethrow;
     }
   }
@@ -429,8 +465,16 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
       _ref.read(allCommentsProvider.notifier).removeComment(commentId);
 
       state = false;
-    } catch (e) {
+    } catch (e, stackTrace) {
       state = false;
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: 'Failed to reject comment $commentId: ${e.toString()}',
+        stackTrace: stackTrace.toString(),
+        type: 'comment_moderation',
+        context: 'CommentModerationActionsNotifier.rejectComment',
+      );
       rethrow;
     }
   }
@@ -451,8 +495,16 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
       _ref.read(allCommentsProvider.notifier).updateComment(updatedComment);
 
       state = false;
-    } catch (e) {
+    } catch (e, stackTrace) {
       state = false;
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: 'Failed to edit comment $commentId: ${e.toString()}',
+        stackTrace: stackTrace.toString(),
+        type: 'comment_moderation',
+        context: 'CommentModerationActionsNotifier.editComment',
+      );
       rethrow;
     }
   }
@@ -475,8 +527,16 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
       );
 
       state = false;
-    } catch (e) {
+    } catch (e, stackTrace) {
       state = false;
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: 'Failed to ban user $userId: ${e.toString()}',
+        stackTrace: stackTrace.toString(),
+        type: 'comment_moderation',
+        context: 'CommentModerationActionsNotifier.banUser',
+      );
       rethrow;
     }
   }
