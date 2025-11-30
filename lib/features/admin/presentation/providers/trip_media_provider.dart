@@ -15,7 +15,7 @@ class TripMediaState {
   final bool isLoading;
   final String? error;
   final int? tripFilter;
-  final bool? approvedFilter;  // null = all, true = approved, false = pending
+  final bool? approvedFilter; // null = all, true = approved, false = pending
 
   const TripMediaState({
     this.media = const [],
@@ -51,12 +51,10 @@ class TripMediaState {
   }
 
   /// Get only pending media
-  List<TripMedia> get pendingMedia => 
-      media.where((m) => m.isPending).toList();
+  List<TripMedia> get pendingMedia => media.where((m) => m.isPending).toList();
 
   /// Get only approved media
-  List<TripMedia> get approvedMedia => 
-      media.where((m) => m.approved).toList();
+  List<TripMedia> get approvedMedia => media.where((m) => m.approved).toList();
 
   /// Get pending count
   int get pendingCount => media.where((m) => m.isPending).length;
@@ -93,10 +91,10 @@ class TripMediaNotifier extends StateNotifier<TripMediaState> {
       );
 
       final mediaResponse = TripMediaResponse.fromJson(response);
-      
+
       state = state.copyWith(
-        media: page == 1 
-            ? mediaResponse.results 
+        media: page == 1
+            ? mediaResponse.results
             : [...state.media, ...mediaResponse.results],
         totalCount: mediaResponse.count,
         currentPage: page,
@@ -104,10 +102,7 @@ class TripMediaNotifier extends StateNotifier<TripMediaState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -138,9 +133,10 @@ class TripMediaNotifier extends StateNotifier<TripMediaState> {
 }
 
 /// Trip Media Provider
-final tripMediaProvider = StateNotifierProvider<TripMediaNotifier, TripMediaState>((ref) {
-  return TripMediaNotifier(ref);
-});
+final tripMediaProvider =
+    StateNotifierProvider<TripMediaNotifier, TripMediaState>((ref) {
+      return TripMediaNotifier(ref);
+    });
 
 // ============================================================================
 // PENDING MEDIA STATE
@@ -203,10 +199,10 @@ class PendingMediaNotifier extends StateNotifier<PendingMediaState> {
       );
 
       final mediaResponse = TripMediaResponse.fromJson(response);
-      
+
       state = state.copyWith(
-        pendingMedia: page == 1 
-            ? mediaResponse.results 
+        pendingMedia: page == 1
+            ? mediaResponse.results
             : [...state.pendingMedia, ...mediaResponse.results],
         totalCount: mediaResponse.count,
         currentPage: page,
@@ -214,10 +210,7 @@ class PendingMediaNotifier extends StateNotifier<PendingMediaState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -243,9 +236,10 @@ class PendingMediaNotifier extends StateNotifier<PendingMediaState> {
 }
 
 /// Pending Media Provider
-final pendingMediaProvider = StateNotifierProvider<PendingMediaNotifier, PendingMediaState>((ref) {
-  return PendingMediaNotifier(ref);
-});
+final pendingMediaProvider =
+    StateNotifierProvider<PendingMediaNotifier, PendingMediaState>((ref) {
+      return PendingMediaNotifier(ref);
+    });
 
 // ============================================================================
 // MEDIA UPLOAD STATE
@@ -253,7 +247,7 @@ final pendingMediaProvider = StateNotifierProvider<PendingMediaNotifier, Pending
 
 /// Media Upload State - Tracks upload progress
 class MediaUploadState {
-  final Map<String, MediaUploadProgress> uploads;  // uploadId -> progress
+  final Map<String, MediaUploadProgress> uploads; // uploadId -> progress
   final bool isUploading;
   final String? error;
 
@@ -276,15 +270,15 @@ class MediaUploadState {
   }
 
   /// Get active uploads
-  List<MediaUploadProgress> get activeUploads => 
+  List<MediaUploadProgress> get activeUploads =>
       uploads.values.where((u) => u.isUploading).toList();
 
   /// Get completed uploads
-  List<MediaUploadProgress> get completedUploads => 
+  List<MediaUploadProgress> get completedUploads =>
       uploads.values.where((u) => u.isComplete).toList();
 
   /// Get failed uploads
-  List<MediaUploadProgress> get failedUploads => 
+  List<MediaUploadProgress> get failedUploads =>
       uploads.values.where((u) => u.isFailed).toList();
 }
 
@@ -301,7 +295,7 @@ class MediaUploadNotifier extends StateNotifier<MediaUploadState> {
     String? caption,
   }) async {
     final uploadId = DateTime.now().millisecondsSinceEpoch.toString();
-    
+
     // Add upload to state
     final newUpload = MediaUploadProgress(
       uploadId: uploadId,
@@ -317,7 +311,7 @@ class MediaUploadNotifier extends StateNotifier<MediaUploadState> {
 
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
-      
+
       // TODO: Add progress tracking with Dio
       final response = await repository.uploadTripPhoto(
         tripId: tripId,
@@ -342,7 +336,6 @@ class MediaUploadNotifier extends StateNotifier<MediaUploadState> {
 
       // Refresh media lists
       _ref.read(tripMediaProvider.notifier).refresh();
-      
     } catch (e) {
       // Update upload as failed
       state = state.copyWith(
@@ -374,9 +367,10 @@ class MediaUploadNotifier extends StateNotifier<MediaUploadState> {
 }
 
 /// Media Upload Provider
-final mediaUploadProvider = StateNotifierProvider<MediaUploadNotifier, MediaUploadState>((ref) {
-  return MediaUploadNotifier(ref);
-});
+final mediaUploadProvider =
+    StateNotifierProvider<MediaUploadNotifier, MediaUploadState>((ref) {
+      return MediaUploadNotifier(ref);
+    });
 
 // ============================================================================
 // MEDIA MODERATION ACTIONS
@@ -393,17 +387,14 @@ class MediaModerationActionsNotifier extends StateNotifier<bool> {
     state = true;
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
-      await repository.moderatePhoto(
-        photoId: photoId,
-        approved: true,
-      );
+      await repository.moderatePhoto(photoId: photoId, approved: true);
 
       // Update pending media list
       _ref.read(pendingMediaProvider.notifier).removeMedia(photoId);
-      
+
       // Refresh main media list
       _ref.read(tripMediaProvider.notifier).refresh();
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -424,10 +415,10 @@ class MediaModerationActionsNotifier extends StateNotifier<bool> {
 
       // Update pending media list
       _ref.read(pendingMediaProvider.notifier).removeMedia(photoId);
-      
+
       // Refresh main media list
       _ref.read(tripMediaProvider.notifier).refresh();
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -445,7 +436,7 @@ class MediaModerationActionsNotifier extends StateNotifier<bool> {
       // Refresh both lists
       _ref.read(pendingMediaProvider.notifier).refresh();
       _ref.read(tripMediaProvider.notifier).refresh();
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -455,16 +446,20 @@ class MediaModerationActionsNotifier extends StateNotifier<bool> {
 }
 
 /// Media Moderation Actions Provider
-final mediaModerationActionsProvider = StateNotifierProvider<MediaModerationActionsNotifier, bool>((ref) {
-  return MediaModerationActionsNotifier(ref);
-});
+final mediaModerationActionsProvider =
+    StateNotifierProvider<MediaModerationActionsNotifier, bool>((ref) {
+      return MediaModerationActionsNotifier(ref);
+    });
 
 // ============================================================================
 // TRIP MEDIA GALLERY PROVIDER (for specific trip)
 // ============================================================================
 
 /// Trip Media Gallery Provider - Family provider for individual trip galleries
-final tripMediaGalleryProvider = FutureProvider.family<TripMediaGallery, int>((ref, tripId) async {
+final tripMediaGalleryProvider = FutureProvider.family<TripMediaGallery, int>((
+  ref,
+  tripId,
+) async {
   final repository = ref.read(mainApiRepositoryProvider);
   final response = await repository.getTripMediaGallery(tripId);
   return TripMediaGallery.fromJson(response);

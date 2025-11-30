@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/error_log_service.dart';
 
 /// Activity item model for admin activity feed
 class AdminActivity {
@@ -191,10 +192,16 @@ class GalleryAdminActivityNotifier
         hasMore: hasMore,
         currentPage: 1,
       );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to load activity: ${e.toString()}',
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load activity: ${e.toString()}';
+      state = state.copyWith(isLoading: false, error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'gallery_admin_activity',
+        context: 'GalleryAdminActivityNotifier.loadActivities',
       );
     }
   }
@@ -228,10 +235,16 @@ class GalleryAdminActivityNotifier
         hasMore: hasMore,
         currentPage: state.currentPage + 1,
       );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to load more activities: ${e.toString()}',
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load more activities: ${e.toString()}';
+      state = state.copyWith(isLoading: false, error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'gallery_admin_activity',
+        context: 'GalleryAdminActivityNotifier.loadMore',
       );
     }
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/repository_providers.dart';
 
 /// Performance Metrics Widget - Shows key club performance indicators
@@ -9,13 +8,15 @@ class PerformanceMetricsWidget extends ConsumerStatefulWidget {
   const PerformanceMetricsWidget({super.key});
 
   @override
-  ConsumerState<PerformanceMetricsWidget> createState() => _PerformanceMetricsWidgetState();
+  ConsumerState<PerformanceMetricsWidget> createState() =>
+      _PerformanceMetricsWidgetState();
 }
 
-class _PerformanceMetricsWidgetState extends ConsumerState<PerformanceMetricsWidget> {
+class _PerformanceMetricsWidgetState
+    extends ConsumerState<PerformanceMetricsWidget> {
   bool _isLoading = true;
   String? _error;
-  
+
   int _totalMembers = 0;
   int _totalTrips = 0;
   int _upcomingTrips = 0;
@@ -36,7 +37,7 @@ class _PerformanceMetricsWidgetState extends ConsumerState<PerformanceMetricsWid
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      
+
       // Fetch members count
       try {
         final membersResponse = await repository.getMembers(pageSize: 1);
@@ -44,17 +45,17 @@ class _PerformanceMetricsWidgetState extends ConsumerState<PerformanceMetricsWid
       } catch (e) {
         // Silent fail for members
       }
-      
+
       // Fetch trips count
       try {
         final tripsResponse = await repository.getTrips(pageSize: 1);
         _totalTrips = tripsResponse['count'] as int? ?? 0;
-        
+
         // Count upcoming trips (simple check for now)
         final allTripsResponse = await repository.getTrips(pageSize: 100);
         final results = allTripsResponse['results'] as List<dynamic>? ?? [];
         final now = DateTime.now();
-        
+
         _upcomingTrips = results.where((trip) {
           final startTime = trip['start_time'] as String?;
           if (startTime == null) return false;
@@ -68,24 +69,22 @@ class _PerformanceMetricsWidgetState extends ConsumerState<PerformanceMetricsWid
       } catch (e) {
         // Silent fail for trips
       }
-      
+
       // Fetch feedback count
+      // NOTE: Removed getAllFeedback call - backend doesn't support GET /api/feedback/
+      // This endpoint requires admin permissions and specific implementation
+      // For now, skip feedback metrics to avoid 405 errors
       try {
-        final feedbackResponse = await repository.getAllFeedback(pageSize: 1000);
-        final results = feedbackResponse['results'] as List<dynamic>? ?? [];
-        _totalFeedback = results.length;
-        _pendingFeedback = results.where((feedback) {
-          final status = feedback['status'] as String?;
-          return status == 'SUBMITTED' || status == 'IN_REVIEW';
-        }).length;
+        // TODO: Implement proper feedback admin endpoint when available
+        _totalFeedback = 0;
+        _pendingFeedback = 0;
       } catch (e) {
         // Silent fail for feedback
       }
-      
+
       setState(() {
         _isLoading = false;
       });
-      
     } catch (e) {
       setState(() {
         _error = 'Failed to load metrics';
@@ -162,11 +161,7 @@ class _PerformanceMetricsWidgetState extends ConsumerState<PerformanceMetricsWid
               Center(
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: colors.error,
-                      size: 32,
-                    ),
+                    Icon(Icons.error_outline, color: colors.error, size: 32),
                     const SizedBox(height: 8),
                     Text(
                       _error!,

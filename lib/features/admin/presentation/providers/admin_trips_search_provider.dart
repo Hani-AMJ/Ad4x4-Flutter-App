@@ -6,7 +6,7 @@ import '../../../../core/providers/repository_providers.dart';
 part 'admin_trips_search_provider.g.dart';
 
 /// Admin Trips Search State
-/// 
+///
 /// Unified state for trips search functionality
 class AdminTripsSearchState {
   final List<TripListItem> results;
@@ -56,7 +56,7 @@ class AdminTripsSearchState {
 }
 
 /// Admin Trips Search Provider
-/// 
+///
 /// Single unified provider for all trips search operations
 @riverpod
 class AdminTripsSearch extends _$AdminTripsSearch {
@@ -71,10 +71,14 @@ class AdminTripsSearch extends _$AdminTripsSearch {
   /// Execute search with current or provided criteria
   Future<void> executeSearch([TripSearchCriteria? newCriteria]) async {
     final criteria = newCriteria ?? state.criteria;
-    
+
     print('🔍 [AdminTripsSearch] ========== EXECUTING SEARCH ==========');
-    print('🔍 [AdminTripsSearch] Search Type: ${criteria.searchType.displayName}');
-    print('🔍 [AdminTripsSearch] Date Range: ${criteria.dateFrom} to ${criteria.dateTo}');
+    print(
+      '🔍 [AdminTripsSearch] Search Type: ${criteria.searchType.displayName}',
+    );
+    print(
+      '🔍 [AdminTripsSearch] Date Range: ${criteria.dateFrom} to ${criteria.dateTo}',
+    );
     print('🔍 [AdminTripsSearch] Levels: ${criteria.levelIds}');
     print('🔍 [AdminTripsSearch] Lead: ${criteria.leadUsername ?? "Any"}');
     print('🔍 [AdminTripsSearch] Area: ${criteria.meetingPointArea ?? "Any"}');
@@ -91,12 +95,12 @@ class AdminTripsSearch extends _$AdminTripsSearch {
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       final apiParams = criteria.toApiParams();
-      
+
       print('🔍 [AdminTripsSearch] API Params: $apiParams');
 
       // Fetch trips with pagination
       final allTrips = await _fetchAllTrips(repository, apiParams, criteria);
-      
+
       print('🔍 [AdminTripsSearch] Fetched ${allTrips.length} trips from API');
 
       // Apply client-side filters if needed
@@ -108,7 +112,9 @@ class AdminTripsSearch extends _$AdminTripsSearch {
           (trip) => trip.level.id,
           (trip) => trip.lead.username,
         );
-        print('🔍 [AdminTripsSearch] After client filtering: ${filteredTrips.length} trips');
+        print(
+          '🔍 [AdminTripsSearch] After client filtering: ${filteredTrips.length} trips',
+        );
       }
 
       // Apply client-side sorting if needed
@@ -121,7 +127,9 @@ class AdminTripsSearch extends _$AdminTripsSearch {
         );
       }
 
-      print('🔍 [AdminTripsSearch] ✅ FINAL RESULT: ${filteredTrips.length} trips');
+      print(
+        '🔍 [AdminTripsSearch] ✅ FINAL RESULT: ${filteredTrips.length} trips',
+      );
 
       // Update state with results
       state = state.copyWith(
@@ -150,14 +158,20 @@ class AdminTripsSearch extends _$AdminTripsSearch {
   ) async {
     final List<TripListItem> allTrips = [];
     int currentPage = 1;
-    
+
     // Determine pagination strategy based on search type
-    final bool fetchAllPages = criteria.searchType == TripSearchType.all || criteria.needsClientFiltering;
+    final bool fetchAllPages =
+        criteria.searchType == TripSearchType.all ||
+        criteria.needsClientFiltering;
     final int pageSize = fetchAllPages ? 200 : 50;
     bool hasMorePages = true;
-    final int maxPages = fetchAllPages ? 50 : 3; // "All Trips" fetches everything, others fetch limited
+    final int maxPages = fetchAllPages
+        ? 50
+        : 3; // "All Trips" fetches everything, others fetch limited
 
-    print('🔍 [AdminTripsSearch] Starting pagination (pageSize: $pageSize, maxPages: $maxPages, searchType: ${criteria.searchType.displayName}, fetchAll: $fetchAllPages)...');
+    print(
+      '🔍 [AdminTripsSearch] Starting pagination (pageSize: $pageSize, maxPages: $maxPages, searchType: ${criteria.searchType.displayName}, fetchAll: $fetchAllPages)...',
+    );
 
     while (hasMorePages && currentPage <= maxPages) {
       print('🔍 [AdminTripsSearch] Fetching page $currentPage...');
@@ -177,7 +191,9 @@ class AdminTripsSearch extends _$AdminTripsSearch {
       final tripsData = response['results'] as List<dynamic>? ?? [];
       final nextUrl = response['next'] as String?;
 
-      print('🔍 [AdminTripsSearch] Page $currentPage: ${tripsData.length} trips (next: ${nextUrl != null})');
+      print(
+        '🔍 [AdminTripsSearch] Page $currentPage: ${tripsData.length} trips (next: ${nextUrl != null})',
+      );
 
       final pageTrips = tripsData
           .map((json) => TripListItem.fromJson(json as Map<String, dynamic>))
@@ -190,7 +206,9 @@ class AdminTripsSearch extends _$AdminTripsSearch {
       currentPage++;
     }
 
-    print('🔍 [AdminTripsSearch] ✅ Pagination complete: ${allTrips.length} total trips from ${currentPage - 1} pages');
+    print(
+      '🔍 [AdminTripsSearch] ✅ Pagination complete: ${allTrips.length} total trips from ${currentPage - 1} pages',
+    );
     return allTrips;
   }
 
@@ -207,10 +225,7 @@ class AdminTripsSearch extends _$AdminTripsSearch {
 
   /// Update date range
   Future<void> updateDateRange(DateTime? from, DateTime? to) async {
-    final newCriteria = state.criteria.copyWith(
-      dateFrom: from,
-      dateTo: to,
-    );
+    final newCriteria = state.criteria.copyWith(dateFrom: from, dateTo: to);
     await executeSearch(newCriteria);
   }
 

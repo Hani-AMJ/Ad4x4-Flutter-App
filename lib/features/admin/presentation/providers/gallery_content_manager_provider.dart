@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/error_log_service.dart';
 
 /// Photo item for content manager
 class PhotoItem {
@@ -158,10 +159,16 @@ class RecentPhotosNotifier extends StateNotifier<RecentPhotosState> {
       final recentPhotos = allPhotos.take(limit).toList();
 
       state = state.copyWith(photos: recentPhotos, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to load photos: ${e.toString()}',
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load photos: ${e.toString()}';
+      state = state.copyWith(isLoading: false, error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'gallery_content_manager',
+        context: 'RecentPhotosNotifier.loadPhotos',
       );
     }
   }
@@ -175,8 +182,17 @@ class RecentPhotosNotifier extends StateNotifier<RecentPhotosState> {
       // Remove from local state
       final updatedPhotos = state.photos.where((p) => p.id != photoId).toList();
       state = state.copyWith(photos: updatedPhotos);
-    } catch (e) {
-      state = state.copyWith(error: 'Failed to delete photo: ${e.toString()}');
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to delete photo: ${e.toString()}';
+      state = state.copyWith(error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'gallery_content_manager',
+        context: 'RecentPhotosNotifier.deletePhoto',
+      );
     }
   }
 
@@ -294,9 +310,16 @@ class GalleriesListNotifier extends StateNotifier<GalleriesListState> {
           .where((g) => g.id != galleryId)
           .toList();
       state = state.copyWith(galleries: updatedGalleries);
-    } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to delete gallery: ${e.toString()}',
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to delete gallery: ${e.toString()}';
+      state = state.copyWith(error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'gallery_content_manager',
+        context: 'GalleriesListNotifier.deleteGallery',
       );
     }
   }

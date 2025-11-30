@@ -16,13 +16,14 @@ String _$adminWizardHash() => r'4f60a8cc73999a71e84ded86d5eafbac067114d1';
 @ProviderFor(AdminWizard)
 final adminWizardProvider =
     AutoDisposeNotifierProvider<AdminWizard, AdminTripSearchCriteria>.internal(
-  AdminWizard.new,
-  name: r'adminWizardProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$adminWizardHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      AdminWizard.new,
+      name: r'adminWizardProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$adminWizardHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AdminWizard = AutoDisposeNotifier<AdminTripSearchCriteria>;
 String _$adminWizardResultsHash() =>
@@ -34,18 +35,21 @@ String _$adminWizardResultsHash() =>
 ///
 /// Copied from [AdminWizardResults].
 @ProviderFor(AdminWizardResults)
-final adminWizardResultsProvider = AutoDisposeNotifierProvider<
-    AdminWizardResults, AsyncValue<List<TripListItem>>>.internal(
-  AdminWizardResults.new,
-  name: r'adminWizardResultsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$adminWizardResultsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final adminWizardResultsProvider =
+    AutoDisposeNotifierProvider<
+      AdminWizardResults,
+      AsyncValue<List<TripListItem>>
+    >.internal(
+      AdminWizardResults.new,
+      name: r'adminWizardResultsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$adminWizardResultsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
-typedef _$AdminWizardResults
-    = AutoDisposeNotifier<AsyncValue<List<TripListItem>>>;
+typedef _$AdminWizardResults =
+    AutoDisposeNotifier<AsyncValue<List<TripListItem>>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -14,16 +14,19 @@ String _$adminTripsSearchHash() => r'da9b4b2ce6d459da2c36f173f08801291be499cc';
 ///
 /// Copied from [AdminTripsSearch].
 @ProviderFor(AdminTripsSearch)
-final adminTripsSearchProvider = AutoDisposeNotifierProvider<AdminTripsSearch,
-    AdminTripsSearchState>.internal(
-  AdminTripsSearch.new,
-  name: r'adminTripsSearchProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$adminTripsSearchHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final adminTripsSearchProvider =
+    AutoDisposeNotifierProvider<
+      AdminTripsSearch,
+      AdminTripsSearchState
+    >.internal(
+      AdminTripsSearch.new,
+      name: r'adminTripsSearchProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$adminTripsSearchHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AdminTripsSearch = AutoDisposeNotifier<AdminTripsSearchState>;
 // ignore_for_file: type=lint

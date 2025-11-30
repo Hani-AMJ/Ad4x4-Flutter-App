@@ -63,15 +63,15 @@ class AllCommentsState {
   }
 
   /// Get pending comments
-  List<TripCommentWithModeration> get pendingComments => 
+  List<TripCommentWithModeration> get pendingComments =>
       comments.where((c) => c.isPending).toList();
 
   /// Get flagged comments
-  List<TripCommentWithModeration> get flaggedComments => 
+  List<TripCommentWithModeration> get flaggedComments =>
       comments.where((c) => c.flagged).toList();
 
   /// Get approved comments
-  List<TripCommentWithModeration> get approvedComments => 
+  List<TripCommentWithModeration> get approvedComments =>
       comments.where((c) => c.approved).toList();
 }
 
@@ -109,10 +109,10 @@ class AllCommentsNotifier extends StateNotifier<AllCommentsState> {
       );
 
       final commentsResponse = CommentModerationResponse.fromJson(response);
-      
+
       state = state.copyWith(
-        comments: page == 1 
-            ? commentsResponse.results 
+        comments: page == 1
+            ? commentsResponse.results
             : [...state.comments, ...commentsResponse.results],
         totalCount: commentsResponse.count,
         pendingCount: commentsResponse.pendingCount,
@@ -122,10 +122,7 @@ class AllCommentsNotifier extends StateNotifier<AllCommentsState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -175,9 +172,10 @@ class AllCommentsNotifier extends StateNotifier<AllCommentsState> {
 }
 
 /// All Comments Provider
-final allCommentsProvider = StateNotifierProvider<AllCommentsNotifier, AllCommentsState>((ref) {
-  return AllCommentsNotifier(ref);
-});
+final allCommentsProvider =
+    StateNotifierProvider<AllCommentsNotifier, AllCommentsState>((ref) {
+      return AllCommentsNotifier(ref);
+    });
 
 // ============================================================================
 // PENDING COMMENTS STATE
@@ -241,10 +239,10 @@ class PendingCommentsNotifier extends StateNotifier<PendingCommentsState> {
       );
 
       final commentsResponse = CommentModerationResponse.fromJson(response);
-      
+
       state = state.copyWith(
-        pendingComments: page == 1 
-            ? commentsResponse.results 
+        pendingComments: page == 1
+            ? commentsResponse.results
             : [...state.pendingComments, ...commentsResponse.results],
         totalCount: commentsResponse.count,
         currentPage: page,
@@ -252,10 +250,7 @@ class PendingCommentsNotifier extends StateNotifier<PendingCommentsState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -274,16 +269,19 @@ class PendingCommentsNotifier extends StateNotifier<PendingCommentsState> {
   /// Remove comment from pending list
   void removeComment(int commentId) {
     state = state.copyWith(
-      pendingComments: state.pendingComments.where((c) => c.id != commentId).toList(),
+      pendingComments: state.pendingComments
+          .where((c) => c.id != commentId)
+          .toList(),
       totalCount: state.totalCount - 1,
     );
   }
 }
 
 /// Pending Comments Provider
-final pendingCommentsProvider = StateNotifierProvider<PendingCommentsNotifier, PendingCommentsState>((ref) {
-  return PendingCommentsNotifier(ref);
-});
+final pendingCommentsProvider =
+    StateNotifierProvider<PendingCommentsNotifier, PendingCommentsState>((ref) {
+      return PendingCommentsNotifier(ref);
+    });
 
 // ============================================================================
 // FLAGGED COMMENTS STATE
@@ -346,10 +344,10 @@ class FlaggedCommentsNotifier extends StateNotifier<FlaggedCommentsState> {
       );
 
       final commentsResponse = CommentModerationResponse.fromJson(response);
-      
+
       state = state.copyWith(
-        flaggedComments: page == 1 
-            ? commentsResponse.results 
+        flaggedComments: page == 1
+            ? commentsResponse.results
             : [...state.flaggedComments, ...commentsResponse.results],
         totalCount: commentsResponse.count,
         currentPage: page,
@@ -357,10 +355,7 @@ class FlaggedCommentsNotifier extends StateNotifier<FlaggedCommentsState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -379,16 +374,19 @@ class FlaggedCommentsNotifier extends StateNotifier<FlaggedCommentsState> {
   /// Remove comment from flagged list
   void removeComment(int commentId) {
     state = state.copyWith(
-      flaggedComments: state.flaggedComments.where((c) => c.id != commentId).toList(),
+      flaggedComments: state.flaggedComments
+          .where((c) => c.id != commentId)
+          .toList(),
       totalCount: state.totalCount - 1,
     );
   }
 }
 
 /// Flagged Comments Provider
-final flaggedCommentsProvider = StateNotifierProvider<FlaggedCommentsNotifier, FlaggedCommentsState>((ref) {
-  return FlaggedCommentsNotifier(ref);
-});
+final flaggedCommentsProvider =
+    StateNotifierProvider<FlaggedCommentsNotifier, FlaggedCommentsState>((ref) {
+      return FlaggedCommentsNotifier(ref);
+    });
 
 // ============================================================================
 // COMMENT MODERATION ACTIONS
@@ -410,7 +408,7 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
       // Update all comment lists
       _ref.read(pendingCommentsProvider.notifier).removeComment(commentId);
       _ref.read(allCommentsProvider.notifier).refresh();
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -423,16 +421,13 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
     state = true;
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
-      await repository.rejectComment(
-        commentId: commentId,
-        reason: reason,
-      );
+      await repository.rejectComment(commentId: commentId, reason: reason);
 
       // Update all comment lists
       _ref.read(pendingCommentsProvider.notifier).removeComment(commentId);
       _ref.read(flaggedCommentsProvider.notifier).removeComment(commentId);
       _ref.read(allCommentsProvider.notifier).removeComment(commentId);
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -451,10 +446,10 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
       );
 
       final updatedComment = TripCommentWithModeration.fromJson(response);
-      
+
       // Update comment in all lists
       _ref.read(allCommentsProvider.notifier).updateComment(updatedComment);
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -478,7 +473,7 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
         reason: reason,
         notifyUser: notifyUser,
       );
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -488,6 +483,7 @@ class CommentModerationActionsNotifier extends StateNotifier<bool> {
 }
 
 /// Comment Moderation Actions Provider
-final commentModerationActionsProvider = StateNotifierProvider<CommentModerationActionsNotifier, bool>((ref) {
-  return CommentModerationActionsNotifier(ref);
-});
+final commentModerationActionsProvider =
+    StateNotifierProvider<CommentModerationActionsNotifier, bool>((ref) {
+      return CommentModerationActionsNotifier(ref);
+    });

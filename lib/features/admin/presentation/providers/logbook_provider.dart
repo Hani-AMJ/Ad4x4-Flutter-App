@@ -59,11 +59,7 @@ class LogbookEntriesNotifier extends StateNotifier<LogbookEntriesState> {
   LogbookEntriesNotifier(this._ref) : super(const LogbookEntriesState());
 
   /// Load logbook entries
-  Future<void> loadEntries({
-    int? memberId,
-    int? tripId,
-    int page = 1,
-  }) async {
+  Future<void> loadEntries({int? memberId, int? tripId, int page = 1}) async {
     if (page == 1) {
       state = state.copyWith(
         isLoading: true,
@@ -135,18 +131,15 @@ class LogbookEntriesNotifier extends StateNotifier<LogbookEntriesState> {
 
   /// Refresh entries
   Future<void> refresh() async {
-    await loadEntries(
-      memberId: state.memberFilter,
-      tripId: state.tripFilter,
-    );
+    await loadEntries(memberId: state.memberFilter, tripId: state.tripFilter);
   }
 }
 
 /// Logbook Entries Provider
 final logbookEntriesProvider =
     StateNotifierProvider<LogbookEntriesNotifier, LogbookEntriesState>((ref) {
-  return LogbookEntriesNotifier(ref);
-});
+      return LogbookEntriesNotifier(ref);
+    });
 
 // ============================================================================
 // LOGBOOK SKILLS STATE
@@ -202,11 +195,7 @@ class LogbookSkillsNotifier extends StateNotifier<LogbookSkillsState> {
 
   /// Load all logbook skills
   Future<void> loadSkills({int? levelId}) async {
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-      levelFilter: levelId,
-    );
+    state = state.copyWith(isLoading: true, error: null, levelFilter: levelId);
 
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
@@ -249,8 +238,8 @@ class LogbookSkillsNotifier extends StateNotifier<LogbookSkillsState> {
 /// Logbook Skills Provider
 final logbookSkillsProvider =
     StateNotifierProvider<LogbookSkillsNotifier, LogbookSkillsState>((ref) {
-  return LogbookSkillsNotifier(ref);
-});
+      return LogbookSkillsNotifier(ref);
+    });
 
 // ============================================================================
 // MEMBER SKILLS STATUS PROVIDER
@@ -259,17 +248,21 @@ final logbookSkillsProvider =
 /// Member Skills Status Provider (by member ID)
 final memberSkillsStatusProvider =
     FutureProvider.family<List<MemberSkillStatus>, int>((ref, memberId) async {
-  final repository = ref.read(mainApiRepositoryProvider);
-  final response = await repository.getMemberLogbookSkills(memberId: memberId);
+      final repository = ref.read(mainApiRepositoryProvider);
+      final response = await repository.getMemberLogbookSkills(
+        memberId: memberId,
+      );
 
-  // API returns {'results': [...]} format
-  final results = response['results'] as List<dynamic>?;
-  if (results == null) return [];
+      // API returns {'results': [...]} format
+      final results = response['results'] as List<dynamic>?;
+      if (results == null) return [];
 
-  return results
-      .map((item) => MemberSkillStatus.fromJson(item as Map<String, dynamic>))
-      .toList();
-});
+      return results
+          .map(
+            (item) => MemberSkillStatus.fromJson(item as Map<String, dynamic>),
+          )
+          .toList();
+    });
 
 // ============================================================================
 // LOGBOOK ACTIONS PROVIDER
@@ -343,7 +336,7 @@ class LogbookActionsNotifier extends StateNotifier<bool> {
     state = true;
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
-      
+
       // ✅ Serialize all structured data into reportText
       final reportText = TripReportSerializer.serialize(
         mainReport: report,
@@ -353,13 +346,13 @@ class LogbookActionsNotifier extends StateNotifier<bool> {
         participantCount: participantCount,
         issues: issues,
       );
-      
+
       await repository.createTripReport(
         tripId: tripId,
         title: 'Trip Report', // Required field
         reportText: reportText,
       );
-      
+
       // Invalidate trip reports to refresh list
       _ref.read(tripReportsProvider.notifier).refresh();
     } finally {
@@ -382,7 +375,7 @@ class LogbookActionsNotifier extends StateNotifier<bool> {
     state = true;
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
-      
+
       // ✅ Serialize all structured data into reportText
       final reportText = TripReportSerializer.serialize(
         mainReport: report,
@@ -392,14 +385,14 @@ class LogbookActionsNotifier extends StateNotifier<bool> {
         participantCount: participantCount,
         issues: issues,
       );
-      
+
       await repository.updateTripReport(
         id: reportId,
         tripId: tripId,
         title: 'Trip Report', // Required field
         reportText: reportText,
       );
-      
+
       // Invalidate trip reports to refresh list
       _ref.read(tripReportsProvider.notifier).refresh();
     } finally {
@@ -411,8 +404,8 @@ class LogbookActionsNotifier extends StateNotifier<bool> {
 /// Logbook Actions Provider
 final logbookActionsProvider =
     StateNotifierProvider<LogbookActionsNotifier, bool>((ref) {
-  return LogbookActionsNotifier(ref);
-});
+      return LogbookActionsNotifier(ref);
+    });
 
 // ============================================================================
 // TRIP REPORTS STATE
@@ -492,7 +485,7 @@ class TripReportsNotifier extends StateNotifier<TripReportsState> {
 
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
-      
+
       // Step 1: Get list of report IDs (minimal data)
       final response = await repository.getTripReports(
         tripId: tripId,
@@ -505,21 +498,21 @@ class TripReportsNotifier extends StateNotifier<TripReportsState> {
       final listResults = (response['results'] as List<dynamic>?) ?? [];
       final count = response['count'] as int? ?? 0;
       final hasMore = response['next'] != null;
-      
+
       // Step 2: Fetch full details for each report
       final results = <TripReport>[];
-      
+
       for (final item in listResults) {
         try {
           if (item is! Map<String, dynamic>) continue;
-          
+
           final reportId = item['id'] as int?;
           final reportTripId = item['trip'] as int?;
           if (reportId == null) continue;
-          
+
           // Fetch full detail data
           final detailData = await repository.getTripReportDetail(reportId);
-          
+
           // Fetch trip details if we have trip ID
           if (reportTripId != null) {
             try {
@@ -537,7 +530,6 @@ class TripReportsNotifier extends StateNotifier<TripReportsState> {
           } else {
             results.add(TripReport.fromJson(detailData));
           }
-          
         } catch (e, stackTrace) {
           if (kDebugMode) {
             debugPrint('❌ Error fetching report detail: $e');
@@ -627,16 +619,14 @@ class TripReportsNotifier extends StateNotifier<TripReportsState> {
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
       await repository.deleteTripReport(reportId);
-      
+
       // Remove from local state
       state = state.copyWith(
         reports: state.reports.where((r) => r.id != reportId).toList(),
         totalCount: state.totalCount - 1,
       );
     } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to delete report: $e',
-      );
+      state = state.copyWith(error: 'Failed to delete report: $e');
       rethrow;
     }
   }
@@ -645,22 +635,24 @@ class TripReportsNotifier extends StateNotifier<TripReportsState> {
 /// Trip Reports Provider
 final tripReportsProvider =
     StateNotifierProvider<TripReportsNotifier, TripReportsState>((ref) {
-  return TripReportsNotifier(ref);
-});
+      return TripReportsNotifier(ref);
+    });
 
 /// Trip Reports by Trip ID Provider
 /// Fetches all trip reports for a specific trip with FULL details
-/// 
+///
 /// ⚠️ CRITICAL: The list endpoint returns minimal data (no reportText, no member info)
 /// We must fetch the detail endpoint for each report to get complete data
-final tripReportsByTripProvider =
-    FutureProvider.family<List<TripReport>, int>((ref, tripId) async {
+final tripReportsByTripProvider = FutureProvider.family<List<TripReport>, int>((
+  ref,
+  tripId,
+) async {
   final repository = ref.read(mainApiRepositoryProvider);
-  
+
   if (kDebugMode) {
     debugPrint('🔍 [TripReports] Fetching reports for trip $tripId');
   }
-  
+
   // Step 1: Get list of report IDs from list endpoint (minimal data)
   final listResponse = await repository.getTripReports(
     tripId: tripId,
@@ -669,38 +661,37 @@ final tripReportsByTripProvider =
   );
 
   final listResults = (listResponse['results'] as List<dynamic>?) ?? [];
-  
+
   if (kDebugMode) {
     debugPrint('🔍 [TripReports] Found ${listResults.length} reports in list');
   }
-  
+
   // Step 2: Fetch full details for each report
   final reports = <TripReport>[];
-  
+
   for (final item in listResults) {
     try {
       if (item is! Map<String, dynamic>) continue;
-      
+
       final reportId = item['id'] as int?;
       if (reportId == null) continue;
-      
+
       if (kDebugMode) {
         debugPrint('   📥 Fetching detail for report #$reportId');
       }
-      
+
       // Fetch full detail data
       final detailData = await repository.getTripReportDetail(reportId);
-      
+
       // Also fetch trip details to get full trip info
       final tripData = await repository.getTripDetail(tripId);
-      
+
       // Merge trip data into detail response
       final enrichedData = Map<String, dynamic>.from(detailData);
       enrichedData['trip'] = tripData;
-      
+
       final report = TripReport.fromJson(enrichedData);
       reports.add(report);
-      
     } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('❌ Error fetching report detail: $e');
@@ -708,9 +699,11 @@ final tripReportsByTripProvider =
       }
     }
   }
-  
+
   if (kDebugMode) {
-    debugPrint('✅ [TripReports] Successfully loaded ${reports.length} full reports');
+    debugPrint(
+      '✅ [TripReports] Successfully loaded ${reports.length} full reports',
+    );
   }
 
   return reports;

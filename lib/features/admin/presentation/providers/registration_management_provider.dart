@@ -8,11 +8,12 @@ import '../../../../core/providers/repository_providers.dart';
 // ============================================================================
 
 /// Registration Analytics Provider - Family provider for trip analytics
-final registrationAnalyticsProvider = FutureProvider.family<RegistrationAnalytics, int>((ref, tripId) async {
-  final repository = ref.read(mainApiRepositoryProvider);
-  final response = await repository.getRegistrationAnalytics(tripId);
-  return RegistrationAnalytics.fromJson(response);
-});
+final registrationAnalyticsProvider =
+    FutureProvider.family<RegistrationAnalytics, int>((ref, tripId) async {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final response = await repository.getRegistrationAnalytics(tripId);
+      return RegistrationAnalytics.fromJson(response);
+    });
 
 // ============================================================================
 // REGISTRATION LIST STATE
@@ -70,8 +71,9 @@ class RegistrationListState {
   bool get hasSelection => selectedIds.isNotEmpty;
 
   /// Get selected registrations
-  List<TripRegistrationWithAnalytics> get selectedRegistrations => 
-      registrations.where((r) => selectedIds.contains(r.registration.id)).toList();
+  List<TripRegistrationWithAnalytics> get selectedRegistrations => registrations
+      .where((r) => selectedIds.contains(r.registration.id))
+      .toList();
 }
 
 /// Registration List Notifier
@@ -104,22 +106,27 @@ class RegistrationListNotifier extends StateNotifier<RegistrationListState> {
         pageSize: 20,
       );
 
-      final results = (response['results'] as List<dynamic>?)
-          ?.map((item) => TripRegistrationWithAnalytics.fromJson(item as Map<String, dynamic>))
-          .toList() ?? [];
-      
+      final results =
+          (response['results'] as List<dynamic>?)
+              ?.map(
+                (item) => TripRegistrationWithAnalytics.fromJson(
+                  item as Map<String, dynamic>,
+                ),
+              )
+              .toList() ??
+          [];
+
       state = state.copyWith(
-        registrations: page == 1 ? results : [...state.registrations, ...results],
+        registrations: page == 1
+            ? results
+            : [...state.registrations, ...results],
         totalCount: response['count'] as int? ?? 0,
         currentPage: page,
         hasMore: response['next'] != null,
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -175,9 +182,12 @@ class RegistrationListNotifier extends StateNotifier<RegistrationListState> {
 }
 
 /// Registration List Provider
-final registrationListProvider = StateNotifierProvider<RegistrationListNotifier, RegistrationListState>((ref) {
-  return RegistrationListNotifier(ref);
-});
+final registrationListProvider =
+    StateNotifierProvider<RegistrationListNotifier, RegistrationListState>((
+      ref,
+    ) {
+      return RegistrationListNotifier(ref);
+    });
 
 // ============================================================================
 // REGISTRATION BULK ACTIONS
@@ -198,13 +208,13 @@ class RegistrationBulkActionsNotifier extends StateNotifier<bool> {
 
       // Refresh registration list
       _ref.read(registrationListProvider.notifier).refresh();
-      
+
       // Refresh analytics
       final tripId = _ref.read(registrationListProvider).tripFilter;
       if (tripId != null) {
         _ref.invalidate(registrationAnalyticsProvider(tripId));
       }
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -224,13 +234,13 @@ class RegistrationBulkActionsNotifier extends StateNotifier<bool> {
 
       // Refresh registration list
       _ref.read(registrationListProvider.notifier).refresh();
-      
+
       // Refresh analytics
       final tripId = _ref.read(registrationListProvider).tripFilter;
       if (tripId != null) {
         _ref.invalidate(registrationAnalyticsProvider(tripId));
       }
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -247,13 +257,13 @@ class RegistrationBulkActionsNotifier extends StateNotifier<bool> {
 
       // Refresh registration list
       _ref.read(registrationListProvider.notifier).refresh();
-      
+
       // Refresh analytics
       final tripId = _ref.read(registrationListProvider).tripFilter;
       if (tripId != null) {
         _ref.invalidate(registrationAnalyticsProvider(tripId));
       }
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -281,7 +291,7 @@ class RegistrationBulkActionsNotifier extends StateNotifier<bool> {
         pushNotification: pushNotification,
         emailNotification: emailNotification,
       );
-      
+
       state = false;
     } catch (e) {
       state = false;
@@ -291,9 +301,10 @@ class RegistrationBulkActionsNotifier extends StateNotifier<bool> {
 }
 
 /// Registration Bulk Actions Provider
-final registrationBulkActionsProvider = StateNotifierProvider<RegistrationBulkActionsNotifier, bool>((ref) {
-  return RegistrationBulkActionsNotifier(ref);
-});
+final registrationBulkActionsProvider =
+    StateNotifierProvider<RegistrationBulkActionsNotifier, bool>((ref) {
+      return RegistrationBulkActionsNotifier(ref);
+    });
 
 // ============================================================================
 // WAITLIST MANAGEMENT STATE
@@ -339,43 +350,38 @@ class WaitlistManagementState {
   bool get hasSelection => selectedIds.isNotEmpty;
 
   /// Get selected waitlist members
-  List<TripWaitlist> get selectedMembers => 
+  List<TripWaitlist> get selectedMembers =>
       waitlist.where((w) => selectedIds.contains(w.member.id)).toList();
 }
 
 /// Waitlist Management Notifier
-class WaitlistManagementNotifier extends StateNotifier<WaitlistManagementState> {
+class WaitlistManagementNotifier
+    extends StateNotifier<WaitlistManagementState> {
   final Ref _ref;
 
-  WaitlistManagementNotifier(this._ref) : super(const WaitlistManagementState());
+  WaitlistManagementNotifier(this._ref)
+    : super(const WaitlistManagementState());
 
   /// Load waitlist
   Future<void> loadWaitlist(int tripId) async {
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-      tripFilter: tripId,
-    );
+    state = state.copyWith(isLoading: true, error: null, tripFilter: tripId);
 
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
       final response = await repository.getTripDetail(tripId);
-      
+
       final waitlistData = response['waitlist'] as List<dynamic>? ?? [];
       final waitlist = waitlistData
           .map((item) => TripWaitlist.fromJson(item as Map<String, dynamic>))
           .toList();
-      
+
       state = state.copyWith(
         waitlist: waitlist,
         totalCount: waitlist.length,
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -427,10 +433,10 @@ class WaitlistManagementNotifier extends StateNotifier<WaitlistManagementState> 
       // Refresh waitlist and registration list
       await refresh();
       _ref.read(registrationListProvider.notifier).refresh();
-      
+
       // Refresh analytics
       _ref.invalidate(registrationAnalyticsProvider(state.tripFilter!));
-      
+
       // Clear selection
       state = state.copyWith(selectedIds: []);
     } catch (e) {
@@ -447,7 +453,9 @@ class WaitlistManagementNotifier extends StateNotifier<WaitlistManagementState> 
       final repository = _ref.read(mainApiRepositoryProvider);
       await repository.reorderWaitlist(
         tripId: state.tripFilter!,
-        positions: positions.map((p) => {'member_id': p.memberId, 'position': p.newPosition}).toList(),
+        positions: positions
+            .map((p) => {'member_id': p.memberId, 'position': p.newPosition})
+            .toList(),
       );
 
       // Refresh waitlist
@@ -465,9 +473,12 @@ class WaitlistManagementNotifier extends StateNotifier<WaitlistManagementState> 
 }
 
 /// Waitlist Management Provider
-final waitlistManagementProvider = StateNotifierProvider<WaitlistManagementNotifier, WaitlistManagementState>((ref) {
-  return WaitlistManagementNotifier(ref);
-});
+final waitlistManagementProvider =
+    StateNotifierProvider<WaitlistManagementNotifier, WaitlistManagementState>((
+      ref,
+    ) {
+      return WaitlistManagementNotifier(ref);
+    });
 
 // ============================================================================
 // EXPORT STATE
@@ -479,11 +490,7 @@ class ExportState {
   final String? downloadUrl;
   final String? error;
 
-  const ExportState({
-    this.isExporting = false,
-    this.downloadUrl,
-    this.error,
-  });
+  const ExportState({this.isExporting = false, this.downloadUrl, this.error});
 
   ExportState copyWith({
     bool? isExporting,
@@ -523,16 +530,13 @@ class ExportNotifier extends StateNotifier<ExportState> {
       );
 
       final exportResponse = RegistrationExportResponse.fromJson(response);
-      
+
       state = state.copyWith(
         isExporting: false,
         downloadUrl: exportResponse.downloadUrl,
       );
     } catch (e) {
-      state = state.copyWith(
-        isExporting: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isExporting: false, error: e.toString());
     }
   }
 
@@ -543,6 +547,8 @@ class ExportNotifier extends StateNotifier<ExportState> {
 }
 
 /// Export Provider
-final exportProvider = StateNotifierProvider<ExportNotifier, ExportState>((ref) {
+final exportProvider = StateNotifierProvider<ExportNotifier, ExportState>((
+  ref,
+) {
   return ExportNotifier(ref);
 });

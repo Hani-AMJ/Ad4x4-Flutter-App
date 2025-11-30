@@ -8,7 +8,7 @@ import '../../../../core/utils/status_helpers.dart';
 part 'admin_wizard_provider.g.dart';
 
 /// Admin Wizard State Notifier
-/// 
+///
 /// Manages wizard navigation and search criteria for admin trips search
 @riverpod
 class AdminWizard extends _$AdminWizard {
@@ -43,26 +43,26 @@ class AdminWizard extends _$AdminWizard {
   /// Execute search and store results in state
   Future<void> executeSearchAndStoreResults() async {
     print('🔍 [AdminWizard] executeSearchAndStoreResults called');
-    
+
     // Set loading state
     state = state.copyWith(isSearching: true, searchError: null);
-    
+
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       final params = state.toQueryParams();
-      
+
       print('🔍 [AdminWizard] Query params: $params');
       print('🔍 [AdminWizard] Starting pagination loop...');
-      
+
       // Pagination loop to fetch ALL trips
       final List<TripListItem> allTrips = [];
       int currentPage = 1;
       const int pageSize = 200;
       bool hasMorePages = true;
-      
+
       while (hasMorePages) {
         print('🔍 [AdminWizard] Fetching page $currentPage...');
-        
+
         final response = await repository.getTrips(
           startTimeAfter: params['startTimeAfter'] as String?,
           startTimeBefore: params['startTimeBefore'] as String?,
@@ -77,43 +77,53 @@ class AdminWizard extends _$AdminWizard {
 
         final tripsData = response['results'] as List<dynamic>? ?? [];
         final nextUrl = response['next'] as String?;
-        
+
         print('🔍 [AdminWizard] Page $currentPage: ${tripsData.length} trips');
-        
+
         final pageTrips = tripsData
             .map((json) => TripListItem.fromJson(json as Map<String, dynamic>))
             .toList();
-        
+
         allTrips.addAll(pageTrips);
-        
+
         hasMorePages = nextUrl != null && tripsData.length == pageSize;
         currentPage++;
-        
+
         if (currentPage > 50) {
           print('⚠️ [AdminWizard] Reached page limit (50 pages)');
           break;
         }
       }
-      
-      print('🔍 [AdminWizard] ✅ Pagination complete: ${allTrips.length} total trips');
-      
+
+      print(
+        '🔍 [AdminWizard] ✅ Pagination complete: ${allTrips.length} total trips',
+      );
+
       // Client-side filtering
       var trips = allTrips;
-      
+
       // Filter by approval status
       if (params['approvalStatus'] != null) {
         final status = params['approvalStatus'] as String;
         final beforeFilter = trips.length;
-        
+
         if (status == 'approved') {
-          trips = trips.where((trip) => isApproved(trip.approvalStatus)).toList();
+          trips = trips
+              .where((trip) => isApproved(trip.approvalStatus))
+              .toList();
         } else if (status == 'pending') {
-          trips = trips.where((trip) => isPending(trip.approvalStatus)).toList();
+          trips = trips
+              .where((trip) => isPending(trip.approvalStatus))
+              .toList();
         } else if (status == 'declined') {
-          trips = trips.where((trip) => isDeclined(trip.approvalStatus)).toList();
+          trips = trips
+              .where((trip) => isDeclined(trip.approvalStatus))
+              .toList();
         }
-        
-        print('🔍 [AdminWizard] Approval filter ($status): $beforeFilter → ${trips.length}');
+
+        print(
+          '🔍 [AdminWizard] Approval filter ($status): $beforeFilter → ${trips.length}',
+        );
       }
 
       // Filter by lead user
@@ -121,36 +131,39 @@ class AdminWizard extends _$AdminWizard {
         final leadId = params['lead'] as int;
         final beforeFilter = trips.length;
         trips = trips.where((trip) => trip.lead.id == leadId).toList();
-        print('🔍 [AdminWizard] Lead filter ($leadId): $beforeFilter → ${trips.length}');
+        print(
+          '🔍 [AdminWizard] Lead filter ($leadId): $beforeFilter → ${trips.length}',
+        );
       }
 
       // Multi-level filtering
       if (params['level_Id'] is List) {
         final levelIds = (params['level_Id'] as List<int>).toSet();
         final beforeFilter = trips.length;
-        trips = trips.where((trip) => levelIds.contains(trip.level.id)).toList();
-        print('🔍 [AdminWizard] Multi-level filter ($levelIds): $beforeFilter → ${trips.length}');
+        trips = trips
+            .where((trip) => levelIds.contains(trip.level.id))
+            .toList();
+        print(
+          '🔍 [AdminWizard] Multi-level filter ($levelIds): $beforeFilter → ${trips.length}',
+        );
       }
 
       print('🔍 [AdminWizard] ✅ FINAL TRIP COUNT: ${trips.length}');
-      
+
       // Store results in state
       state = state.copyWith(
         searchResults: trips,
         isSearching: false,
         searchError: null,
       );
-      
+
       print('🔍 [AdminWizard] ✅ Results stored in state');
     } catch (e, stackTrace) {
       print('❌ [AdminWizard] Search failed: $e');
       print('   Stack trace: $stackTrace');
-      
-      state = state.copyWith(
-        isSearching: false,
-        searchError: e.toString(),
-      );
-      
+
+      state = state.copyWith(isSearching: false, searchError: e.toString());
+
       rethrow;
     }
   }
@@ -234,7 +247,7 @@ class AdminWizard extends _$AdminWizard {
 }
 
 /// Admin Wizard Results Provider
-/// 
+///
 /// Manages search results for admin trips wizard
 @riverpod
 class AdminWizardResults extends _$AdminWizardResults {
@@ -251,7 +264,7 @@ class AdminWizardResults extends _$AdminWizardResults {
     print('🔍 [AdminWizard] Level IDs: ${criteria.levelIds}');
     print('🔍 [AdminWizard] Lead User ID: ${criteria.leadUserId}');
     print('🔍 [AdminWizard] Meeting Point Area: ${criteria.meetingPointArea}');
-    
+
     state = const AsyncValue.loading();
     print('🔍 [AdminWizard] State set to loading...');
 
@@ -259,7 +272,7 @@ class AdminWizardResults extends _$AdminWizardResults {
       try {
         final repository = ref.read(mainApiRepositoryProvider);
         final params = criteria.toQueryParams();
-        
+
         print('🔍 [AdminWizard] Query params generated:');
         params.forEach((key, value) {
           print('   - $key: $value');
@@ -270,18 +283,19 @@ class AdminWizardResults extends _$AdminWizardResults {
         int currentPage = 1;
         const int pageSize = 200; // Reasonable page size for performance
         bool hasMorePages = true;
-        
+
         print('🔍 [AdminWizard] Starting pagination loop...');
-        
+
         while (hasMorePages) {
           print('🔍 [AdminWizard] Fetching page $currentPage...');
-          
+
           final response = await repository.getTrips(
             startTimeAfter: params['startTimeAfter'] as String?,
             startTimeBefore: params['startTimeBefore'] as String?,
             levelId: params['level_Id'] is List
                 ? (params['level_Id'] as List<int>).first
-                : params['level_Id'] as int?, // ⚠️ API limitation: only one level supported
+                : params['level_Id']
+                      as int?, // ⚠️ API limitation: only one level supported
             meetingPointArea: params['meetingPoint_Area'] as String?,
             ordering: params['ordering'] as String?,
             page: currentPage,
@@ -290,49 +304,63 @@ class AdminWizardResults extends _$AdminWizardResults {
 
           final tripsData = response['results'] as List<dynamic>? ?? [];
           final nextUrl = response['next'] as String?;
-          
-          print('🔍 [AdminWizard] Page $currentPage: ${tripsData.length} trips');
+
+          print(
+            '🔍 [AdminWizard] Page $currentPage: ${tripsData.length} trips',
+          );
           print('🔍 [AdminWizard] Next URL: ${nextUrl ?? "null (last page)"}');
-          
+
           // Parse and add trips from this page
           final pageTrips = tripsData
-              .map((json) => TripListItem.fromJson(json as Map<String, dynamic>))
+              .map(
+                (json) => TripListItem.fromJson(json as Map<String, dynamic>),
+              )
               .toList();
-          
+
           allTrips.addAll(pageTrips);
-          
+
           // Check if there are more pages
           hasMorePages = nextUrl != null && tripsData.length == pageSize;
           currentPage++;
-          
+
           // Safety limit to prevent infinite loops
           if (currentPage > 50) {
             print('⚠️ [AdminWizard] Reached page limit (50 pages)');
             break;
           }
         }
-        
-        print('🔍 [AdminWizard] ✅ Pagination complete: ${allTrips.length} total trips from ${currentPage - 1} pages');
-        
+
+        print(
+          '🔍 [AdminWizard] ✅ Pagination complete: ${allTrips.length} total trips from ${currentPage - 1} pages',
+        );
+
         var trips = allTrips;
 
         // ⚠️ CLIENT-SIDE FILTERING for unsupported backend parameters
-        
+
         // Filter by approval status (if not already handled by startTime filters)
         if (params['approvalStatus'] != null) {
           final status = params['approvalStatus'] as String;
           final beforeFilter = trips.length;
-          
+
           // ✅ FIX: Backend uses single-letter codes (A, P, D), not full words
           if (status == 'approved') {
-            trips = trips.where((trip) => isApproved(trip.approvalStatus)).toList();
+            trips = trips
+                .where((trip) => isApproved(trip.approvalStatus))
+                .toList();
           } else if (status == 'pending') {
-            trips = trips.where((trip) => isPending(trip.approvalStatus)).toList();
+            trips = trips
+                .where((trip) => isPending(trip.approvalStatus))
+                .toList();
           } else if (status == 'declined') {
-            trips = trips.where((trip) => isDeclined(trip.approvalStatus)).toList();
+            trips = trips
+                .where((trip) => isDeclined(trip.approvalStatus))
+                .toList();
           }
-          
-          print('🔍 [AdminWizard] Approval status filter ($status): $beforeFilter → ${trips.length}');
+
+          print(
+            '🔍 [AdminWizard] Approval status filter ($status): $beforeFilter → ${trips.length}',
+          );
         }
 
         // Filter by lead user (if API doesn't support it)
@@ -340,7 +368,9 @@ class AdminWizardResults extends _$AdminWizardResults {
           final leadId = params['lead'] as int;
           final beforeFilter = trips.length;
           trips = trips.where((trip) => trip.lead.id == leadId).toList();
-          print('🔍 [AdminWizard] Lead user filter ($leadId): $beforeFilter → ${trips.length}');
+          print(
+            '🔍 [AdminWizard] Lead user filter ($leadId): $beforeFilter → ${trips.length}',
+          );
         }
 
         // ✅ CRITICAL: Client-side multi-level filtering
@@ -348,8 +378,12 @@ class AdminWizardResults extends _$AdminWizardResults {
         if (params['level_Id'] is List) {
           final levelIds = (params['level_Id'] as List<int>).toSet();
           final beforeFilter = trips.length;
-          trips = trips.where((trip) => levelIds.contains(trip.level.id)).toList();
-          print('🔍 [AdminWizard] Multi-level filter ($levelIds): $beforeFilter → ${trips.length}');
+          trips = trips
+              .where((trip) => levelIds.contains(trip.level.id))
+              .toList();
+          print(
+            '🔍 [AdminWizard] Multi-level filter ($levelIds): $beforeFilter → ${trips.length}',
+          );
         }
 
         print('🔍 [AdminWizard] ✅ FINAL TRIP COUNT: ${trips.length}');
@@ -362,8 +396,14 @@ class AdminWizardResults extends _$AdminWizardResults {
         rethrow;
       }
     });
-    
-    print('🔍 [AdminWizard] State after guard: ${state.hasValue ? "✅ HAS VALUE (${state.value?.length} trips)" : state.hasError ? "❌ HAS ERROR: ${state.error}" : "⏳ LOADING"}');
+
+    print(
+      '🔍 [AdminWizard] State after guard: ${state.hasValue
+          ? "✅ HAS VALUE (${state.value?.length} trips)"
+          : state.hasError
+          ? "❌ HAS ERROR: ${state.error}"
+          : "⏳ LOADING"}',
+    );
   }
 
   /// Refresh current results

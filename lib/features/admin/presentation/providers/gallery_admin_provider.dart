@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/error_log_service.dart';
 
 // ============================================================================
 // GALLERY ADMIN STATS STATE
@@ -89,8 +90,17 @@ class GalleryAdminStatsNotifier extends StateNotifier<GalleryAdminStatsState> {
 
       final stats = GalleryAdminStats.fromJson(statsData);
       state = state.copyWith(stats: stats, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load Gallery Admin stats: $e';
+      state = state.copyWith(isLoading: false, error: errorMsg);
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'gallery_admin_stats',
+        context: 'GalleryAdminStatsNotifier.loadStats',
+      );
     }
   }
 
