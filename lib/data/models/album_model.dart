@@ -8,10 +8,14 @@ class Album {
   final String? coverImageUrl;  // Nullable
   final int photoCount;
   final DateTime createdAt;
+  final DateTime? tripStartTime;  // When trip actually happened (vs createdAt = when gallery created)
   final String createdBy;
   final int? createdById;  // User ID
+  final String? createdByAvatar;  // User avatar URL
   final int? tripId;  // Link to trip (nullable)
   final String? tripTitle;  // Trip title (nullable)
+  final int? tripLevel;  // Trip level ID (1-8)
+  final String? tripLevelName;  // Trip level name ("Club Event", etc.)
   final List<String> samplePhotos;  // Sample photo filenames from Gallery API
 
   Album({
@@ -21,10 +25,14 @@ class Album {
     this.coverImageUrl,
     required this.photoCount,
     required this.createdAt,
+    this.tripStartTime,  // Optional - only populated for trip-related galleries
     required this.createdBy,
     this.createdById,
+    this.createdByAvatar,
     this.tripId,
     this.tripTitle,
+    this.tripLevel,
+    this.tripLevelName,
     this.samplePhotos = const [],
   });
 
@@ -37,6 +45,13 @@ class Album {
           .toList();
     }
 
+    final tripStartTime = json['trip_start_time'] != null 
+        ? _parseDateTime(json['trip_start_time'] as String)
+        : null;
+    final createdAt = json['created_at'] != null 
+        ? _parseDateTime(json['created_at'] as String)
+        : (json['createdAt'] != null ? _parseDateTime(json['createdAt'] as String) : DateTime.now());
+
     return Album(
       // Gallery API uses UUID strings
       id: json['id']?.toString() ?? '',
@@ -48,19 +63,21 @@ class Album {
                      json['coverImageUrl'] as String? ??
                      (samplePhotos.isNotEmpty ? samplePhotos.first : null),
       photoCount: json['photo_count'] as int? ?? json['photoCount'] as int? ?? 0,
-      // Gallery API format: "2025-11-09 10:22:41" (no timezone)
-      createdAt: json['created_at'] != null 
-          ? _parseDateTime(json['created_at'] as String)
-          : (json['createdAt'] != null ? _parseDateTime(json['createdAt'] as String) : DateTime.now()),
+      // Use pre-parsed values with debug logging
+      createdAt: createdAt,
+      tripStartTime: tripStartTime,
       // Gallery API provides created_by_username
       createdBy: json['created_by_username'] as String? ?? 
                  json['created_by'] as String? ?? 
                  json['createdBy'] as String? ?? 
                  'Unknown',
       createdById: json['created_by'] as int?,
+      createdByAvatar: json['created_by_avatar'] as String?,
       // Handle source_trip_id as either string or int (webhook returns string)
       tripId: _parseTripId(json),
       tripTitle: json['trip_title'] as String? ?? json['tripTitle'] as String?,
+      tripLevel: json['trip_level'] as int?,
+      tripLevelName: json['trip_level_name'] as String?,
       samplePhotos: samplePhotos,
     );
   }
@@ -106,6 +123,7 @@ class Album {
       'cover_image_url': coverImageUrl,
       'photo_count': photoCount,
       'created_at': createdAt.toIso8601String(),
+      if (tripStartTime != null) 'trip_start_time': tripStartTime!.toIso8601String(),
       'created_by': createdBy,
       if (tripId != null) 'trip_id': tripId,
       if (tripTitle != null) 'trip_title': tripTitle,
@@ -119,10 +137,14 @@ class Album {
     String? coverImageUrl,
     int? photoCount,
     DateTime? createdAt,
+    DateTime? tripStartTime,
     String? createdBy,
     int? createdById,
+    String? createdByAvatar,
     int? tripId,
     String? tripTitle,
+    int? tripLevel,
+    String? tripLevelName,
     List<String>? samplePhotos,
   }) {
     return Album(
@@ -132,10 +154,14 @@ class Album {
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
       photoCount: photoCount ?? this.photoCount,
       createdAt: createdAt ?? this.createdAt,
+      tripStartTime: tripStartTime ?? this.tripStartTime,
       createdBy: createdBy ?? this.createdBy,
       createdById: createdById ?? this.createdById,
+      createdByAvatar: createdByAvatar ?? this.createdByAvatar,
       tripId: tripId ?? this.tripId,
       tripTitle: tripTitle ?? this.tripTitle,
+      tripLevel: tripLevel ?? this.tripLevel,
+      tripLevelName: tripLevelName ?? this.tripLevelName,
       samplePhotos: samplePhotos ?? this.samplePhotos,
     );
   }
@@ -171,6 +197,25 @@ class Album {
       return filename; // Return as-is if no extension
     }
     return null;
+  }
+  
+  /// Get display date - prefer trip start time if available, otherwise creation date
+  DateTime get displayDate => tripStartTime ?? createdAt;
+  
+  /// Get date label - "Trip Date" if trip-related, "Created" otherwise
+  String get dateLabel => tripStartTime != null ? 'Trip Date' : 'Created';
+  
+  /// Check if this is a trip-related gallery
+  bool get isTripGallery => tripId != null;
+  
+  /// Get avatar URL with fallback to UI Avatars API
+  String get avatarUrl {
+    if (createdByAvatar != null && createdByAvatar!.isNotEmpty) {
+      return createdByAvatar!;
+    }
+    // Fallback to UI Avatars with user's name
+    final encodedName = Uri.encodeComponent(createdBy);
+    return 'https://ui-avatars.com/api/?name=$encodedName&background=random';
   }
 }
 

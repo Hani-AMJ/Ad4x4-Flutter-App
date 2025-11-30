@@ -713,7 +713,430 @@ Authorization: Bearer {token}
 
 ---
 
+### Public Settings
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "quick_stats": {
+      "total_photos": 129,
+      "total_galleries": 20,
+      "active_members": 3,
+      "photos_this_month": 129
+    },
+    "recent_photos": [
+      {
+        "id": "95c03008-a958-4c52-9251-ad983776c0de",
+        "filename": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+        "date_taken": null,
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+        "filename": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+        "date_taken": null,
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+        "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "date_taken": null,
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Artur2020",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+        "filename": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+        "date_taken": "2025-11-01T20:21:55.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+        "filename": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+        "date_taken": "2025-11-01T20:21:51.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "75d21ff4-5978-4e51-94f3-34c530d4faa7",
+        "filename": "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg",
+        "date_taken": "2025-11-01T20:19:08.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49",
+        "filename": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49.jpg",
+        "date_taken": "2025-11-01T17:49:33.000Z",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_state": "Abu Dhabi Emirate",
+        "geocoded_area": null,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "f184c17d-aef3-4bd0-905c-2b0227c7da87",
+        "filename": "f184c17d-aef3-4bd0-905c-2b0227c7da87.jpg",
+        "date_taken": "2025-11-01T15:38:12.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "673bc2a6-e310-4e6a-bcfe-e986cc85287a",
+        "filename": "673bc2a6-e310-4e6a-bcfe-e986cc85287a.jpg",
+        "date_taken": "2025-11-01T20:27:23.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "389510d2-cae0-4c0a-9f3c-8bc69a875837",
+        "filename": "389510d2-cae0-4c0a-9f3c-8bc69a875837.jpg",
+        "date_taken": "2025-11-01T20:24:26.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "8e8f5414-568d-4bc3-bfd8-52d65e854963",
+        "filename": "8e8f5414-568d-4bc3-bfd8-52d65e854963.jpg",
+        "date_taken": "2025-11-01T18:28:46.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "113a9e32-dfb1-485f-895c-88a2a09a014a",
+        "filename": "113a9e32-dfb1-485f-895c-88a2a09a014a.jpg",
+        "date_taken": "2025-11-01T19:57:40.000Z",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "geocoded_state": null,
+        "geocoded_area": null,
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "gallery_name": "Season Opening 2025"
+      }
+    ],
+    "top_uploaders": [
+      {
+        "user_id": 10613,
+        "username": "Hani AMJ",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "upload_count": 122
+      },
+      {
+        "user_id": 17877,
+        "username": "Redbeard",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "upload_count": 4
+      },
+      {
+        "user_id": 10613,
+        "username": "Hani AMJ",
+        "avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "upload_count": 2
+      },
+      {
+        "user_id": 18144,
+        "username": "Artur2020",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "upload_count": 1
+      }
+    ],
+    "top_downloads": [
+      {
+        "id": "06783a09-9d08-4ee8-b3ae-0dee331f3673",
+        "filename": "06783a09-9d08-4ee8-b3ae-0dee331f3673.jpg",
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 9,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+        "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "uploaded_by_username": "Artur2020",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 2,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+        "filename": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 1,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "95c03008-a958-4c52-9251-ad983776c0de",
+        "filename": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 0,
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+        "filename": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+        "uploaded_by_username": "Hani AMJ",
+        "uploaded_by_avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "geocoded_country": null,
+        "geocoded_city": null,
+        "download_count": 0,
+        "gallery_name": "Swriahan Winter Surfing"
+      },
+      {
+        "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+        "filename": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 0,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "75d21ff4-5978-4e51-94f3-34c530d4faa7",
+        "filename": "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 0,
+        "gallery_name": "Season Opening 2025"
+      },
+      {
+        "id": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49",
+        "filename": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49.jpg",
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "geocoded_country": "AE",
+        "geocoded_city": "Ramlat Sweihan",
+        "download_count": 0,
+        "gallery_name": "Season Opening 2025"
+      }
+    ],
+    "photo_locations": [
+      {
+        "latitude": 24.43071388888889,
+        "longitude": 55.165863888888886,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      },
+      {
+        "latitude": 24.431133333333335,
+        "longitude": 55.16623333333333,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      },
+      {
+        "latitude": 24.431205555555557,
+        "longitude": 55.16605277777778,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      },
+      {
+        "latitude": 24.431208333333334,
+        "longitude": 55.16605277777778,
+        "geocoded_city": "Ramlat Sweihan",
+        "geocoded_area": null,
+        "uploaded_by": 17877,
+        "uploaded_by_username": "Redbeard",
+        "uploaded_by_avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 1
+      }
+    ],
+    "featured_galleries": [
+      {
+        "id": "c06766ea-fc14-4bb9-bdd2-db0c66c2533a",
+        "name": "Swriahan Winter Surfing",
+        "description": "Auto-created gallery for trip: Swriahan Winter Surfing",
+        "created_by": 19888,
+        "created_by_username": "Abu Makram",
+        "created_by_avatar": null,
+        "trip_level": 4,
+        "is_public": 1,
+        "created_at": "2025-11-29T14:10:31.029Z",
+        "updated_at": "2025-11-29T19:15:58.256Z",
+        "soft_deleted_at": "2025-11-29T19:15:58.256Z",
+        "source_trip_id": "6307.0",
+        "auto_created": 1,
+        "photo_count": 2,
+        "cover_photo": "95c03008-a958-4c52-9251-ad983776c0de.jpg"
+      },
+      {
+        "id": "ad5cca82-ef30-46cc-9ae5-163ce2112067",
+        "name": "Season Opening 2025",
+        "description": "2025 2026",
+        "created_by": 10613,
+        "created_by_username": "Hani AMJ",
+        "created_by_avatar": null,
+        "trip_level": 1,
+        "is_public": 1,
+        "created_at": "2025-11-04 22:21:18",
+        "updated_at": "2025-11-04 22:21:18",
+        "soft_deleted_at": null,
+        "source_trip_id": null,
+        "auto_created": 0,
+        "photo_count": 127,
+        "cover_photo": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg"
+      }
+    ],
+    "recent_activity": [
+      {
+        "username": "Hani AMJ",
+        "avatar": "https://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "photo_count": 2,
+        "gallery_name": "Swriahan Winter Surfing",
+        "activity_time": "2025-11-29 16:44:52"
+      },
+      {
+        "username": "Artur2020",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/61b15788149095ef8e633027.png",
+        "photo_count": 1,
+        "gallery_name": "Season Opening 2025",
+        "activity_time": "2025-11-09 10:16:19"
+      },
+      {
+        "username": "Redbeard",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/024b7916da50cf8396e26da3.png",
+        "photo_count": 4,
+        "gallery_name": "Season Opening 2025",
+        "activity_time": "2025-11-09 09:31:39"
+      },
+      {
+        "username": "Hani AMJ",
+        "avatar": "http://ap.ad4x4.com/uploads/avatars/migration/da059d31401d6d4f962a93e8.jpg",
+        "photo_count": 122,
+        "gallery_name": "Season Opening 2025",
+        "activity_time": "2025-11-06 22:20:06"
+      }
+    ]
+  },
+  "settings": {
+    "recent_photos_count": 12,
+    "top_downloads_count": 8,
+    "top_uploaders_count": 10
+  }
+}
+```
+
+#### GET `/api/settings/public`
+
+Get public system settings (no authentication required).
+
+**Request:**
+```http
+GET /api/settings/public
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "settings": {
+    "max_batch_size_mb": 95
+  }
+}
+```
+
+**Notes:**
+- This endpoint does NOT require authentication
+- Returns public configuration values needed by clients
+- Currently returns maximum upload batch size in MB
+- Defaults to 95MB if not configured (Cloudflare Free plan limit)
+
+---
+
 ### Galleries Management
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "settings": {}
+}
+```
 
 #### GET `/api/galleries`
 
@@ -802,6 +1225,62 @@ Authorization: Bearer {token}
 
 ---
 
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "galleries": [
+    {
+      "id": "ad5cca82-ef30-46cc-9ae5-163ce2112067",
+      "name": "Season Opening 2025",
+      "description": "2025 2026",
+      "created_by": 10613,
+      "created_by_username": "Hani AMJ",
+      "created_by_avatar": null,
+      "trip_level": 1,
+      "is_public": 1,
+      "created_at": "2025-11-04 22:21:18",
+      "updated_at": "2025-11-04 22:21:18",
+      "soft_deleted_at": null,
+      "source_trip_id": null,
+      "auto_created": 0,
+      "trip_level_name": "Club Event",
+      "photo_count": 127,
+      "latest_photo_date": "2025-11-09 10:16:19",
+      "sample_photos": [
+        "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+        "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+        "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg"
+      ],
+      "sample_metadata": {
+        "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+        "date_taken": null,
+        "camera_make": null,
+        "camera_model": null,
+        "iso": null,
+        "aperture": null,
+        "shutter_speed": null,
+        "focal_length": null,
+        "latitude": null,
+        "longitude": null,
+        "location_name": null,
+        "file_size": null,
+        "width": 1200,
+        "height": 1600
+      }
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "count": 1
+  }
+}
+```
+
 #### POST `/api/galleries`
 
 Create a new gallery.
@@ -859,6 +1338,30 @@ Content-Type: application/json
 - Gallery ID is auto-generated UUID
 
 ---
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "gallery": {
+    "id": "6d468411-fdc4-4238-a00e-590f120148e7",
+    "name": "\ud83e\uddea API Test Album",
+    "description": "Test album created by API testing script - Safe to delete",
+    "created_by": 10613,
+    "created_by_username": "Hani AMJ",
+    "created_by_avatar": null,
+    "trip_level": null,
+    "is_public": 1,
+    "created_at": "2025-11-29 20:56:56",
+    "updated_at": "2025-11-29 20:56:56",
+    "soft_deleted_at": null,
+    "source_trip_id": null,
+    "auto_created": 0
+  }
+}
+```
 
 #### GET `/api/galleries/:galleryId/stats`
 
@@ -955,6 +1458,21 @@ Content-Type: application/json
 
 ---
 
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "Gallery renamed successfully",
+  "gallery": {
+    "id": "6d468411-fdc4-4238-a00e-590f120148e7",
+    "name": "\ud83e\uddea API Test Album (RENAMED)",
+    "updated_at": "2025-11-29T20:57:28.243Z"
+  }
+}
+```
+
 #### DELETE `/api/galleries/:galleryId`
 
 Soft delete a gallery (30-day restore window). Requires ownership or Board member permission.
@@ -992,6 +1510,18 @@ Authorization: Bearer {token}
 ---
 
 ## Photos Management
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "message": "Gallery deleted successfully (30-day restore window)",
+  "deleted_at": "2025-11-29T20:57:28.923Z",
+  "restore_until": "2025-12-29T20:57:28.932Z"
+}
+```
 
 #### GET `/api/photos/gallery/:galleryId`
 
@@ -1747,14 +2277,26 @@ POST /api/webhooks/trip/published
 Content-Type: application/json
 
 {
-  "trip_id": "trip-abc123",
+  "trip_id": 123,
   "title": "Desert Safari - January 2025",
-  "creator_id": 123,
+  "creator_id": 456,
   "creator_username": "hani_ad4x4",
   "creator_avatar": "https://...",
-  "level": 2
+  "level": 2,
+  "start_time": "2025-01-15T09:00:00Z"
 }
 ```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `trip_id` | integer | Yes | Trip ID from main backend |
+| `title` | string | Yes | Trip title |
+| `creator_id` | integer | Yes | User ID of trip creator |
+| `creator_username` | string | No | Username of trip creator |
+| `creator_avatar` | string | No | Avatar URL of trip creator |
+| `level` | integer | Yes | Trip difficulty level (user group ID) |
+| `start_time` | string (ISO8601) | No | Trip start date/time (e.g., "2025-01-15T09:00:00Z") |
 
 **Response:**
 ```json
@@ -1763,12 +2305,20 @@ Content-Type: application/json
   "gallery": {
     "id": "gallery-xyz789",
     "name": "Desert Safari - January 2025",
-    "source_trip_id": "trip-abc123",
+    "source_trip_id": 123,
+    "created_at": "2025-11-30T10:00:00Z",
+    "trip_start_time": "2025-01-15T09:00:00Z",
     "auto_created": true
   },
   "created": true
 }
 ```
+
+**Notes:**
+- `start_time` is optional but recommended - it sets the gallery's `trip_start_time` field
+- If `start_time` not provided, `trip_start_time` will be NULL
+- `created_at` tracks when gallery was created
+- `trip_start_time` tracks when trip actually happened
 
 **Idempotency:**
 - If gallery already exists for trip_id, returns existing gallery
@@ -1776,7 +2326,9 @@ Content-Type: application/json
 
 ---
 
-#### POST `/api/webhooks/trip/renamed`
+#### POST `/api/webhooks/trip/renamed` ⚠️ DEPRECATED
+
+**⚠️ DEPRECATED:** Use `/api/webhooks/trip/updated` instead. This endpoint is maintained for backward compatibility.
 
 Called when a trip is renamed. Syncs the gallery name if it was auto-created.
 
@@ -1786,10 +2338,16 @@ POST /api/webhooks/trip/renamed
 Content-Type: application/json
 
 {
-  "trip_id": "trip-abc123",
+  "trip_id": 123,
   "new_title": "Desert Safari - January 2025 (Updated)"
 }
 ```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `trip_id` | integer | Yes | Trip ID from main backend |
+| `new_title` | string | Yes | New trip title |
 
 **Response:**
 ```json
@@ -1818,9 +2376,14 @@ POST /api/webhooks/trip/deleted
 Content-Type: application/json
 
 {
-  "trip_id": "trip-abc123"
+  "trip_id": 123
 }
 ```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `trip_id` | integer | Yes | Trip ID from main backend |
 
 **Response:**
 ```json
@@ -1849,9 +2412,14 @@ POST /api/webhooks/trip/restored
 Content-Type: application/json
 
 {
-  "trip_id": "trip-abc123"
+  "trip_id": 123
 }
 ```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `trip_id` | integer | Yes | Trip ID from main backend |
 
 **Response:**
 ```json
@@ -1861,6 +2429,181 @@ Content-Type: application/json
   "restored": true
 }
 ```
+
+---
+
+#### POST `/api/webhooks/trip/updated` ✨ NEW
+
+**Unified endpoint to update trip-related gallery fields.** Replaces `/renamed` and `/rescheduled` with a single flexible endpoint.
+
+Called when a trip is updated (renamed and/or rescheduled). Updates the gallery name and/or `trip_start_time` field.
+
+**Request:**
+```http
+POST /api/webhooks/trip/updated
+Content-Type: application/json
+
+// Update title only
+{
+  "trip_id": 123,
+  "title": "Desert Safari - January 2025 (Updated)"
+}
+
+// Update start_time only
+{
+  "trip_id": 123,
+  "start_time": "2025-01-22T09:00:00Z"
+}
+
+// Update both
+{
+  "trip_id": 123,
+  "title": "Desert Safari - January 2025 (Rescheduled)",
+  "start_time": "2025-01-22T09:00:00Z"
+}
+```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `trip_id` | integer | Yes | Trip ID from main backend |
+| `title` | string | No | New trip title (if renaming) |
+| `start_time` | string (ISO8601) | No | New trip start date/time (if rescheduling) |
+
+**Note:** At least one of `title` or `start_time` must be provided.
+
+**Success Responses:**
+
+```json
+// Title only update
+{
+  "success": true,
+  "message": "Gallery updated successfully (title)",
+  "trip_id": 123,
+  "updated_fields": ["title"],
+  "updated_count": 1
+}
+
+// Start time only update
+{
+  "success": true,
+  "message": "Gallery updated successfully (start_time)",
+  "trip_id": 123,
+  "updated_fields": ["start_time"],
+  "updated_count": 1
+}
+
+// Both fields update
+{
+  "success": true,
+  "message": "Gallery updated successfully (title, start_time)",
+  "trip_id": 123,
+  "updated_fields": ["title", "start_time"],
+  "updated_count": 1
+}
+```
+
+**Error Responses:**
+```json
+// Missing trip_id
+{
+  "success": false,
+  "error": "Missing required field: trip_id"
+}
+
+// No fields to update
+{
+  "success": false,
+  "error": "Must provide at least one field to update: title or start_time"
+}
+
+// Invalid trip_id type
+{
+  "success": false,
+  "error": "trip_id must be an integer"
+}
+
+// Invalid start_time format
+{
+  "success": false,
+  "error": "start_time must be a valid ISO8601 date string"
+}
+
+// Gallery not found
+{
+  "success": false,
+  "error": "Gallery not found or not auto-created from trip"
+}
+```
+
+**Behavior:**
+- Only updates galleries that were auto-created from trips (`auto_created = 1`)
+- Soft-deleted galleries are not updated
+- Dynamic updates: only provided fields are updated
+- Updates gallery's `updated_at` timestamp
+- Returns 404 if gallery not found
+
+**Use Cases:**
+- Trip renamed: send `title` only
+- Trip rescheduled: send `start_time` only
+- Trip renamed AND rescheduled: send both `title` and `start_time`
+- Single API call for multiple changes (more efficient)
+
+---
+
+#### POST `/api/webhooks/trip/rescheduled` ⚠️ DEPRECATED
+
+**⚠️ DEPRECATED:** Use `/api/webhooks/trip/updated` with `start_time` field instead. This endpoint is maintained for backward compatibility.
+
+Called when a trip's start date/time is changed. Updates the gallery's `trip_start_time` field.
+
+**Request:**
+```http
+POST /api/webhooks/trip/rescheduled
+Content-Type: application/json
+
+{
+  "trip_id": 123,
+  "new_start_time": "2025-01-22T09:00:00Z"
+}
+```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `trip_id` | integer | Yes | Trip ID from main backend |
+| `new_start_time` | string (ISO8601) | Yes | New trip start date/time |
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Gallery trip start time updated successfully",
+  "trip_id": 123,
+  "new_start_time": "2025-01-22T09:00:00Z",
+  "updated_count": 1
+}
+```
+
+**Error Responses:**
+```json
+{
+  "success": false,
+  "error": "Gallery not found or not auto-created from trip"
+}
+```
+
+**Notes:**
+- Only updates galleries that were auto-created from trips (`auto_created = 1`)
+- Soft-deleted galleries are not updated
+- If gallery not found, returns 404 error
+- Updates gallery's `updated_at` timestamp
+- Preserves gallery's `created_at` (when gallery was created)
+
+**Use Cases:**
+- Trip rescheduled to different date
+- Trip postponed to future date
+- Admin corrects trip date
 
 ---
 
@@ -1916,6 +2659,169 @@ Content-Type: application/json
 
 ---
 
+### Admin Theme Management
+
+#### GET `/api/admin/themes`
+
+Get all theme presets (Board members only).
+
+**Request:**
+```http
+GET /api/admin/themes
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "themes": [
+    {
+      "id": 1,
+      "name": "dark",
+      "is_active": 1,
+      "primary_color": "#ffa500",
+      "secondary_color": "#9aa0a6",
+      "accent_color": "#ff9500",
+      "text_color": "#e8eaed",
+      "background_color": "#202124",
+      "card_color": "#292a2d",
+      "hover_color": "#35363a",
+      "border_color": "#3c4043",
+      "created_at": "2025-01-01T00:00:00",
+      "updated_at": "2025-01-07T10:00:00"
+    },
+    {
+      "id": 2,
+      "name": "light",
+      "is_active": 0,
+      "primary_color": "#ffa500",
+      "secondary_color": "#4a5568",
+      "accent_color": "#ff9500",
+      "text_color": "#1a1a1a",
+      "background_color": "#f8f9fa",
+      "card_color": "#e8e8e8",
+      "hover_color": "#f0f0f0",
+      "border_color": "#dee2e6"
+    }
+  ]
+}
+```
+
+**Permissions:**
+- Requires Board member level (level 9)
+- Returns 403 Forbidden for non-board members
+
+---
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "themes": [
+    {
+      "id": 1,
+      "name": "dark",
+      "is_active": 1,
+      "primary_color": "#ffa500",
+      "secondary_color": "#9aa0a6",
+      "accent_color": "#ff9500",
+      "text_color": "#e8eaed",
+      "background_color": "#202124",
+      "card_color": "#292a2d",
+      "hover_color": "#35363a",
+      "border_color": "#3c4043",
+      "created_at": "2025-11-05 21:22:47",
+      "updated_at": "2025-11-05 21:22:47"
+    },
+    {
+      "id": 2,
+      "name": "light",
+      "is_active": 0,
+      "primary_color": "#ffa500",
+      "secondary_color": "#4a5568",
+      "accent_color": "#ff9500",
+      "text_color": "#1a1a1a",
+      "background_color": "#f8f9fa",
+      "card_color": "#e8e8e8",
+      "hover_color": "#f0f0f0",
+      "border_color": "#dee2e6",
+      "created_at": "2025-11-05 21:22:47",
+      "updated_at": "2025-11-05 21:22:47"
+    }
+  ]
+}
+```
+
+#### PUT `/api/admin/themes/:themeId`
+
+Update a theme preset's colors (Board members only).
+
+**Request:**
+```http
+PUT /api/admin/themes/1
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "primary_color": "#ff8800",
+  "secondary_color": "#9aa0a6",
+  "accent_color": "#ff9500",
+  "text_color": "#e8eaed",
+  "background_color": "#202124",
+  "card_color": "#292a2d",
+  "hover_color": "#35363a",
+  "border_color": "#3c4043"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "theme": {
+    "id": 1,
+    "name": "dark",
+    "primary_color": "#ff8800",
+    "updated_at": "2025-01-07T15:30:00"
+  }
+}
+```
+
+**Notes:**
+- All color values must be valid hex colors (#RRGGBB)
+- Theme name cannot be changed via this endpoint
+- Changes affect all users using this theme
+
+---
+
+#### POST `/api/admin/themes/:themeId/activate`
+
+Set a theme as the active default theme (Board members only).
+
+**Request:**
+```http
+POST /api/admin/themes/1/activate
+Authorization: Bearer {token}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Theme activated successfully"
+}
+```
+
+**Behavior:**
+- Deactivates all other themes
+- Sets selected theme as active (is_active = 1)
+- Affects new users and users with "system" theme mode
+
+---
+
 ## Admin Panel (Board Members Only)
 
 ### Statistics & Analytics
@@ -1942,6 +2848,136 @@ Get system statistics.
 
 ---
 
+#### GET `/api/admin/activity`
+
+Get recent activity feed (Board members only).
+
+**Request:**
+```http
+GET /api/admin/activity?limit=20
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | integer | `10` | Number of activity items to return |
+
+**Response:**
+```json
+{
+  "success": true,
+  "activities": [
+    {
+      "id": "photo-123",
+      "filename": "IMG_4567.jpg",
+      "username": "hani_ad4x4",
+      "created_at": "2025-01-07T15:30:00",
+      "gallery_name": "Desert Safari 2025",
+      "action_type": "photo_upload"
+    }
+  ]
+}
+```
+
+**Notes:**
+- Returns recent photo uploads
+- Ordered by most recent first
+- Useful for monitoring system activity
+
+---
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "activities": [
+    {
+      "id": "95c03008-a958-4c52-9251-ad983776c0de",
+      "filename": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-29 16:44:52",
+      "gallery_name": "Swriahan Winter Surfing",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+      "filename": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-29 16:44:50",
+      "gallery_name": "Swriahan Winter Surfing",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+      "filename": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+      "username": "Artur2020",
+      "created_at": "2025-11-09 10:16:19",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+      "filename": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:39",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+      "filename": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:38",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "75d21ff4-5978-4e51-94f3-34c530d4faa7",
+      "filename": "75d21ff4-5978-4e51-94f3-34c530d4faa7.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:37",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49",
+      "filename": "7ebc7ff0-13b2-4ad9-8cfa-72c424cb5f49.jpg",
+      "username": "Redbeard",
+      "created_at": "2025-11-09 09:31:36",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "f184c17d-aef3-4bd0-905c-2b0227c7da87",
+      "filename": "f184c17d-aef3-4bd0-905c-2b0227c7da87.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-06 22:20:06",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "673bc2a6-e310-4e6a-bcfe-e986cc85287a",
+      "filename": "673bc2a6-e310-4e6a-bcfe-e986cc85287a.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-06 22:20:05",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    },
+    {
+      "id": "389510d2-cae0-4c0a-9f3c-8bc69a875837",
+      "filename": "389510d2-cae0-4c0a-9f3c-8bc69a875837.jpg",
+      "username": "Hani AMJ",
+      "created_at": "2025-11-06 22:20:03",
+      "gallery_name": "Season Opening 2025",
+      "action_type": "photo_upload"
+    }
+  ]
+}
+```
+
 #### GET `/api/admin/analytics`
 
 Get detailed analytics data.
@@ -1955,7 +2991,91 @@ Get detailed analytics data.
 
 ---
 
+#### GET `/api/admin/logs`
+
+Get system audit logs (Board members only).
+
+**Request:**
+```http
+GET /api/admin/logs?limit=100
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | integer | `50` | Number of log entries to return |
+
+**Response:**
+```json
+{
+  "success": true,
+  "logs": [
+    {
+      "id": "photo-123",
+      "username": "hani_ad4x4",
+      "action": "Photo Upload",
+      "details": "IMG_4567.jpg",
+      "timestamp": "2025-01-07T15:30:00"
+    }
+  ]
+}
+```
+
+**Notes:**
+- Returns recent photo actions as audit trail
+- Ordered by most recent first
+- Useful for security and compliance
+
+---
+
 ### Content Management
+
+
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "logs": [
+    {
+      "id": "95c03008-a958-4c52-9251-ad983776c0de",
+      "username": "Hani AMJ",
+      "action": "Photo Upload",
+      "details": "95c03008-a958-4c52-9251-ad983776c0de.jpg",
+      "timestamp": "2025-11-29 16:44:52"
+    },
+    {
+      "id": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7",
+      "username": "Hani AMJ",
+      "action": "Photo Upload",
+      "details": "1b8a408e-da9e-4511-b91e-3ef79f4e60b7.jpg",
+      "timestamp": "2025-11-29 16:44:50"
+    },
+    {
+      "id": "31395591-3d7c-43e5-91e8-74b76e4e529c",
+      "username": "Artur2020",
+      "action": "Photo Upload",
+      "details": "31395591-3d7c-43e5-91e8-74b76e4e529c.jpg",
+      "timestamp": "2025-11-09 10:16:19"
+    },
+    {
+      "id": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7",
+      "username": "Redbeard",
+      "action": "Photo Upload",
+      "details": "b5b6d1fb-28eb-4cee-b5b2-8859c32950a7.jpg",
+      "timestamp": "2025-11-09 09:31:39"
+    },
+    {
+      "id": "1e81b9eb-e240-46d1-a500-8c205a2d8e66",
+      "username": "Redbeard",
+      "action": "Photo Upload",
+      "details": "1e81b9eb-e240-46d1-a500-8c205a2d8e66.jpg",
+      "timestamp": "2025-11-09 09:31:38"
+    }
+  ]
+}
+```
 
 #### GET `/api/admin/content/galleries`
 
@@ -2082,6 +3202,47 @@ Update multiple settings.
 #### PUT `/api/admin/settings/:key`
 
 Update a single setting.
+
+---
+
+#### POST `/api/admin/settings`
+
+Create a new system setting (Board members only).
+
+**Request:**
+```http
+POST /api/admin/settings
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "key": "new_feature_enabled",
+  "value": "true"
+}
+```
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `key` | string | Yes | Setting key name |
+| `value` | string | Yes | Setting value |
+
+**Response:**
+```json
+{
+  "success": true,
+  "setting": {
+    "key": "new_feature_enabled",
+    "value": "true",
+    "created_at": "2025-01-07T15:30:00"
+  }
+}
+```
+
+**Notes:**
+- Creates a new setting in system_settings table
+- If key already exists, use PUT endpoint instead
+- Board member permission required
 
 ---
 

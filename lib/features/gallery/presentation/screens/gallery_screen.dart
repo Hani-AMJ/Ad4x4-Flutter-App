@@ -22,7 +22,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   List<Album> _albums = [];
   bool _isLoading = true;
   String _sortBy = 'recent-photo';  // recent-photo, name, newest, oldest, photo-count
-  String? _tripLevelFilter;  // null = all
+  int? _tripLevelFilter;  // null = all, 1-8 = specific trip level
   String? _userFilter;  // 'my' = user's albums only, 'all' or null = all albums
 
   @override
@@ -53,7 +53,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
         page: 1,
         limit: 20,
         sortBy: _sortBy,
-        tripLevel: _tripLevelFilter,
+        tripLevel: _tripLevelFilter?.toString(),  // Convert int to string for API
         filter: _userFilter,  // FIXED: Pass user filter to API
       );
       
@@ -65,7 +65,16 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
         for (var item in data) {
           if (item != null && item is Map<String, dynamic>) {
             try {
-              albums.add(Album.fromJson(item));
+              final album = Album.fromJson(item);
+              albums.add(album);
+              // Debug: Log trip start time parsing
+              if (album.tripId != null) {
+                print('🔍 [GalleryScreen] Trip Gallery: ${album.title}');
+                print('   tripStartTime: ${album.tripStartTime}');
+                print('   createdAt: ${album.createdAt}');
+                print('   displayDate: ${album.displayDate}');
+                print('   isTripGallery: ${album.isTripGallery}');
+              }
             } catch (e) {
               print('⚠️ [GalleryScreen] Error parsing album: $e');
               print('   Album data: $item');
@@ -162,6 +171,90 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
     );
   }
 
+  Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    
+    // Determine if user is filtering or not
+    final isFiltering = _tripLevelFilter != null;
+    
+    String message;
+    String description;
+    IconData icon;
+    
+    if (isFiltering) {
+      // User is filtering but no results
+      final levelName = _getLevelName(_tripLevelFilter!);
+      message = 'No Albums Found';
+      description = 'No galleries available for $levelName level.\\nTry selecting a different level or view all galleries.';
+      icon = Icons.filter_alt_off_outlined;
+    } else {
+      // No albums at all
+      message = 'No Galleries Yet';
+      description = 'Create your first gallery or wait for trip galleries to be auto-created.';
+      icon = Icons.photo_library_outlined;
+    }
+    
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 80,
+              color: colors.primary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              message,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colors.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (isFiltering) ...[
+              const SizedBox(height: 32),
+              FilledButton.icon(
+                onPressed: () {
+                  setState(() => _tripLevelFilter = null);
+                  _loadAlbums();
+                },
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear Filter'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// Get level name from level ID
+  String _getLevelName(int levelId) {
+    const levelNames = {
+      1: '🎪 Club Event',
+      2: '⭐ ANIT',
+      3: '⭐ Newbie/ANIT',
+      4: '⭐⭐ Intermediate',
+      5: '⭐⭐⭐ Advanced',
+      6: '⭐⭐⭐⭐ Expert',
+      7: '⭐⭐⭐⭐ Explorer',
+      8: '⭐⭐⭐⭐⭐ Marshal',
+    };
+    return levelNames[levelId] ?? 'Unknown Level';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -221,17 +314,21 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                 ),
                 const SizedBox(width: 8),
                 // Trip level filter
-                DropdownButton<String?>(
+                DropdownButton<int?>(
                   value: _tripLevelFilter,
                   underline: const SizedBox(),
                   icon: const Icon(Icons.filter_list, size: 20),
                   hint: const Text('All Levels'),
                   items: const [
                     DropdownMenuItem(value: null, child: Text('All Levels')),
-                    DropdownMenuItem(value: 'easy', child: Text('Easy')),
-                    DropdownMenuItem(value: 'moderate', child: Text('Moderate')),
-                    DropdownMenuItem(value: 'hard', child: Text('Hard')),
-                    DropdownMenuItem(value: 'extreme', child: Text('Extreme')),
+                    DropdownMenuItem(value: 1, child: Text('🎪 Club Event')),
+                    DropdownMenuItem(value: 2, child: Text('⭐ ANIT')),
+                    DropdownMenuItem(value: 3, child: Text('⭐ Newbie/ANIT')),
+                    DropdownMenuItem(value: 4, child: Text('⭐⭐ Intermediate')),
+                    DropdownMenuItem(value: 5, child: Text('⭐⭐⭐ Advanced')),
+                    DropdownMenuItem(value: 6, child: Text('⭐⭐⭐⭐ Expert')),
+                    DropdownMenuItem(value: 7, child: Text('⭐⭐⭐⭐ Explorer')),
+                    DropdownMenuItem(value: 8, child: Text('⭐⭐⭐⭐⭐ Marshal')),
                   ],
                   onChanged: (value) {
                     setState(() => _tripLevelFilter = value);
@@ -247,7 +344,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
             child: _isLoading
                 ? const LoadingIndicator(message: 'Loading albums...')
                 : _albums.isEmpty
-                    ? _buildErrorState()
+                    ? _buildEmptyState()
                     : RefreshIndicator(
                         onRefresh: _loadAlbums,
                   child: GridView.builder(
@@ -284,7 +381,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
   Future<void> _showCreateGalleryDialog() async {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
-    String selectedLevel = 'moderate';
+    int selectedLevel = 4;  // Default to Intermediate
 
     final result = await showDialog<bool>(
       context: context,
@@ -321,17 +418,21 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<int>(
                   value: selectedLevel,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'easy', child: Text('🟢 Easy')),
-                    DropdownMenuItem(value: 'moderate', child: Text('🟡 Moderate')),
-                    DropdownMenuItem(value: 'hard', child: Text('🟠 Hard')),
-                    DropdownMenuItem(value: 'extreme', child: Text('🔴 Extreme')),
+                    DropdownMenuItem(value: 1, child: Text('🎪 Club Event')),
+                    DropdownMenuItem(value: 2, child: Text('⭐ ANIT')),
+                    DropdownMenuItem(value: 3, child: Text('⭐ Newbie/ANIT')),
+                    DropdownMenuItem(value: 4, child: Text('⭐⭐ Intermediate')),
+                    DropdownMenuItem(value: 5, child: Text('⭐⭐⭐ Advanced')),
+                    DropdownMenuItem(value: 6, child: Text('⭐⭐⭐⭐ Expert')),
+                    DropdownMenuItem(value: 7, child: Text('⭐⭐⭐⭐ Explorer')),
+                    DropdownMenuItem(value: 8, child: Text('⭐⭐⭐⭐⭐ Marshal')),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -481,7 +582,41 @@ class _AlbumCard extends StatelessWidget{
                             color: colors.onSurface.withValues(alpha: 0.3),
                           ),
                         ),
-                  // Photo count badge
+                  // Trip level badge (top-left)
+                  if (album.tripLevelName != null)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _getLevelEmoji(album.tripLevel ?? 1),
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              album.tripLevelName!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  // Photo count badge (top-right)
                   Positioned(
                     top: 8,
                     right: 8,
@@ -525,6 +660,7 @@ class _AlbumCard extends StatelessWidget{
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Album title
                   Text(
                     album.title,
                     style: theme.textTheme.titleMedium?.copyWith(
@@ -533,12 +669,48 @@ class _AlbumCard extends StatelessWidget{
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 8),
+                  
+                  // Owner info (avatar + username)
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundImage: NetworkImage(album.avatarUrl),
+                        backgroundColor: colors.surfaceContainerHighest,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          album.createdBy,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 4),
-                  Text(
-                    DateFormat('MMM d, y').format(album.createdAt),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.7),
-                    ),
+                  
+                  // Date row
+                  Row(
+                    children: [
+                      Icon(
+                        album.isTripGallery ? Icons.event : Icons.create,
+                        size: 12,
+                        color: colors.onSurface.withValues(alpha: 0.6),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        DateFormat('MMM d, y').format(album.displayDate),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onSurface.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -547,5 +719,20 @@ class _AlbumCard extends StatelessWidget{
         ),
       ),
     );
+  }
+  
+  /// Get level emoji based on trip level ID
+  String _getLevelEmoji(int levelId) {
+    switch (levelId) {
+      case 1: return '🎪';           // Club Event
+      case 2: return '⭐';            // ANIT
+      case 3: return '⭐';            // Newbie/ANIT
+      case 4: return '⭐⭐';          // Intermediate
+      case 5: return '⭐⭐⭐';        // Advanced
+      case 6: return '⭐⭐⭐⭐';      // Expert
+      case 7: return '⭐⭐⭐⭐';      // Explorer
+      case 8: return '⭐⭐⭐⭐⭐';    // Marshal
+      default: return '⚪';
+    }
   }
 }

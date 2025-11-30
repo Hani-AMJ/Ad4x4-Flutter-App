@@ -439,7 +439,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
         slivers: [
           // App Bar
           SliverAppBar(
-            expandedHeight: 120,
+            expandedHeight: 80,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
@@ -590,51 +590,61 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
             ],
           ),
 
-          // Album Info
+          // Album Info - Ultra-compact layout
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _album!.description,
-                    style: theme.textTheme.bodyLarge,
+            child: Column(
+              children: [
+                // Only show description if it's not auto-generated text
+                if (_album!.description.isNotEmpty && 
+                    !_album!.description.startsWith('Auto-created gallery'))
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Text(
+                      _album!.description,
+                      style: theme.textTheme.bodyMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
+                
+                // Compact info row with all details
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 6,
                     children: [
-                      Icon(
-                        Icons.person,
-                        size: 16,
-                        color: colors.onSurface.withValues(alpha: 0.7),
+                      // Creator
+                      _CompactInfoChip(
+                        icon: Icons.person,
+                        label: _album!.createdBy,
+                        colors: colors,
+                        theme: theme,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _album!.createdBy,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.7),
+                      
+                      // Date
+                      _CompactInfoChip(
+                        icon: _album!.isTripGallery ? Icons.event : Icons.create,
+                        label: DateFormat('MMM d, y').format(_album!.displayDate),
+                        colors: colors,
+                        theme: theme,
+                      ),
+                      
+                      // Trip level (if available)
+                      if (_album!.tripLevelName != null)
+                        _CompactInfoChip(
+                          emoji: _getLevelEmoji(_album!.tripLevel ?? 1),
+                          label: _album!.tripLevelName!,
+                          colors: colors,
+                          theme: theme,
+                          isBold: true,
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Icon(
-                        Icons.calendar_today,
-                        size: 16,
-                        color: colors.onSurface.withValues(alpha: 0.7),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        DateFormat('MMM d, y').format(_album!.createdAt),
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurface.withValues(alpha: 0.7),
-                        ),
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  const Divider(),
-                ],
-              ),
+                ),
+                
+                Divider(height: 1, color: colors.onSurface.withValues(alpha: 0.1)),
+              ],
             ),
           ),
           
@@ -1087,6 +1097,21 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
       );
     }
   }
+  
+  // Helper method to get trip level emoji
+  String _getLevelEmoji(int level) {
+    switch (level) {
+      case 1: return '🎪'; // Club Event
+      case 2: return '⭐'; // ANIT
+      case 3: return '🟢'; // Intermediate
+      case 4: return '🟡'; // Advanced
+      case 5: return '🔴'; // Expert
+      case 6: return '⚫'; // Extreme
+      case 7: return '🏋️'; // Training
+      case 8: return '🤝'; // Social
+      default: return '📌';
+    }
+  }
 }
 
 class _PhotoThumbnail extends StatelessWidget {
@@ -1222,6 +1247,54 @@ class _StatRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Compact info chip widget for album details
+class _CompactInfoChip extends StatelessWidget {
+  final IconData? icon;
+  final String? emoji;
+  final String label;
+  final ColorScheme colors;
+  final ThemeData theme;
+  final bool isBold;
+
+  const _CompactInfoChip({
+    this.icon,
+    this.emoji,
+    required this.label,
+    required this.colors,
+    required this.theme,
+    this.isBold = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null)
+          Icon(
+            icon,
+            size: 13,
+            color: colors.onSurface.withValues(alpha: 0.5),
+          ),
+        if (emoji != null)
+          Text(
+            emoji!,
+            style: const TextStyle(fontSize: 12),
+          ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.onSurface.withValues(alpha: 0.65),
+            fontWeight: isBold ? FontWeight.w500 : FontWeight.normal,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 }
