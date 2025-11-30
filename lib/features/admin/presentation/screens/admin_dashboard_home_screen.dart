@@ -10,25 +10,27 @@ import '../widgets/performance_metrics_widget.dart';
 import 'package:flutter/foundation.dart';
 
 /// Admin Dashboard Home Screen
-/// 
+///
 /// Overview screen showing statistics, quick actions, and recent activity.
 /// This is the main landing page when admins navigate to /admin/dashboard.
-/// 
+///
 /// ✅ AUDIT FIX: Added real API metrics (Priority 1 - HIGH)
 class AdminDashboardHomeScreen extends ConsumerStatefulWidget {
   const AdminDashboardHomeScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardHomeScreen> createState() => _AdminDashboardHomeScreenState();
+  ConsumerState<AdminDashboardHomeScreen> createState() =>
+      _AdminDashboardHomeScreenState();
 }
 
-class _AdminDashboardHomeScreenState extends ConsumerState<AdminDashboardHomeScreen> {
+class _AdminDashboardHomeScreenState
+    extends ConsumerState<AdminDashboardHomeScreen> {
   // Dashboard statistics
   int? _pendingTripsCount;
   int? _activeMembersCount;
   int? _totalTripsCount;
   int? _monthlyRegistrationsCount;
-  
+
   bool _isLoadingStats = true;
   String? _statsError;
 
@@ -41,7 +43,7 @@ class _AdminDashboardHomeScreenState extends ConsumerState<AdminDashboardHomeScr
   /// Load all dashboard statistics from API
   Future<void> _loadDashboardStatistics() async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoadingStats = true;
       _statsError = null;
@@ -49,7 +51,7 @@ class _AdminDashboardHomeScreenState extends ConsumerState<AdminDashboardHomeScr
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      
+
       // Calculate date ranges
       final now = DateTime.now();
       final firstDayOfMonth = DateTime(now.year, now.month, 1);
@@ -59,13 +61,13 @@ class _AdminDashboardHomeScreenState extends ConsumerState<AdminDashboardHomeScr
       final results = await Future.wait([
         // 1. Pending trips count
         repository.getTrips(approvalStatus: 'P', pageSize: 1),
-        
+
         // 2. Active members count (all members)
         repository.getMembers(pageSize: 1),
-        
+
         // 3. Total trips count (all approved trips)
         repository.getTrips(approvalStatus: 'A', pageSize: 1),
-        
+
         // 4. Monthly registrations - trips starting this month
         repository.getTrips(
           approvalStatus: 'A',
@@ -83,19 +85,20 @@ class _AdminDashboardHomeScreenState extends ConsumerState<AdminDashboardHomeScr
         _monthlyRegistrationsCount = results[3]['count'] as int? ?? 0;
         _isLoadingStats = false;
       });
-      
-      if (kDebugMode) {
-        debugPrint('✅ Dashboard stats loaded: Pending=$_pendingTripsCount, Members=$_activeMembersCount, Total=$_totalTripsCount, Monthly=$_monthlyRegistrationsCount');
-      }
 
+      if (kDebugMode) {
+        debugPrint(
+          '✅ Dashboard stats loaded: Pending=$_pendingTripsCount, Members=$_activeMembersCount, Total=$_totalTripsCount, Monthly=$_monthlyRegistrationsCount',
+        );
+      }
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         _statsError = 'Failed to load statistics: $e';
         _isLoadingStats = false;
       });
-      
+
       if (kDebugMode) {
         debugPrint('❌ Dashboard stats error: $e');
       }
@@ -147,7 +150,7 @@ class _AdminDashboardHomeScreenState extends ConsumerState<AdminDashboardHomeScr
             LayoutBuilder(
               builder: (context, constraints) {
                 final isWideScreen = constraints.maxWidth > 900;
-                
+
                 if (isWideScreen) {
                   // Desktop: Two columns
                   return Row(
@@ -271,7 +274,7 @@ class _StatisticsSection extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Error state
             if (errorMessage != null)
               Padding(
@@ -281,7 +284,9 @@ class _StatisticsSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -318,7 +323,7 @@ class _StatisticsSection extends StatelessWidget {
                   ),
                 ),
               ),
-            
+
             // Statistics Grid - 2x2 layout
             Row(
               children: [
@@ -327,7 +332,9 @@ class _StatisticsSection extends StatelessWidget {
                     icon: Icons.approval_outlined,
                     iconColor: colors.primary,
                     title: 'Pending Trips',
-                    value: isLoading ? '...' : (pendingTripsCount?.toString() ?? '0'),
+                    value: isLoading
+                        ? '...'
+                        : (pendingTripsCount?.toString() ?? '0'),
                     subtitle: 'Awaiting approval',
                     onTap: (context) => context.go('/admin/trips/pending'),
                   ),
@@ -338,7 +345,9 @@ class _StatisticsSection extends StatelessWidget {
                     icon: Icons.people_outline,
                     iconColor: Colors.blue,
                     title: 'Active Members',
-                    value: isLoading ? '...' : (activeMembersCount?.toString() ?? '0'),
+                    value: isLoading
+                        ? '...'
+                        : (activeMembersCount?.toString() ?? '0'),
                     subtitle: 'Club members',
                     onTap: (context) => context.go('/admin/members'),
                   ),
@@ -353,7 +362,9 @@ class _StatisticsSection extends StatelessWidget {
                     icon: Icons.event_outlined,
                     iconColor: Colors.green,
                     title: 'Total Trips',
-                    value: isLoading ? '...' : (totalTripsCount?.toString() ?? '0'),
+                    value: isLoading
+                        ? '...'
+                        : (totalTripsCount?.toString() ?? '0'),
                     subtitle: 'All time',
                     onTap: (context) => context.go('/admin/trips/all'),
                   ),
@@ -364,9 +375,12 @@ class _StatisticsSection extends StatelessWidget {
                     icon: Icons.how_to_reg_outlined,
                     iconColor: Colors.orange,
                     title: 'Trips This Month',
-                    value: isLoading ? '...' : (monthlyRegistrationsCount?.toString() ?? '0'),
+                    value: isLoading
+                        ? '...'
+                        : (monthlyRegistrationsCount?.toString() ?? '0'),
                     subtitle: 'Starting this month',
-                    onTap: (context) => context.go('/admin/registration-analytics'),
+                    onTap: (context) =>
+                        context.go('/admin/registration-analytics'),
                   ),
                 ),
               ],
@@ -414,7 +428,7 @@ class _StatCard extends StatelessWidget {
             // Icon at top
             Icon(icon, color: iconColor, size: 32),
             const SizedBox(height: 12),
-            
+
             // Value - large and bold
             Text(
               value,
@@ -424,7 +438,7 @@ class _StatCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            
+
             // Title
             Text(
               title,
@@ -437,7 +451,7 @@ class _StatCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            
+
             // Subtitle
             Text(
               subtitle,
@@ -476,7 +490,7 @@ class _QuickActionsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -489,7 +503,7 @@ class _QuickActionsSection extends StatelessWidget {
                 onTap: () => context.go('/admin/logbook/analytics'),
                 color: const Color(0xFF9C27B0),
               ),
-            
+
             // Phase B Features (Priority)
             if (user?.hasPermission('approve_trip') ?? false)
               _QuickActionButton(
@@ -498,7 +512,7 @@ class _QuickActionsSection extends StatelessWidget {
                 onTap: () => context.go('/admin/trip-requests'),
                 color: const Color(0xFFE91E63),
               ),
-            
+
             if (user?.hasPermission('view_members') ?? false)
               _QuickActionButton(
                 icon: Icons.feedback_outlined,
@@ -506,7 +520,7 @@ class _QuickActionsSection extends StatelessWidget {
                 onTap: () => context.go('/admin/feedback'),
                 color: Colors.purple,
               ),
-            
+
             // Core Trip Management
             if (user?.hasPermission('approve_trip') ?? false)
               _QuickActionButton(
@@ -514,7 +528,7 @@ class _QuickActionsSection extends StatelessWidget {
                 label: 'Pending Trips',
                 onTap: () => context.go('/admin/trips/pending'),
               ),
-            
+
             if (user?.hasPermission('create_trip') ?? false)
               _QuickActionButton(
                 icon: Icons.add_circle,
@@ -522,7 +536,7 @@ class _QuickActionsSection extends StatelessWidget {
                 onTap: () => context.go('/trips/create'),
                 color: Colors.green,
               ),
-            
+
             // Member Management
             if (user?.hasPermission('view_members') ?? false)
               _QuickActionButton(
@@ -530,22 +544,22 @@ class _QuickActionsSection extends StatelessWidget {
                 label: 'View Members',
                 onTap: () => context.go('/admin/members'),
               ),
-            
+
             if (user?.hasPermission('view_upgrade_req') ?? false)
               _QuickActionButton(
                 icon: Icons.upgrade,
                 label: 'Upgrade Requests',
                 onTap: () => context.go('/admin/upgrade-requests'),
               ),
-            
-            // Content Moderation
+
+            // Gallery Management
             if (user?.hasPermission('edit_trip_media') ?? false)
               _QuickActionButton(
-                icon: Icons.photo_library,
-                label: 'Media Moderation',
-                onTap: () => context.go('/admin/trip-media'),
+                icon: Icons.admin_panel_settings,
+                label: 'Gallery Admin',
+                onTap: () => context.go('/admin/gallery-management'),
               ),
-            
+
             if (user?.hasPermission('delete_trip_comments') ?? false)
               _QuickActionButton(
                 icon: Icons.comment,
@@ -609,15 +623,13 @@ class _RecentActivitySection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: colors.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: colors.outline.withValues(alpha: 0.2),
-            ),
+            border: Border.all(color: colors.outline.withValues(alpha: 0.2)),
           ),
           child: Column(
             children: [

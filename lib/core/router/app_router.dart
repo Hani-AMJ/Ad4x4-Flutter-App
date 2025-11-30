@@ -90,7 +90,7 @@ import '../../features/admin/presentation/screens/admin_audit_log_screen.dart';
 // import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart';
 // import '../../features/admin/presentation/screens/quick_trip_report_screen.dart';
 // Phase 3B - Enhanced Trip Management Screens
-import '../../features/admin/presentation/screens/admin_trip_media_screen.dart';
+import '../../features/admin/presentation/screens/gallery_admin_center_screen.dart';
 import '../../features/admin/presentation/screens/admin_comments_moderation_screen.dart';
 import '../../features/admin/presentation/screens/admin_registration_analytics_screen.dart';
 import '../../features/admin/presentation/screens/admin_bulk_registrations_screen.dart';
@@ -106,7 +106,7 @@ import '../../shared/widgets/navigation/app_shell.dart';
 final goRouterProvider = Provider<GoRouter>((ref) {
   // Listen to auth state changes (V2 - Clean implementation)
   final authStateNotifier = _AuthStateNotifierV2(ref);
-  
+
   return GoRouter(
     initialLocation: '/splash',
     debugLogDiagnostics: true,
@@ -116,63 +116,67 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState?.isAuthenticated ?? false;
       final isLoading = authState?.isLoading ?? false;
       final currentLocation = state.matchedLocation;
-      
+
       // Check if current page is auth page, splash page, or debug page
-      final isAuthPage = currentLocation == '/login' || 
-                        currentLocation == '/register' ||
-                        currentLocation == '/forgot-password';
-      
+      final isAuthPage =
+          currentLocation == '/login' ||
+          currentLocation == '/register' ||
+          currentLocation == '/forgot-password';
+
       final isSplashPage = currentLocation == '/splash';
-      
+
       // Debug pages are always accessible (no auth required)
       final isDebugPage = currentLocation.startsWith('/debug');
-      
+
       // Public pages accessible without authentication
-      final isPublicPage = currentLocation == '/settings/terms' ||
-                          currentLocation == '/settings/privacy';
-      
-      print('🔀 [Router] $currentLocation | Auth: $isAuthenticated | Loading: $isLoading');
-      
+      final isPublicPage =
+          currentLocation == '/settings/terms' ||
+          currentLocation == '/settings/privacy';
+
+      print(
+        '🔀 [Router] $currentLocation | Auth: $isAuthenticated | Loading: $isLoading',
+      );
+
       // Wait for auth to finish loading
       if (isLoading) {
         print('⏳ [Router] Loading auth state...');
         return null;
       }
-      
+
       // Allow splash page without authentication (will handle its own navigation)
       if (isSplashPage) {
         print('🌟 [Router] Splash page - allowing access');
         return null;
       }
-      
+
       // Allow access to debug pages without authentication
       if (isDebugPage) {
         print('🔧 [Router] Debug page - allowing access');
         return null;
       }
-      
+
       // Allow access to public pages without authentication
       if (isPublicPage) {
         print('📄 [Router] Public page - allowing access');
         return null;
       }
-      
+
       // Simple redirect logic
       if (isAuthenticated && isAuthPage) {
         print('↪️ [Router] Authenticated, redirect to home');
         return '/';
       }
-      
+
       if (!isAuthenticated && !isAuthPage) {
         print('↪️ [Router] Not authenticated, redirect to login');
         return '/login';
       }
-      
+
       // Check profile completion after login (only for authenticated users)
       if (isAuthenticated && !isAuthPage) {
         final user = authState?.user;
         final isEditProfilePage = currentLocation == '/profile/edit';
-        
+
         // If user exists and profile is incomplete, redirect to edit profile
         if (user != null && !user.isProfileComplete && !isEditProfilePage) {
           print('⚠️ [Router] Profile incomplete, redirect to edit profile');
@@ -180,7 +184,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return '/profile/edit';
         }
       }
-      
+
       return null;
     },
     routes: [
@@ -190,7 +194,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      
+
       // Auth Routes
       GoRoute(
         path: '/login',
@@ -210,10 +214,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // Main App Shell with persistent bottom navigation
       ShellRoute(
-        builder: (context, state, child) => AppShell(
-          state: state,
-          child: child,
-        ),
+        builder: (context, state, child) =>
+            AppShell(state: state, child: child),
         routes: [
           // Home Route
           GoRoute(
@@ -302,11 +304,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'filtered-trips',
         builder: (context, state) {
           final memberId = int.parse(state.pathParameters['memberId']!);
-          final filterType = state.uri.queryParameters['filterType'] ?? 'completed';
+          final filterType =
+              state.uri.queryParameters['filterType'] ?? 'completed';
           final levelNumericStr = state.uri.queryParameters['levelNumeric'];
-          final levelNumeric = levelNumericStr != null ? int.tryParse(levelNumericStr) : null;
+          final levelNumeric = levelNumericStr != null
+              ? int.tryParse(levelNumericStr)
+              : null;
           final title = state.uri.queryParameters['title'] ?? 'Trips';
-          
+
           return FilteredTripsScreen(
             memberId: memberId,
             filterType: filterType,
@@ -332,7 +337,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'meeting-point-detail',
         builder: (context, state) {
           final meetingPoint = state.extra as MeetingPoint?;
-          
+
           // Safe navigation: redirect if meetingPoint is not provided
           if (meetingPoint == null) {
             // Redirect back to meeting points list
@@ -341,12 +346,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             });
             // Return placeholder while redirecting
             return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
+              body: Center(child: CircularProgressIndicator()),
             );
           }
-          
+
           return MeetingPointDetailScreen(meetingPoint: meetingPoint);
         },
       ),
@@ -373,7 +376,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'album',
         builder: (context, state) {
           final albumId = state.pathParameters['albumId']!;
-          final album = state.extra as Album?;  // Get pre-loaded album data if available
+          final album =
+              state.extra as Album?; // Get pre-loaded album data if available
           return AlbumScreen(albumId: albumId, album: album);
         },
       ),
@@ -381,8 +385,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/gallery/upload/:galleryId',
         name: 'upload-photos',
         builder: (context, state) {
-          final galleryId = state.pathParameters['galleryId']!;  // UUID string
-          final galleryTitle = state.uri.queryParameters['galleryTitle'] ?? 'Gallery';
+          final galleryId = state.pathParameters['galleryId']!; // UUID string
+          final galleryTitle =
+              state.uri.queryParameters['galleryTitle'] ?? 'Gallery';
           return PhotoUploadScreen(
             galleryId: galleryId,
             galleryTitle: galleryTitle,
@@ -440,7 +445,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'skills-matrix',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return SkillsMatrixScreen(memberId: memberId);
         },
       ),
@@ -449,7 +456,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'trip-history-logbook',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return TripHistoryWithLogbookScreen(memberId: memberId);
         },
       ),
@@ -468,7 +477,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'skill-verification-history',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return SkillVerificationHistoryScreen(memberId: memberId);
         },
       ),
@@ -482,7 +493,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'timeline-visualization',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return LogbookTimelineVisualizationScreen(memberId: memberId);
         },
       ),
@@ -491,7 +504,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'skill-recommendations',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return SkillRecommendationsScreen(memberId: memberId);
         },
       ),
@@ -500,7 +515,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'skills-comparison',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['comparisonMemberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return SkillsComparisonScreen(comparisonMemberId: memberId);
         },
       ),
@@ -509,7 +526,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'trip-history-enhanced',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return TripHistoryEnhancedScreen(memberId: memberId);
         },
       ),
@@ -518,7 +537,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'skill-certificates',
         builder: (context, state) {
           final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+          final memberId = memberIdStr != null
+              ? int.tryParse(memberIdStr)
+              : null;
           return SkillCertificatesScreen(memberId: memberId);
         },
       ),
@@ -563,7 +584,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'privacy-policy',
         builder: (context, state) => const PrivacyPolicyScreen(),
       ),
-      
+
       // Debug Routes (for development)
       GoRoute(
         path: '/debug/auth',
@@ -609,36 +630,28 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/admin/dashboard',
             name: 'admin-dashboard',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminDashboardHomeScreen(),
-              );
+              return NoTransitionPage(child: const AdminDashboardHomeScreen());
             },
           ),
           GoRoute(
             path: '/admin/trips/pending',
             name: 'admin-trips-pending',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminTripsPendingScreen(),
-              );
+              return NoTransitionPage(child: const AdminTripsPendingScreen());
             },
           ),
           GoRoute(
             path: '/admin/trips/all',
             name: 'admin-trips-all',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminTripsAllScreen(),
-              );
+              return NoTransitionPage(child: const AdminTripsAllScreen());
             },
           ),
           GoRoute(
             path: '/admin/trips/wizard',
             name: 'admin-trips-wizard',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminTripsSearchScreen(),
-              );
+              return NoTransitionPage(child: const AdminTripsSearchScreen());
             },
           ),
           GoRoute(
@@ -655,9 +668,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/admin/members',
             name: 'admin-members',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminMembersListScreen(),
-              );
+              return NoTransitionPage(child: const AdminMembersListScreen());
             },
           ),
           GoRoute(
@@ -684,9 +695,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/admin/meeting-points',
             name: 'admin-meeting-points',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminMeetingPointsScreen(),
-              );
+              return NoTransitionPage(child: const AdminMeetingPointsScreen());
             },
           ),
           GoRoute(
@@ -750,9 +759,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/admin/trip-requests',
             name: 'admin-trip-requests',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminTripRequestsScreen(),
-              );
+              return NoTransitionPage(child: const AdminTripRequestsScreen());
             },
           ),
 
@@ -761,9 +768,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/admin/feedback',
             name: 'admin-feedback',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminFeedbackScreen(),
-              );
+              return NoTransitionPage(child: const AdminFeedbackScreen());
             },
           ),
 
@@ -799,9 +804,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/admin/logbook/entries',
             name: 'admin-logbook-entries',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminLogbookEntriesScreen(),
-              );
+              return NoTransitionPage(child: const AdminLogbookEntriesScreen());
             },
           ),
           GoRoute(
@@ -817,45 +820,35 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/admin/logbook/sign-off',
             name: 'admin-sign-off-skills',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminSignOffSkillsScreen(),
-              );
+              return NoTransitionPage(child: const AdminSignOffSkillsScreen());
             },
           ),
           GoRoute(
             path: '/admin/logbook/quick-signoff',
             name: 'marshal-quick-signoff',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const MarshalQuickSignoffScreen(),
-              );
+              return NoTransitionPage(child: const MarshalQuickSignoffScreen());
             },
           ),
           GoRoute(
             path: '/admin/logbook/bulk-operations',
             name: 'admin-bulk-operations',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminBulkOperationsScreen(),
-              );
+              return NoTransitionPage(child: const AdminBulkOperationsScreen());
             },
           ),
           GoRoute(
             path: '/admin/logbook/export',
             name: 'admin-export-data',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminExportDataScreen(),
-              );
+              return NoTransitionPage(child: const AdminExportDataScreen());
             },
           ),
           GoRoute(
             path: '/admin/logbook/audit-log',
             name: 'admin-audit-log',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminAuditLogScreen(),
-              );
+              return NoTransitionPage(child: const AdminAuditLogScreen());
             },
           ),
           // TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
@@ -890,12 +883,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           */
           // Phase 3B - Content Moderation Routes
           GoRoute(
-            path: '/admin/trip-media',
-            name: 'admin-trip-media',
+            path: '/admin/gallery-management',
+            name: 'admin-gallery-management',
             pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminTripMediaScreen(),
-              );
+              return NoTransitionPage(child: const GalleryAdminCenterScreen());
             },
           ),
           GoRoute(
@@ -968,17 +959,18 @@ class _AuthStateNotifierV2 extends ChangeNotifier {
   _AuthStateNotifierV2(this._ref) {
     // Get initial auth state from V2 provider
     currentAuthState = _ref.read(authProviderV2);
-    print('🔧 [RouterNotifier] Created with auth state: ${currentAuthState?.isAuthenticated}');
-    
-    // Listen to auth changes from V2 provider
-    _ref.listen<AuthStateV2>(
-      authProviderV2,
-      (previous, next) {
-        print('🔔 [RouterNotifier] Auth changed: ${previous?.isAuthenticated} → ${next.isAuthenticated}');
-        currentAuthState = next;
-        notifyListeners(); // Tell GoRouter to re-evaluate redirects
-      },
+    print(
+      '🔧 [RouterNotifier] Created with auth state: ${currentAuthState?.isAuthenticated}',
     );
+
+    // Listen to auth changes from V2 provider
+    _ref.listen<AuthStateV2>(authProviderV2, (previous, next) {
+      print(
+        '🔔 [RouterNotifier] Auth changed: ${previous?.isAuthenticated} → ${next.isAuthenticated}',
+      );
+      currentAuthState = next;
+      notifyListeners(); // Tell GoRouter to re-evaluate redirects
+    });
   }
 
   final Ref _ref;

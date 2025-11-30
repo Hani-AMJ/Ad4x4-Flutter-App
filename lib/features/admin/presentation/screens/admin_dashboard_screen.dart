@@ -4,22 +4,21 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 
 /// Admin Dashboard Screen
-/// 
+///
 /// Main admin panel with sidebar navigation and content area.
 /// Only accessible to users with admin permissions.
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   final Widget child;
 
-  const AdminDashboardScreen({
-    super.key,
-    required this.child,
-  });
+  const AdminDashboardScreen({super.key, required this.child});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> with SingleTickerProviderStateMixin {
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
+    with SingleTickerProviderStateMixin {
   bool _isDrawerExpanded = false; // Start collapsed
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -35,7 +34,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     // Start pulsing after a short delay
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted && !_isDrawerExpanded) {
@@ -64,9 +63,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
     final user = ref.watch(authProviderV2).user;
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     // Check if user has ANY admin permission
@@ -143,7 +140,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 CircleAvatar(
                   radius: 16,
                   backgroundColor: colors.primary.withValues(alpha: 0.2),
-                  backgroundImage: user.avatar != null && user.avatar!.isNotEmpty
+                  backgroundImage:
+                      user.avatar != null && user.avatar!.isNotEmpty
                       ? NetworkImage(
                           user.avatar!.startsWith('http')
                               ? user.avatar!
@@ -152,7 +150,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                       : null,
                   child: user.avatar == null || user.avatar!.isEmpty
                       ? Text(
-                          user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : 'A',
+                          user.firstName.isNotEmpty
+                              ? user.firstName[0].toUpperCase()
+                              : 'A',
                           style: TextStyle(
                             color: colors.primary,
                             fontWeight: FontWeight.bold,
@@ -171,7 +171,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    if (user.level?.displayName != null && user.level!.displayName!.isNotEmpty)
+                    if (user.level?.displayName != null &&
+                        user.level!.displayName!.isNotEmpty)
                       Text(
                         user.level!.displayName!,
                         style: theme.textTheme.bodySmall?.copyWith(
@@ -198,18 +199,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
             width: _isDrawerExpanded ? 240 : 72,
             child: _buildSidebar(context, user, _isDrawerExpanded),
           ),
-          
+
           // Divider
           VerticalDivider(
             width: 1,
             thickness: 1,
             color: colors.outline.withValues(alpha: 0.2),
           ),
-          
+
           // Main Content Area
-          Expanded(
-            child: widget.child,
-          ),
+          Expanded(child: widget.child),
         ],
       ),
     );
@@ -229,13 +228,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
     for (var perm in user.permissions) {
       print('🔍 [AdminMenu]   - ${perm.action}');
     }
-    
+
     // Check specific permissions for missing items
     print('🔍 [AdminMenu] === CHECKING SPECIFIC PERMISSIONS ===');
-    print('🔍 [AdminMenu] edit_trip_registrations: ${user.hasPermission('edit_trip_registrations')}');
-    print('🔍 [AdminMenu] edit_trip_media: ${user.hasPermission('edit_trip_media')}');
-    print('🔍 [AdminMenu] delete_trip_comments: ${user.hasPermission('delete_trip_comments')}');
-    print('🔍 [AdminMenu] create_trip_report: ${user.hasPermission('create_trip_report')}');
+    print(
+      '🔍 [AdminMenu] edit_trip_registrations: ${user.hasPermission('edit_trip_registrations')}',
+    );
+    print(
+      '🔍 [AdminMenu] edit_trip_media: ${user.hasPermission('edit_trip_media')}',
+    );
+    print(
+      '🔍 [AdminMenu] delete_trip_comments: ${user.hasPermission('delete_trip_comments')}',
+    );
+    print(
+      '🔍 [AdminMenu] create_trip_report: ${user.hasPermission('create_trip_report')}',
+    );
     print('🔍 [AdminMenu] === END DEBUG ===');
 
     return Container(
@@ -244,7 +251,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
         padding: EdgeInsets.zero,
         children: [
           // Dashboard
-          if (user.hasPermission('edit_trips') || 
+          if (user.hasPermission('edit_trips') ||
               user.hasPermission('view_members'))
             _NavItem(
               icon: Icons.dashboard_outlined,
@@ -256,14 +263,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
             ),
 
           const SizedBox(height: 8),
-          
+
           // Trip Management Section
           if (_hasTripPermissions(user)) ...[
-            _SectionHeader(
-              label: 'TRIP MANAGEMENT',
-              isExpanded: expanded,
-            ),
-            
+            _SectionHeader(label: 'TRIP MANAGEMENT', isExpanded: expanded),
+
             if (user.hasPermission('approve_trip'))
               _NavItem(
                 icon: Icons.approval_outlined,
@@ -273,7 +277,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/trips/pending'),
               ),
-            
+
             // All Trips - List view with quick actions
             if (_hasTripPermissions(user))
               _NavItem(
@@ -284,7 +288,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/trips/all'),
               ),
-            
+
             // Search Trips - Wizard interface
             if (_hasTripPermissions(user))
               _NavItem(
@@ -295,7 +299,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/trips/wizard'),
               ),
-            
 
             // Trip Registrants Management (Phase 3B - moved here for better organization)
             if (user.hasPermission('edit_trip_registrations'))
@@ -307,7 +310,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/registration-analytics'),
               ),
-            
+
             if (user.hasPermission('edit_trip_registrations'))
               _NavItem(
                 icon: Icons.checklist_outlined,
@@ -317,7 +320,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/bulk-registrations'),
               ),
-            
+
             if (user.hasPermission('edit_trip_registrations'))
               _NavItem(
                 icon: Icons.list_outlined,
@@ -327,18 +330,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/waitlist-management'),
               ),
-            
+
             // Trip Media & Comments (Phase 3B - moved here for better organization)
             if (user.hasPermission('edit_trip_media'))
               _NavItem(
-                icon: Icons.photo_library_outlined,
-                selectedIcon: Icons.photo_library,
-                label: 'Trip Media',
-                isSelected: currentPath == '/admin/trip-media',
+                icon: Icons.admin_panel_settings_outlined,
+                selectedIcon: Icons.admin_panel_settings,
+                label: 'Gallery Admin',
+                isSelected: currentPath == '/admin/gallery-management',
                 isExpanded: expanded,
-                onTap: () => context.go('/admin/trip-media'),
+                onTap: () => context.go('/admin/gallery-management'),
               ),
-            
+
             if (user.hasPermission('delete_trip_comments'))
               _NavItem(
                 icon: Icons.comment_outlined,
@@ -348,7 +351,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/comments-moderation'),
               ),
-            
+
             // TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
             // This feature is temporarily hidden until development is complete.
             // Will be rolled out once all functionality is fully tested and ready.
@@ -365,17 +368,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 onTap: () => context.go('/admin/trip-reports'),
               ),
             */
-            
             const SizedBox(height: 8),
           ],
 
           // Trip Requests Section
           if (_hasTripManagementPermissions(user)) ...[
-            _SectionHeader(
-              label: 'TRIP REQUESTS',
-              isExpanded: expanded,
-            ),
-            
+            _SectionHeader(label: 'TRIP REQUESTS', isExpanded: expanded),
+
             _NavItem(
               icon: Icons.assignment_outlined,
               selectedIcon: Icons.assignment,
@@ -384,17 +383,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               isExpanded: expanded,
               onTap: () => context.go('/admin/trip-requests'),
             ),
-            
+
             const SizedBox(height: 8),
           ],
 
           // Feedback Section
           if (_hasTripManagementPermissions(user)) ...[
-            _SectionHeader(
-              label: 'FEEDBACK',
-              isExpanded: expanded,
-            ),
-            
+            _SectionHeader(label: 'FEEDBACK', isExpanded: expanded),
+
             _NavItem(
               icon: Icons.feedback_outlined,
               selectedIcon: Icons.feedback,
@@ -403,17 +399,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               isExpanded: expanded,
               onTap: () => context.go('/admin/feedback'),
             ),
-            
+
             const SizedBox(height: 8),
           ],
 
           // Member Management Section
           if (user.hasPermission('view_members')) ...[
-            _SectionHeader(
-              label: 'MEMBER MANAGEMENT',
-              isExpanded: expanded,
-            ),
-            
+            _SectionHeader(label: 'MEMBER MANAGEMENT', isExpanded: expanded),
+
             _NavItem(
               icon: Icons.people_outline,
               selectedIcon: Icons.people,
@@ -422,17 +415,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               isExpanded: expanded,
               onTap: () => context.go('/admin/members'),
             ),
-            
+
             const SizedBox(height: 8),
           ],
 
           // Upgrade Requests Section
           if (user.hasPermission('view_upgrade_req')) ...[
-            _SectionHeader(
-              label: 'UPGRADE REQUESTS',
-              isExpanded: expanded,
-            ),
-            
+            _SectionHeader(label: 'UPGRADE REQUESTS', isExpanded: expanded),
+
             _NavItem(
               icon: Icons.upgrade_outlined,
               selectedIcon: Icons.upgrade,
@@ -441,17 +431,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               isExpanded: expanded,
               onTap: () => context.go('/admin/upgrade-requests'),
             ),
-            
+
             const SizedBox(height: 8),
           ],
 
           // Marshal Panel Section
           if (_hasMarshalPermissions(user)) ...[
-            _SectionHeader(
-              label: 'MARSHAL PANEL',
-              isExpanded: expanded,
-            ),
-            
+            _SectionHeader(label: 'MARSHAL PANEL', isExpanded: expanded),
+
             // ✅ NEW: Logbook Analytics
             if (user.hasPermission('create_logbook_entries'))
               _NavItem(
@@ -462,7 +449,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/analytics'),
               ),
-            
+
             // ✅ NEW: Member Skills Report
             if (user.hasPermission('create_logbook_entries'))
               _NavItem(
@@ -473,7 +460,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/member-skills'),
               ),
-            
+
             // ✅ NEW: Marshal Activity Report
             if (user.hasPermission('create_logbook_entries'))
               _NavItem(
@@ -484,7 +471,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/marshal-activity'),
               ),
-            
+
             // ✅ NEW: Quick Sign-Off
             if (user.hasPermission('sign_logbook_skills'))
               _NavItem(
@@ -495,7 +482,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/quick-signoff'),
               ),
-            
+
             // ✅ NEW: Bulk Operations
             if (user.hasPermission('sign_logbook_skills'))
               _NavItem(
@@ -506,7 +493,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/bulk-operations'),
               ),
-            
+
             // ✅ NEW: Export Data
             if (user.hasPermission('create_logbook_entries'))
               _NavItem(
@@ -517,7 +504,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/export'),
               ),
-            
+
             // ✅ NEW: Logbook History
             if (user.hasPermission('create_logbook_entries'))
               _NavItem(
@@ -528,7 +515,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/logbook/audit-log'),
               ),
-            
+
             // ✅ NEW: Trip Reports
             if (user.hasPermission('create_trip_report'))
               _NavItem(
@@ -539,7 +526,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 isExpanded: expanded,
                 onTap: () => context.go('/admin/trip-reports'),
               ),
-            
+
             // ⚠️ HIDDEN FOR TESTING: Old logbook entries and sign-off pages
             // These are commented out but code remains for potential deletion later
             /*
@@ -563,7 +550,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 onTap: () => context.go('/admin/logbook/sign-off'),
               ),
             */
-            
             const SizedBox(height: 8),
           ],
 
@@ -573,11 +559,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
 
           // Meeting Points Section
           if (_hasMeetingPointPermissions(user)) ...[
-            _SectionHeader(
-              label: 'RESOURCES',
-              isExpanded: expanded,
-            ),
-            
+            _SectionHeader(label: 'RESOURCES', isExpanded: expanded),
+
             _NavItem(
               icon: Icons.place_outlined,
               selectedIcon: Icons.place,
@@ -586,7 +569,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
               isExpanded: expanded,
               onTap: () => context.go('/admin/meeting-points'),
             ),
-            
+
             _NavItem(
               icon: Icons.map_outlined,
               selectedIcon: Icons.map,
@@ -602,7 +585,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
   }
 
   /// Check if user has admin permission
-  /// 
+  ///
   /// NEW LOGIC: Allow access to admin panel for Admins, Board Members, and Marshals
   /// Individual actions will be permission-gated inside the tools
   bool _hasAdminPermission(dynamic user) {
@@ -621,34 +604,33 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
       'view_trip_registrations',
       'edit_trip_registrations',
       'export_trip_registrants',
-      
+
       // Backend permissions for advanced trip features
-      'override_waitlist',  // Real backend permission (IDs: 12, 25, 33)
-      'bypass_level_req',   // Real backend permission (ID: 61)
-      
+      'override_waitlist', // Real backend permission (IDs: 12, 25, 33)
+      'bypass_level_req', // Real backend permission (ID: 61)
       // Member management
       'view_members',
       'edit_membership_payments',
-      
+
       // Meeting points (use plural forms per backend API)
       'create_meeting_points',
       'edit_meeting_points',
       'delete_meeting_points',
-      
+
       // Logbook (marshals)
       'create_logbook_entries',
       'sign_logbook_skills',
       'create_trip_report',
-      
+
       // Content moderation (Phase 3B)
       'edit_trip_media',
       'delete_trip_comments',
-      
+
       // Upgrade requests
       'view_upgrade_req',
       'approve_upgrade_req',
     ];
-    
+
     // Return true if user has ANY of these permissions
     return adminPermissions.any((permission) => user.hasPermission(permission));
   }
@@ -656,40 +638,40 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
   /// Check if user has any trip management permissions
   bool _hasTripPermissions(dynamic user) {
     return user.hasPermission('create_trip') ||
-           user.hasPermission('create_trip_with_approval') ||
-           user.hasPermission('edit_trips') ||
-           user.hasPermission('delete_trips') ||
-           user.hasPermission('approve_trip') ||
-           user.hasPermission('decline_trip') ||
-           user.hasPermission('view_trip_registrations') ||
-           user.hasPermission('edit_trip_registrations');
+        user.hasPermission('create_trip_with_approval') ||
+        user.hasPermission('edit_trips') ||
+        user.hasPermission('delete_trips') ||
+        user.hasPermission('approve_trip') ||
+        user.hasPermission('decline_trip') ||
+        user.hasPermission('view_trip_registrations') ||
+        user.hasPermission('edit_trip_registrations');
   }
 
   /// Check if user has trip management permissions (including requests and feedback)
   bool _hasTripManagementPermissions(dynamic user) {
     return _hasTripPermissions(user) ||
-           user.hasPermission('view_members') ||
-           user.hasPermission('approve_trip') ||
-           user.hasPermission('decline_trip');
+        user.hasPermission('view_members') ||
+        user.hasPermission('approve_trip') ||
+        user.hasPermission('decline_trip');
   }
 
   bool _hasMeetingPointPermissions(dynamic user) {
     return user.hasPermission('create_meeting_points') ||
-           user.hasPermission('edit_meeting_points') ||
-           user.hasPermission('delete_meeting_points');
+        user.hasPermission('edit_meeting_points') ||
+        user.hasPermission('delete_meeting_points');
   }
 
   /// Check if user has any marshal panel permissions
   bool _hasMarshalPermissions(dynamic user) {
     return user.hasPermission('create_logbook_entries') ||
-           user.hasPermission('sign_logbook_skills') ||
-           user.hasPermission('create_trip_report');
+        user.hasPermission('sign_logbook_skills') ||
+        user.hasPermission('create_trip_report');
   }
 
   /// Check if user has any content moderation permissions (Phase 3B)
   bool _hasContentModerationPermissions(dynamic user) {
     return user.hasPermission('edit_trip_media') ||
-           user.hasPermission('delete_trip_comments');
+        user.hasPermission('delete_trip_comments');
   }
 }
 
@@ -698,10 +680,7 @@ class _SectionHeader extends StatelessWidget {
   final String label;
   final bool isExpanded;
 
-  const _SectionHeader({
-    required this.label,
-    required this.isExpanded,
-  });
+  const _SectionHeader({required this.label, required this.isExpanded});
 
   @override
   Widget build(BuildContext context) {
@@ -754,9 +733,7 @@ class _NavItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Material(
-        color: isSelected
-            ? colors.primaryContainer
-            : Colors.transparent,
+        color: isSelected ? colors.primaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: onTap,
@@ -781,13 +758,18 @@ class _NavItem extends StatelessWidget {
                         color: isSelected
                             ? colors.onPrimaryContainer
                             : colors.onSurface.withValues(alpha: 0.9),
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
                   if (badge != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: colors.error,
                         borderRadius: BorderRadius.circular(12),
