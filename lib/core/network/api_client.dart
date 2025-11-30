@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
+import '../services/error_log_service.dart';
 
 /// API Client with Dio and authentication interceptor
 class ApiClient {
@@ -27,6 +28,80 @@ class ApiClient {
     );
 
     _setupInterceptors();
+  }
+
+  /// Log API errors to ErrorLogService for production debugging
+  Future<void> _logApiError(DioException error) async {
+    try {
+      final errorLog = ErrorLogService();
+      
+      // Build error message
+      final method = error.requestOptions.method;
+      final path = error.requestOptions.path;
+      final statusCode = error.response?.statusCode ?? 0;
+      
+      String errorMessage;
+      String errorType;
+      
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          errorMessage = 'Connection timeout: $method $path (${error.type.name})';
+          errorType = 'network_timeout';
+          break;
+        case DioExceptionType.badResponse:
+          final responseData = error.response?.data;
+          String detail = 'Unknown error';
+          
+          if (responseData is Map<String, dynamic>) {
+            detail = responseData['message'] ?? 
+                     responseData['error'] ?? 
+                     responseData['detail'] ?? 
+                     'HTTP $statusCode';
+          } else if (responseData is String) {
+            detail = responseData.length > 200 ? '${responseData.substring(0, 200)}...' : responseData;
+          } else {
+            detail = 'HTTP $statusCode';
+          }
+          
+          errorMessage = 'API Error: $method $path - $detail';
+          errorType = 'network_http_$statusCode';
+          break;
+        case DioExceptionType.cancel:
+          errorMessage = 'Request cancelled: $method $path';
+          errorType = 'network_cancelled';
+          break;
+        case DioExceptionType.connectionError:
+          errorMessage = 'Connection failed: $method $path (No internet or server unreachable)';
+          errorType = 'network_connection';
+          break;
+        default:
+          errorMessage = 'Network error: $method $path - ${error.message ?? "Unknown"}';
+          errorType = 'network_unknown';
+          break;
+      }
+      
+      // Build stack trace summary
+      String? stackTraceSummary;
+      if (error.stackTrace != null) {
+        final lines = error.stackTrace.toString().split('\n');
+        stackTraceSummary = lines.take(10).join('\n'); // First 10 lines only
+      }
+      
+      // Log the error
+      await errorLog.logError(
+        message: errorMessage,
+        stackTrace: stackTraceSummary,
+        type: errorType,
+        context: 'ApiClient',
+      );
+    } catch (e) {
+      // Don't let error logging break the app
+      if (kDebugMode) {
+        debugPrint('⚠️ [ApiClient] Failed to log error to ErrorLogService: $e');
+      }
+    }
   }
 
   void _setupInterceptors() {
@@ -87,6 +162,9 @@ class ApiClient {
             '❌ ERROR: ${error.response?.statusCode} ${error.requestOptions.path}',
             name: 'ApiClient',
           );
+
+          // 📝 Log to ErrorLogService for production debugging
+          await _logApiError(error);
 
           // Handle 401 Unauthorized - token expired/invalid
           if (error.response?.statusCode == 401) {
