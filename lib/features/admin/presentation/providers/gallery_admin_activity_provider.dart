@@ -168,15 +168,21 @@ class GalleryAdminActivityNotifier
       final repository = _ref.read(galleryApiRepositoryProvider);
       final response = await repository.getAdminActivity(limit: 50);
 
-      final activities =
-          (response['results'] as List<dynamic>?)
-              ?.map(
-                (json) => AdminActivity.fromJson(json as Map<String, dynamic>),
-              )
-              .toList() ??
-          [];
+      // Handle multiple response formats
+      List<dynamic> activitiesData;
+      if (response.containsKey('results')) {
+        activitiesData = response['results'] as List<dynamic>? ?? [];
+      } else if (response.containsKey('activities')) {
+        activitiesData = response['activities'] as List<dynamic>? ?? [];
+      } else {
+        activitiesData = []; // Empty list if no recognized format
+      }
 
-      final totalCount = response['count'] as int? ?? 0;
+      final activities = activitiesData
+          .map((json) => AdminActivity.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      final totalCount = response['count'] as int? ?? activities.length;
       final hasMore = activities.length < totalCount;
 
       state = state.copyWith(

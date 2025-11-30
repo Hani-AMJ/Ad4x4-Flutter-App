@@ -225,28 +225,40 @@ class _DashboardTab extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 2.2,
               children: [
-                _QuickActionButton(
+                _QuickActionCard(
                   icon: Icons.search,
                   label: 'Find Orphans',
+                  description: 'Find orphaned photos',
+                  color: colors.primary,
                   onPressed: () => _handleFindOrphans(context, ref),
                 ),
-                _QuickActionButton(
+                _QuickActionCard(
                   icon: Icons.cleaning_services,
                   label: 'Cleanup',
+                  description: 'Delete old galleries',
+                  color: Colors.orange,
                   onPressed: () => _handleCleanup(context, ref),
                 ),
-                _QuickActionButton(
+                _QuickActionCard(
                   icon: Icons.tune,
                   label: 'Optimize',
+                  description: 'Optimize database',
+                  color: colors.tertiary,
                   onPressed: () => _handleOptimize(context, ref),
                 ),
-                _QuickActionButton(
+                _QuickActionCard(
                   icon: Icons.list_alt,
                   label: 'Audit Logs',
+                  description: 'View system logs',
+                  color: colors.secondary,
                   onPressed: () => _handleViewLogs(context, ref),
                 ),
               ],
@@ -638,23 +650,75 @@ class _StatCard extends StatelessWidget {
 }
 
 /// Quick Action Button Widget
-class _QuickActionButton extends StatelessWidget {
+/// Quick Action Card Widget - Card-based action button
+class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String description;
+  final Color color;
   final VoidCallback onPressed;
 
-  const _QuickActionButton({
+  const _QuickActionCard({
     required this.icon,
     required this.label,
+    required this.description,
+    required this.color,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton.tonalIcon(
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      onPressed: onPressed,
+    final theme = Theme.of(context);
+
+    return Card(
+      elevation: 2,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 24, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

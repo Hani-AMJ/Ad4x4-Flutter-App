@@ -79,14 +79,16 @@ class GalleryAdminStatsNotifier extends StateNotifier<GalleryAdminStatsState> {
       final repository = _ref.read(galleryApiRepositoryProvider);
       final response = await repository.getAdminStats();
 
-      if (response['success'] == true) {
-        final stats = GalleryAdminStats.fromJson(
-          response['stats'] as Map<String, dynamic>,
-        );
-        state = state.copyWith(stats: stats, isLoading: false);
+      // Handle both response formats: {success: true, stats: {...}} or direct stats {...}
+      Map<String, dynamic> statsData;
+      if (response.containsKey('stats')) {
+        statsData = response['stats'] as Map<String, dynamic>;
       } else {
-        state = state.copyWith(isLoading: false, error: 'Failed to load stats');
+        statsData = response; // API returns stats directly
       }
+
+      final stats = GalleryAdminStats.fromJson(statsData);
+      state = state.copyWith(stats: stats, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
