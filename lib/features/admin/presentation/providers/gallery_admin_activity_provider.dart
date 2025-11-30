@@ -3,7 +3,7 @@ import '../../../../core/providers/repository_providers.dart';
 
 /// Activity item model for admin activity feed
 class AdminActivity {
-  final int id;
+  final String id;
   final String type;
   final String description;
   final String username;
@@ -21,10 +21,10 @@ class AdminActivity {
 
   factory AdminActivity.fromJson(Map<String, dynamic> json) {
     return AdminActivity(
-      id: json['id'] as int? ?? 0,
-      type: json['type'] as String? ?? 'unknown',
-      description: json['description'] as String? ?? '',
-      username: json['username'] as String? ?? 'Unknown User',
+      id: json['id']?.toString() ?? '0',
+      type: json['type']?.toString() ?? 'unknown',
+      description: json['description']?.toString() ?? '',
+      username: json['username']?.toString() ?? 'Unknown User',
       timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'] as String)
           : DateTime.now(),
