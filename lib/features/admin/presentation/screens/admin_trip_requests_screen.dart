@@ -4,24 +4,27 @@ import 'package:intl/intl.dart';
 import '../../../../data/models/trip_request_model.dart';
 import '../../../../data/models/approval_status_choice_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
+import '../../../../core/services/error_log_service.dart';
 import '../providers/approval_status_provider.dart';
 
 class AdminTripRequestsScreen extends ConsumerStatefulWidget {
   const AdminTripRequestsScreen({super.key});
 
   @override
-  ConsumerState<AdminTripRequestsScreen> createState() => _AdminTripRequestsScreenState();
+  ConsumerState<AdminTripRequestsScreen> createState() =>
+      _AdminTripRequestsScreenState();
 }
 
-class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScreen> {
+class _AdminTripRequestsScreenState
+    extends ConsumerState<AdminTripRequestsScreen> {
   final MainApiRepository _repository = MainApiRepository();
-  
+
   List<TripRequest> _requests = [];
   bool _isLoading = false;
   String? _error;
-  
-  String _selectedFilter = 'all';  // all, pending, approved, declined, converted
-  
+
+  String _selectedFilter = 'all'; // all, pending, approved, declined, converted
+
   @override
   void initState() {
     super.initState();
@@ -29,39 +32,48 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
       _loadRequests();
     });
   }
-  
+
   Future<void> _loadRequests() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
-    
+
     try {
       final response = await _repository.getAllTripRequests(
         pageSize: 100,
         status: _selectedFilter == 'all' ? null : _selectedFilter,
       );
-      
+
       final results = response['results'] as List<dynamic>? ?? [];
       final requests = results
           .map((json) => TripRequest.fromJson(json as Map<String, dynamic>))
           .toList();
-      
+
       // Sort by created date (newest first)
       requests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      
+
       setState(() {
         _requests = requests;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to load trip requests: $e';
       setState(() {
-        _error = 'Failed to load trip requests: $e';
+        _error = errorMsg;
         _isLoading = false;
       });
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'admin_trip_requests',
+        context: 'AdminTripRequestsScreen._loadRequests',
+      );
     }
   }
-  
+
   Future<void> _updateRequestStatus(
     TripRequest request,
     String newStatus, {
@@ -73,7 +85,7 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
         status: newStatus,
         adminNotes: adminNotes,
       );
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -83,18 +95,25 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
         );
         _loadRequests();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      final errorMsg = 'Failed to update request: $e';
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update request: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );
       }
+
+      // Log error to Error Log Service
+      await ErrorLogService().logError(
+        message: errorMsg,
+        stackTrace: stackTrace.toString(),
+        type: 'admin_trip_requests',
+        context: 'AdminTripRequestsScreen._updateRequestStatus',
+      );
     }
   }
-  
+
   void _showRequestDetails(TripRequest request) {
     showModalBottomSheet(
       context: context,
@@ -102,26 +121,26 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
       backgroundColor: Colors.transparent,
       builder: (context) => _RequestDetailsSheet(
         request: request,
-        onApprove: (notes) => _updateRequestStatus(request, 'approved', adminNotes: notes),
-        onDecline: (notes) => _updateRequestStatus(request, 'declined', adminNotes: notes),
-        onConvert: (notes) => _updateRequestStatus(request, 'converted', adminNotes: notes),
+        onApprove: (notes) =>
+            _updateRequestStatus(request, 'approved', adminNotes: notes),
+        onDecline: (notes) =>
+            _updateRequestStatus(request, 'declined', adminNotes: notes),
+        onConvert: (notes) =>
+            _updateRequestStatus(request, 'converted', adminNotes: notes),
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Trip Requests Management'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadRequests,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadRequests),
         ],
       ),
       body: Column(
@@ -130,7 +149,7 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
           Consumer(
             builder: (context, ref, _) {
               final statusesAsync = ref.watch(approvalStatusChoicesProvider);
-              
+
               return statusesAsync.when(
                 data: (statuses) => _buildDynamicFilters(statuses, colors),
                 loading: () => _buildFallbackFilters(colors),
@@ -138,80 +157,87 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
               );
             },
           ),
-          
+
           // Content
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline, size: 48, color: colors.error),
-                            const SizedBox(height: 16),
-                            Text(
-                              _error!,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: colors.error),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _loadRequests,
-                              child: const Text('Retry'),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: colors.error,
                         ),
-                      )
-                    : _requests.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.assignment_outlined,
-                                  size: 64,
-                                  color: colors.outline,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No trip requests',
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Trip requests will appear here',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: _loadRequests,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _requests.length,
-                              itemBuilder: (context, index) {
-                                final request = _requests[index];
-                                return _AdminTripRequestCard(
-                                  request: request,
-                                  onTap: () => _showRequestDetails(request),
-                                );
-                              },
-                            ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: colors.error),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadRequests,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : _requests.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.assignment_outlined,
+                          size: 64,
+                          color: colors.outline,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No trip requests',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colors.onSurfaceVariant,
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Trip requests will appear here',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _loadRequests,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _requests.length,
+                      itemBuilder: (context, index) {
+                        final request = _requests[index];
+                        return _AdminTripRequestCard(
+                          request: request,
+                          onTap: () => _showRequestDetails(request),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
     );
   }
-  
+
   /// Build dynamic filter chips from approval statuses
-  Widget _buildDynamicFilters(List<ApprovalStatusChoice> statuses, ColorScheme colors) {
+  Widget _buildDynamicFilters(
+    List<ApprovalStatusChoice> statuses,
+    ColorScheme colors,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       color: colors.surfaceContainerHighest.withOpacity(0.3),
@@ -229,32 +255,39 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
               },
             ),
             const SizedBox(width: 8),
-            
+
             // Dynamic status filters
             ...statuses.map((status) {
               // Calculate count for this status
               final count = _requests.where((r) {
                 // Match both backend codes and legacy strings
-                final requestStatus = r.status.toString().split('.').last.toLowerCase();
+                final requestStatus = r.status
+                    .toString()
+                    .split('.')
+                    .last
+                    .toLowerCase();
                 final statusValue = status.value.toLowerCase();
-                return requestStatus == statusValue || 
-                       (statusValue == 'p' && requestStatus == 'pending') ||
-                       (statusValue == 'a' && requestStatus == 'approved') ||
-                       (statusValue == 'd' && requestStatus == 'declined');
+                return requestStatus == statusValue ||
+                    (statusValue == 'p' && requestStatus == 'pending') ||
+                    (statusValue == 'a' && requestStatus == 'approved') ||
+                    (statusValue == 'd' && requestStatus == 'declined');
               }).length;
-              
+
               // Determine color
               Color? chipColor;
-              if (status.value.toLowerCase() == 'pending' || status.value.toUpperCase() == 'P') {
+              if (status.value.toLowerCase() == 'pending' ||
+                  status.value.toUpperCase() == 'P') {
                 chipColor = Colors.orange;
-              } else if (status.value.toLowerCase() == 'approved' || status.value.toUpperCase() == 'A') {
+              } else if (status.value.toLowerCase() == 'approved' ||
+                  status.value.toUpperCase() == 'A') {
                 chipColor = Colors.green;
-              } else if (status.value.toLowerCase() == 'declined' || status.value.toUpperCase() == 'D') {
+              } else if (status.value.toLowerCase() == 'declined' ||
+                  status.value.toUpperCase() == 'D') {
                 chipColor = Colors.red;
               } else if (status.value.toLowerCase() == 'converted') {
                 chipColor = Colors.purple;
               }
-              
+
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: _FilterChip(
@@ -273,15 +306,23 @@ class _AdminTripRequestsScreenState extends ConsumerState<AdminTripRequestsScree
       ),
     );
   }
-  
+
   /// Fallback filters for loading/error states
   Widget _buildFallbackFilters(ColorScheme colors) {
     // Calculate counts using legacy status enum
-    final pendingCount = _requests.where((r) => r.status == TripRequestStatus.pending).length;
-    final approvedCount = _requests.where((r) => r.status == TripRequestStatus.approved).length;
-    final declinedCount = _requests.where((r) => r.status == TripRequestStatus.declined).length;
-    final convertedCount = _requests.where((r) => r.status == TripRequestStatus.converted).length;
-    
+    final pendingCount = _requests
+        .where((r) => r.status == TripRequestStatus.pending)
+        .length;
+    final approvedCount = _requests
+        .where((r) => r.status == TripRequestStatus.approved)
+        .length;
+    final declinedCount = _requests
+        .where((r) => r.status == TripRequestStatus.declined)
+        .length;
+    final convertedCount = _requests
+        .where((r) => r.status == TripRequestStatus.converted)
+        .length;
+
     return Container(
       padding: const EdgeInsets.all(16),
       color: colors.surfaceContainerHighest.withOpacity(0.3),
@@ -349,19 +390,19 @@ class _FilterChip extends StatelessWidget {
   final bool isSelected;
   final Color? color;
   final VoidCallback onTap;
-  
+
   const _FilterChip({
     required this.label,
     required this.isSelected,
     this.color,
     required this.onTap,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    
+
     return FilterChip(
       label: Text(label),
       selected: isSelected,
@@ -376,12 +417,9 @@ class _FilterChip extends StatelessWidget {
 class _AdminTripRequestCard extends StatelessWidget {
   final TripRequest request;
   final VoidCallback onTap;
-  
-  const _AdminTripRequestCard({
-    required this.request,
-    required this.onTap,
-  });
-  
+
+  const _AdminTripRequestCard({required this.request, required this.onTap});
+
   Color _getStatusColor(TripRequestStatus status) {
     switch (status) {
       case TripRequestStatus.pending:
@@ -394,7 +432,7 @@ class _AdminTripRequestCard extends StatelessWidget {
         return Colors.purple;
     }
   }
-  
+
   IconData _getStatusIcon(TripRequestStatus status) {
     switch (status) {
       case TripRequestStatus.pending:
@@ -407,13 +445,13 @@ class _AdminTripRequestCard extends StatelessWidget {
         return Icons.rocket_launch_outlined;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final statusColor = _getStatusColor(request.status);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -464,9 +502,9 @@ class _AdminTripRequestCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               // Trip details chips
               Wrap(
                 spacing: 8,
@@ -491,9 +529,9 @@ class _AdminTripRequestCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               // Member info
               Row(
                 children: [
@@ -538,14 +576,14 @@ class _RequestDetailsSheet extends StatefulWidget {
   final Function(String notes) onApprove;
   final Function(String notes) onDecline;
   final Function(String notes) onConvert;
-  
+
   const _RequestDetailsSheet({
     required this.request,
     required this.onApprove,
     required this.onDecline,
     required this.onConvert,
   });
-  
+
   @override
   State<_RequestDetailsSheet> createState() => _RequestDetailsSheetState();
 }
@@ -553,13 +591,13 @@ class _RequestDetailsSheet extends StatefulWidget {
 class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
   final _notesController = TextEditingController();
   bool _isProcessing = false;
-  
+
   @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
   }
-  
+
   void _showActionDialog(String action, Function(String) onConfirm) {
     showDialog(
       context: context,
@@ -569,7 +607,9 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Are you sure you want to ${action.toLowerCase()} this request?'),
+            Text(
+              'Are you sure you want to ${action.toLowerCase()} this request?',
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: _notesController,
@@ -610,13 +650,13 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final request = widget.request;
-    
+
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
       minChildSize: 0.5,
@@ -638,7 +678,7 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // Content
             Expanded(
               child: ListView(
@@ -681,9 +721,9 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Title (synthesized from level and area)
                   Text(
                     '${request.level.displayName} in ${request.areaDisplayName}',
@@ -691,9 +731,9 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Member info
                   _DetailSection(
                     icon: Icons.person,
@@ -703,9 +743,9 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       style: theme.textTheme.bodyLarge,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Trip Level
                   _DetailSection(
                     icon: Icons.terrain,
@@ -715,9 +755,9 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       style: theme.textTheme.bodyLarge,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Area
                   _DetailSection(
                     icon: Icons.location_on,
@@ -727,7 +767,7 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       style: theme.textTheme.bodyLarge,
                     ),
                   ),
-                  
+
                   if (request.timeOfDay != null) ...[
                     const SizedBox(height: 16),
                     _DetailSection(
@@ -739,9 +779,9 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       ),
                     ),
                   ],
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Requested Date
                   _DetailSection(
                     icon: Icons.calendar_today,
@@ -751,19 +791,21 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       style: theme.textTheme.bodyLarge,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Date submitted
                   _DetailSection(
                     icon: Icons.schedule,
                     title: 'Submitted',
                     child: Text(
-                      DateFormat('MMMM dd, yyyy \'at\' h:mm a').format(request.createdAt),
+                      DateFormat(
+                        'MMMM dd, yyyy \'at\' h:mm a',
+                      ).format(request.createdAt),
                       style: theme.textTheme.bodyLarge,
                     ),
                   ),
-                  
+
                   if (request.adminNotes != null) ...[
                     const SizedBox(height: 16),
                     _DetailSection(
@@ -782,9 +824,9 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       ),
                     ),
                   ],
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Action buttons (only show for pending requests)
                   if (request.status == TripRequestStatus.pending)
                     Column(
@@ -795,7 +837,10 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                           child: FilledButton.icon(
                             onPressed: _isProcessing
                                 ? null
-                                : () => _showActionDialog('Approve', widget.onApprove),
+                                : () => _showActionDialog(
+                                    'Approve',
+                                    widget.onApprove,
+                                  ),
                             icon: const Icon(Icons.check_circle),
                             label: const Text('Approve Request'),
                             style: FilledButton.styleFrom(
@@ -806,14 +851,17 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        
+
                         // Decline button
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: _isProcessing
                                 ? null
-                                : () => _showActionDialog('Decline', widget.onDecline),
+                                : () => _showActionDialog(
+                                    'Decline',
+                                    widget.onDecline,
+                                  ),
                             icon: const Icon(Icons.cancel),
                             label: const Text('Decline Request'),
                             style: OutlinedButton.styleFrom(
@@ -825,7 +873,7 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                         ),
                       ],
                     ),
-                  
+
                   // Convert button (for approved requests)
                   if (request.status == TripRequestStatus.approved)
                     SizedBox(
@@ -833,7 +881,10 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
                       child: FilledButton.icon(
                         onPressed: _isProcessing
                             ? null
-                            : () => _showActionDialog('Convert', widget.onConvert),
+                            : () => _showActionDialog(
+                                'Convert',
+                                widget.onConvert,
+                              ),
                         icon: const Icon(Icons.rocket_launch),
                         label: const Text('Convert to Trip'),
                         style: FilledButton.styleFrom(
@@ -851,7 +902,7 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
       ),
     );
   }
-  
+
   Color _getStatusColor() {
     switch (widget.request.status) {
       case TripRequestStatus.pending:
@@ -864,7 +915,7 @@ class _RequestDetailsSheetState extends State<_RequestDetailsSheet> {
         return Colors.purple;
     }
   }
-  
+
   IconData _getStatusIcon() {
     switch (widget.request.status) {
       case TripRequestStatus.pending:
@@ -883,16 +934,13 @@ class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-  });
+  const _InfoChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -921,18 +969,18 @@ class _DetailSection extends StatelessWidget {
   final IconData icon;
   final String title;
   final Widget child;
-  
+
   const _DetailSection({
     required this.icon,
     required this.title,
     required this.child,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -950,10 +998,7 @@ class _DetailSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.only(left: 28),
-          child: child,
-        ),
+        Padding(padding: const EdgeInsets.only(left: 28), child: child),
       ],
     );
   }
