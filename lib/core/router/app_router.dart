@@ -851,11 +851,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               return NoTransitionPage(child: const AdminAuditLogScreen());
             },
           ),
-          // TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
-          // These routes are temporarily commented out until feature development is complete.
-          // Will be re-enabled once all functionality is fully tested and ready for rollout.
-          // Uncomment the routes below to restore trip reports functionality.
-          /*
+          // TRIP REPORTS FEATURE - NOW ACTIVE
+          // Trip reports functionality fully enabled for admin users
           GoRoute(
             path: '/admin/trip-reports',
             name: 'admin-trip-reports',
@@ -880,7 +877,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
-          */
           // Phase 3B - Content Moderation Routes
           GoRoute(
             path: '/admin/gallery-management',
