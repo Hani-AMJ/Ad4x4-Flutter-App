@@ -888,28 +888,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       switch (level) {
                         case 1:
                           levelNumeric = 5; // Club Event
-                          levelColor = Colors.blue;
-                          levelIcon = Icons.group;
+                          levelColor = const Color(0xFF4CAF50); // Green - matches trip cards
+                          levelIcon = Icons.groups; // Same as LevelDisplayHelper
                           break;
                         case 2:
                           levelNumeric = 10; // Newbie/ANIT
-                          levelColor = Colors.green;
-                          levelIcon = Icons.eco;
+                          levelColor = const Color(0xFF4CAF50); // Green - matches trip cards
+                          levelIcon = Icons.school; // Same as LevelDisplayHelper
                           break;
                         case 3:
                           levelNumeric = 100; // Intermediate
-                          levelColor = Colors.orange;
-                          levelIcon = Icons.trending_up;
+                          levelColor = const Color(0xFF2196F3); // Blue - matches trip cards
+                          levelIcon = Icons.terrain; // Same as LevelDisplayHelper
                           break;
                         case 4:
                           levelNumeric = 200; // Advanced
-                          levelColor = Colors.deepOrange;
-                          levelIcon = Icons.terrain;
+                          levelColor = const Color(0xFFE91E63); // Pink/Red - matches trip cards
+                          levelIcon = Icons.landscape; // Same as LevelDisplayHelper
                           break;
                         case 5:
                           levelNumeric = 300; // Expert
-                          levelColor = Colors.red;
-                          levelIcon = Icons.military_tech;
+                          levelColor = const Color(0xFF9C27B0); // Purple - matches trip cards
+                          levelIcon = Icons.workspace_premium; // Same as LevelDisplayHelper
                           break;
                         default:
                           levelColor = colors.primary;
