@@ -68,7 +68,7 @@ class _AdminMemberSkillsReportScreenState
       
       // ✨ ENRICH ENTRIES to show actual member names
       print('🔄 Member Skills Report: Enriching ${entries.length} entries...');
-      final enrichedEntries = await enrichmentService.enrichBatch(entries);
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
       print('✅ Member Skills Report: Enrichment complete!');
       
       // Load all skills
