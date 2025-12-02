@@ -762,26 +762,29 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
                   ),
                   const SizedBox(width: 8),
                   // ✅ Dynamic level filters based on actual levels with skills
-                  ...skillsByLevel.keys.toList()..sort().map((levelId) {
-                    final level = levelConfig.getLevelById(levelId);
-                    if (level == null) return const SizedBox.shrink();
-                    
-                    final cleanName = levelConfig.getCleanLevelName(level.name);
-                    final emoji = levelConfig.getLevelEmoji(levelId);
-                    
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text('$emoji $cleanName'),
-                        selected: _selectedLevelFilter == levelId,
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedLevelFilter = selected ? levelId : null;
-                          });
-                        },
-                      ),
-                    );
-                  }),
+                  ...() {
+                    final sortedLevelIds = skillsByLevel.keys.toList()..sort();
+                    return sortedLevelIds.map((levelId) {
+                      final level = levelConfig.getLevelById(levelId);
+                      if (level == null) return const SizedBox.shrink();
+                      
+                      final cleanName = levelConfig.getCleanLevelName(level.name);
+                      final emoji = levelConfig.getLevelEmoji(levelId);
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text('$emoji $cleanName'),
+                          selected: _selectedLevelFilter == levelId,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedLevelFilter = selected ? levelId : null;
+                            });
+                          },
+                        ),
+                      );
+                    });
+                  }(),
                 ],
               ),
             ),
