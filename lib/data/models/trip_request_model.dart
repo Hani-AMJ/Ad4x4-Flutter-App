@@ -2,18 +2,18 @@ import 'level_model.dart';
 import 'concise_member_model.dart';
 
 /// Trip Request Model
-/// 
+///
 /// Model for member trip requests (matches OpenAPI schema)
 class TripRequest {
   final int id;
-  final String area;  // Required - DXB/NOR/AUH/AAN/LIW
-  final Level level;  // Required - Trip difficulty level
-  final ConciseMember member;  // Required - Member who made request
-  final String? timeOfDay;  // Optional - MOR/MID/AFT/EVE/ANY
-  final DateTime date;  // Required - Requested trip date
-  final TripRequestStatus status;  // Request status
-  final DateTime createdAt;  // When request was created
-  final String? adminNotes;  // Optional admin notes
+  final String area; // Required - DXB/NOR/AUH/AAN/LIW
+  final Level level; // Required - Trip difficulty level
+  final ConciseMember member; // Required - Member who made request
+  final String? timeOfDay; // Optional - MOR/MID/AFT/EVE/ANY
+  final DateTime date; // Required - Requested trip date
+  final TripRequestStatus status; // Request status
+  final DateTime createdAt; // When request was created
+  final String? adminNotes; // Optional admin notes
 
   TripRequest({
     required this.id,
@@ -31,7 +31,7 @@ class TripRequest {
     // 🔧 DEFENSIVE: Handle different level response formats from backend
     Level parsedLevel;
     final levelData = json['level'];
-    
+
     if (levelData is Map<String, dynamic>) {
       // ✅ Correct: Backend returned nested Level object
       parsedLevel = Level.fromJson(levelData);
@@ -49,13 +49,18 @@ class TripRequest {
       // Try to extract numeric level from name (e.g., "Intermediate-100" -> 3)
       int numericLevel = 0;
       String displayName = levelData;
-      
-      if (levelData.toLowerCase().contains('beginner')) numericLevel = 1;
-      else if (levelData.toLowerCase().contains('easy')) numericLevel = 2;
-      else if (levelData.toLowerCase().contains('intermediate')) numericLevel = 3;
-      else if (levelData.toLowerCase().contains('difficult')) numericLevel = 4;
-      else if (levelData.toLowerCase().contains('extreme')) numericLevel = 5;
-      
+
+      if (levelData.toLowerCase().contains('beginner'))
+        numericLevel = 1;
+      else if (levelData.toLowerCase().contains('easy'))
+        numericLevel = 2;
+      else if (levelData.toLowerCase().contains('intermediate'))
+        numericLevel = 3;
+      else if (levelData.toLowerCase().contains('difficult'))
+        numericLevel = 4;
+      else if (levelData.toLowerCase().contains('extreme'))
+        numericLevel = 5;
+
       parsedLevel = Level(
         id: numericLevel,
         name: displayName,
@@ -75,43 +80,40 @@ class TripRequest {
     // 🔧 DEFENSIVE: Handle NULL or invalid member field from backend
     ConciseMember parsedMember;
     final memberData = json['member'];
-    
+
     if (memberData is Map<String, dynamic>) {
       // ✅ Correct: Backend returned nested Member object
       parsedMember = ConciseMember.fromJson(memberData);
     } else if (memberData is String) {
       // ⚠️ Backend bug: Returned member username string instead of object
-      parsedMember = ConciseMember(
-        id: 0,
-        username: memberData,
-      );
+      parsedMember = ConciseMember(id: 0, username: memberData);
     } else if (memberData == null) {
       // ⚠️ Backend bug: Member field is NULL
-      parsedMember = ConciseMember(
-        id: 0,
-        username: 'Unknown Member',
-      );
+      parsedMember = ConciseMember(id: 0, username: 'Unknown Member');
     } else {
       // Fallback: Create default member
-      parsedMember = ConciseMember(
-        id: 0,
-        username: 'Unknown',
-      );
+      parsedMember = ConciseMember(id: 0, username: 'Unknown');
     }
 
     return TripRequest(
       id: json['id'] as int,
-      area: json['area'] as String,
+      area:
+          (json['area'] as String?) ??
+          'Unknown', // 🔧 Handle null area gracefully
       level: parsedLevel,
       member: parsedMember,
       timeOfDay: json['timeOfDay'] as String?,
       date: DateTime.parse(json['date'] as String),
-      status: TripRequestStatus.fromString(json['status'] as String? ?? 'pending'),
-      createdAt: json['createdAt'] != null 
+      status: TripRequestStatus.fromString(
+        json['status'] as String? ?? 'pending',
+      ),
+      createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : json['date'] != null
-              ? DateTime.parse(json['date'] as String)  // Fallback to date if createdAt missing
-              : DateTime.now(),
+          ? DateTime.parse(
+              json['date'] as String,
+            ) // Fallback to date if createdAt missing
+          : DateTime.now(),
       adminNotes: json['adminNotes'] as String?,
     );
   }
