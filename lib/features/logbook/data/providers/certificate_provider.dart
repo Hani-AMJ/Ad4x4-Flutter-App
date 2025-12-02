@@ -76,7 +76,7 @@ class CertificatesNotifier extends StateNotifier<AsyncValue<List<SkillCertificat
       final memberCache = <int, MemberBasicInfo>{};
       for (final id in memberIds) {
         try {
-          final memberResponse = await _repository.getMemberProfile(id);
+          final memberResponse = await _repository.getMemberDetail(id);
           memberCache[id] = MemberBasicInfo.fromJson(memberResponse);
           if (kDebugMode) {
             debugPrint('✅ [Certificates] Cached member $id: ${memberCache[id]?.displayName}');
@@ -104,7 +104,6 @@ class CertificatesNotifier extends StateNotifier<AsyncValue<List<SkillCertificat
             id: skill.id,
             name: skill.name,
             description: skill.description,
-            order: skill.order,
             level: skill.level,
           );
         } catch (e) {
@@ -121,7 +120,7 @@ class CertificatesNotifier extends StateNotifier<AsyncValue<List<SkillCertificat
       final tripCache = <int, TripBasicInfo>{};
       for (final id in tripIds) {
         try {
-          final tripResponse = await _repository.getTrip(id);
+          final tripResponse = await _repository.getTripDetail(id);
           tripCache[id] = TripBasicInfo.fromJson(tripResponse);
           if (kDebugMode) {
             debugPrint('✅ [Certificates] Cached trip $id: ${tripCache[id]?.title}');
@@ -160,13 +159,10 @@ class CertificatesNotifier extends StateNotifier<AsyncValue<List<SkillCertificat
             id: skillId,
             name: 'Skill #$skillId',
             description: '',
-            order: 0,
-            level: SkillLevel(
+            level: LevelBasicInfo(
               id: 1,
               name: 'Unknown',
               numericLevel: 1,
-              displayName: 'Unknown',
-              active: true,
             ),
           );
 

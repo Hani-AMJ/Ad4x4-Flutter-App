@@ -51,7 +51,7 @@ final timelineEntriesProvider = FutureProvider.autoDispose
   
   for (final id in allMemberIds) {
     try {
-      final memberResponse = await repository.getMemberProfile(id);
+      final memberResponse = await repository.getMemberDetail(id);
       memberCache[id] = MemberBasicInfo.fromJson(memberResponse);
       print('✅ [Timeline] Cached member $id: ${memberCache[id]?.displayName}');
     } catch (e) {
@@ -75,7 +75,6 @@ final timelineEntriesProvider = FutureProvider.autoDispose
         id: skill.id,
         name: skill.name,
         description: skill.description,
-        order: skill.order,
         level: skill.level,
       );
     } catch (e) {
@@ -88,7 +87,7 @@ final timelineEntriesProvider = FutureProvider.autoDispose
   final tripCache = <int, TripBasicInfo>{};
   for (final id in tripIds) {
     try {
-      final tripResponse = await repository.getTrip(id);
+      final tripResponse = await repository.getTripDetail(id);
       tripCache[id] = TripBasicInfo.fromJson(tripResponse);
       print('✅ [Timeline] Cached trip $id: ${tripCache[id]?.title}');
     } catch (e) {
