@@ -535,11 +535,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _StatItem(
-                      icon: Icons.star,  // ✅ Star icon for leadership
-                      label: 'Trips Lead',  // ✅ NEW: Clear leadership label
-                      value: _tripStats?.asLeadTrips.toString() ?? user.tripCount?.toString() ?? '0',  // ✅ Use TripStatistics if available
+                      icon: Icons.explore,  // ✅ Explore icon for trips
+                      label: 'Trips',  // ✅ Shows total checked-in trips
+                      value: _tripStats?.checkedInCount.toString() ?? user.tripCount?.toString() ?? '0',  // ✅ Total checked-in trips
                       colors: colors,
-                      iconColor: Colors.amber,  // ✅ Gold color for leadership
+                      iconColor: Colors.amber,  // ✅ Gold color
                     ),
                     Container(
                       width: 1,
