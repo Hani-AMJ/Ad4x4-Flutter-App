@@ -73,6 +73,15 @@ class _AdminCreateLogbookEntryScreenState
           ?.map((t) => t as Map<String, dynamic>)
           .toList() ?? [];
       
+      // Debug: Log first 3 trips to verify ordering
+      if (tripsList.isNotEmpty) {
+        print('🔍 [CreateLogbook] Loaded ${tripsList.length} trips (showing first 3):');
+        for (var i = 0; i < (tripsList.length > 3 ? 3 : tripsList.length); i++) {
+          final trip = tripsList[i];
+          print('   ${i + 1}. ${trip['title']} - Start: ${trip['startTime']}');
+        }
+      }
+      
       // Load skills
       final skillsResponse = await repository.getLogbookSkills(pageSize: 100);
       final skillsData = LogbookSkillsResponse.fromJson(skillsResponse);

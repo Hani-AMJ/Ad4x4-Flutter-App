@@ -117,11 +117,23 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      final response = await repository.getTrips(page: 1, pageSize: 10);
+      final response = await repository.getTrips(
+        page: 1, 
+        pageSize: 10,
+        ordering: '-start_time', // ✅ Show newest trips first
+      );
       
       final trips = (response['results'] as List<dynamic>)
           .map((json) => TripBasicInfo.fromJson(json))
           .toList();
+      
+      // Debug: Log first 3 trips to verify ordering
+      if (trips.isNotEmpty) {
+        print('🔍 [QuickSignOff] Loaded ${trips.length} recent trips (first 3):');
+        for (var i = 0; i < (trips.length > 3 ? 3 : trips.length); i++) {
+          print('   ${i + 1}. ${trips[i].title} - Start: ${trips[i].startTime}');
+        }
+      }
       
       setState(() {
         _recentTrips = trips;
