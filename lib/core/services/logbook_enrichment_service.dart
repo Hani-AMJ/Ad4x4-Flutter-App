@@ -256,13 +256,26 @@ class LogbookEnrichmentService {
     // Extract trip info
     final title = details['title'] as String?;
     final startTime = details['startTime'] as String?;
-    final level = details['level'] as Map<String, dynamic>?;
+    
+    // Handle level - could be int or Map
+    final levelData = details['level'];
+    LevelBasicInfo? enrichedLevel;
+    
+    if (levelData is Map<String, dynamic>) {
+      enrichedLevel = LevelBasicInfo.fromJson(levelData);
+    } else if (levelData is int) {
+      // If level is just an ID, keep original trip level
+      enrichedLevel = trip.level;
+      print('   ⚠️ Trip level is ID ($levelData), keeping original level');
+    } else {
+      enrichedLevel = trip.level;
+    }
 
     return TripBasicInfo(
       id: trip.id,
       title: title ?? 'Trip #${trip.id}',
       startTime: startTime != null ? DateTime.parse(startTime) : trip.startTime,
-      level: level != null ? LevelBasicInfo.fromJson(level) : trip.level,
+      level: enrichedLevel,
     );
   }
 
