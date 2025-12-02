@@ -846,20 +846,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               const SizedBox(height: 12),
             ],
             
-            // Level Breakdown
+            // Level Breakdown - Enhanced Design
             Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Trips by Level',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.bar_chart_rounded,
+                          color: colors.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Trips by Level',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     ...List.generate(5, (index) {
                       final level = index + 1;
                       final count = _tripStats!.getTripCountByLevel(level);
@@ -867,64 +882,125 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       
                       // Map level index to numeric level for backend filtering
                       int? levelNumeric;
+                      Color levelColor;
+                      IconData levelIcon;
+                      
                       switch (level) {
                         case 1:
                           levelNumeric = 5; // Club Event
+                          levelColor = Colors.blue;
+                          levelIcon = Icons.group;
                           break;
                         case 2:
                           levelNumeric = 10; // Newbie/ANIT
+                          levelColor = Colors.green;
+                          levelIcon = Icons.eco;
                           break;
                         case 3:
                           levelNumeric = 100; // Intermediate
+                          levelColor = Colors.orange;
+                          levelIcon = Icons.trending_up;
                           break;
                         case 4:
                           levelNumeric = 200; // Advanced
+                          levelColor = Colors.deepOrange;
+                          levelIcon = Icons.terrain;
                           break;
                         case 5:
                           levelNumeric = 300; // Expert
+                          levelColor = Colors.red;
+                          levelIcon = Icons.military_tech;
                           break;
+                        default:
+                          levelColor = colors.primary;
+                          levelIcon = Icons.flag;
                       }
                       
-                      return InkWell(
-                        onTap: count > 0 && levelNumeric != null
-                            ? () {
-                                context.push(
-                                  '/trips/filtered/${user.id}?filterType=level&levelNumeric=$levelNumeric&title=$levelLabel Trips ($count)',
-                                );
-                              }
-                            : null,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                levelLabel,
-                                style: TextStyle(
-                                  color: count > 0 ? colors.onSurface : colors.onSurface.withValues(alpha: 0.5),
-                                ),
-                              ),
-                              Row(
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Material(
+                          color: count > 0 
+                              ? levelColor.withValues(alpha: 0.08)
+                              : colors.surfaceContainerHighest.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            onTap: count > 0 && levelNumeric != null
+                                ? () {
+                                    context.push(
+                                      '/trips/filtered/${user.id}?filterType=level&levelNumeric=$levelNumeric&title=$levelLabel Trips ($count)',
+                                    );
+                                  }
+                                : null,
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    count.toString(),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: count > 0 ? colors.primary : colors.onSurface.withValues(alpha: 0.5),
+                                  // Level icon
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: count > 0 
+                                          ? levelColor.withValues(alpha: 0.15)
+                                          : colors.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      levelIcon,
+                                      size: 16,
+                                      color: count > 0 
+                                          ? levelColor
+                                          : colors.onSurface.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Level label
+                                  Expanded(
+                                    child: Text(
+                                      levelLabel,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: count > 0 
+                                            ? colors.onSurface
+                                            : colors.onSurface.withValues(alpha: 0.4),
+                                      ),
+                                    ),
+                                  ),
+                                  // Count badge
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: count > 0 
+                                          ? levelColor
+                                          : colors.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      count.toString(),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        color: count > 0 
+                                            ? Colors.white
+                                            : colors.onSurface.withValues(alpha: 0.4),
+                                      ),
                                     ),
                                   ),
                                   if (count > 0) ...[
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: 8),
                                     Icon(
                                       Icons.arrow_forward_ios,
                                       size: 14,
-                                      color: colors.primary.withValues(alpha: 0.6),
+                                      color: levelColor.withValues(alpha: 0.6),
                                     ),
                                   ],
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       );
@@ -934,35 +1010,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               ),
             ),
             
-            // Attendance Rate (if available)
+            // Attendance Rate (if available) - Enhanced Design
             if (_tripStats!.attendanceRate > 0) ...[
               const SizedBox(height: 12),
               Card(
-                color: colors.primaryContainer,
-                child: Padding(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      colors: [
+                        colors.primaryContainer,
+                        colors.primaryContainer.withValues(alpha: 0.7),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.show_chart, color: colors.onPrimaryContainer),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: colors.onPrimaryContainer.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.show_chart,
+                              color: colors.onPrimaryContainer,
+                              size: 24,
+                            ),
+                          ),
                           const SizedBox(width: 12),
                           Text(
                             'Attendance Rate',
                             style: TextStyle(
                               color: colors.onPrimaryContainer,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
                           ),
                         ],
                       ),
-                      Text(
-                        '${_tripStats!.attendanceRate.toStringAsFixed(1)}%',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: colors.onPrimaryContainer,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.onPrimaryContainer.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${_tripStats!.attendanceRate.toStringAsFixed(1)}%',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: colors.onPrimaryContainer,
+                          ),
                         ),
                       ),
                     ],
@@ -1340,27 +1452,63 @@ class _StatsCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
-      elevation: 2,
+      elevation: 3,
+      shadowColor: color.withValues(alpha: 0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                color.withValues(alpha: 0.08),
+                color.withValues(alpha: 0.02),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           child: Column(
             children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(height: 8),
+              // Icon with circular gradient background
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      color.withValues(alpha: 0.2),
+                      color.withValues(alpha: 0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Icon(icon, color: color, size: 28),
+              ),
+              const SizedBox(height: 12),
+              // Value with larger, bolder font
               Text(
                 value,
-                style: theme.textTheme.headlineSmall?.copyWith(
+                style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: color,
+                  height: 1.0,
                 ),
               ),
               const SizedBox(height: 4),
+              // Label
               Text(
                 label,
-                style: theme.textTheme.bodySmall,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w500,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
