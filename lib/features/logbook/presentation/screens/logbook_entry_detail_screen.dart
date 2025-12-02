@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Logbook Entry Detail Screen
@@ -27,6 +28,37 @@ class LogbookEntryDetailScreen extends ConsumerStatefulWidget {
 class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScreen> {
   final _repository = MainApiRepository();
   bool _isDeleting = false;
+  LogbookEntry? _enrichedEntry;
+  bool _isEnriching = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _enrichEntry();
+  }
+
+  /// Enrich entry data to resolve member/marshal/skill/trip IDs to names
+  Future<void> _enrichEntry() async {
+    try {
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enriched = await enrichmentService.enrichLogbookEntries([widget.entry]);
+      
+      if (mounted) {
+        setState(() {
+          _enrichedEntry = enriched.isNotEmpty ? enriched.first : widget.entry;
+          _isEnriching = false;
+        });
+      }
+    } catch (e) {
+      print('⚠️ [EntryDetail] Enrichment failed: $e');
+      if (mounted) {
+        setState(() {
+          _enrichedEntry = widget.entry; // Fallback to original
+          _isEnriching = false;
+        });
+      }
+    }
+  }
 
   /// Check if current user can edit this entry
   /// Returns true ONLY if user is the marshal who signed it (owner-only deletion)
@@ -34,22 +66,26 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
   bool _canEditEntry() {
     final user = ref.read(currentUserProviderV2);
     if (user == null) return false;
+    
+    final entry = _enrichedEntry ?? widget.entry;
 
     // Only the marshal who created this entry can delete it
     // Backend API does not provide admin override permissions for logbook entries
-    if (user.id == widget.entry.signedBy.id) return true;
+    if (user.id == entry.signedBy.id) return true;
 
     return false;
   }
 
   /// Delete logbook entry with confirmation
   Future<void> _confirmDelete() async {
+    final entry = _enrichedEntry ?? widget.entry;
+    
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Logbook Entry'),
         content: Text(
-          'Are you sure you want to delete this sign-off for ${widget.entry.member.displayName}?\n\n'
+          'Are you sure you want to delete this sign-off for ${entry.member.displayName}?\n\n'
           'This action cannot be undone.',
         ),
         actions: [
@@ -73,7 +109,7 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
     setState(() => _isDeleting = true);
 
     try {
-      await _repository.deleteLogbookEntry(widget.entry.id);
+      await _repository.deleteLogbookEntry(entry.id);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -117,6 +153,7 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final canEdit = _canEditEntry();
+    final entry = _enrichedEntry ?? widget.entry; // Use enriched entry if available
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +173,9 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
           ],
         ],
       ),
-      body: _isDeleting
+      body: _isEnriching
+          ? const LoadingIndicator(message: 'Loading entry details...')
+          : _isDeleting
           ? const LoadingIndicator(message: 'Deleting entry...')
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -144,7 +183,7 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Trip Card
-                  if (widget.entry.trip != null) ...[
+                  if (entry.trip != null) ...[
                     _SectionCard(
                       icon: Icons.terrain,
                       title: 'Trip',
@@ -153,7 +192,7 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.entry.trip!.title,
+                            entry.trip!.title,
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -168,12 +207,12 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                DateFormat('MMM d, y').format(widget.entry.trip!.startTime),
+                                DateFormat('MMM d, y').format(entry.trip!.startTime),
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: colors.onSurface.withValues(alpha: 0.8),
                                 ),
                               ),
-                              if (widget.entry.trip!.level != null) ...[
+                              if (entry.trip!.level != null) ...[
                                 const SizedBox(width: 16),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -185,7 +224,7 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    widget.entry.trip!.level!.name,
+                                    entry.trip!.level!.name,
                                     style: TextStyle(
                                       color: colors.primary,
                                       fontSize: 12,
@@ -209,17 +248,19 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                     color: const Color(0xFF64B5F6),
                     child: Row(
                       children: [
-                        if (widget.entry.member.profilePicture != null)
+                        if (entry.member.profilePicture != null)
                           CircleAvatar(
                             radius: 24,
-                            backgroundImage: NetworkImage(widget.entry.member.profilePicture!),
+                            backgroundImage: NetworkImage(entry.member.profilePicture!),
                           )
                         else
                           CircleAvatar(
                             radius: 24,
                             backgroundColor: colors.primary.withValues(alpha: 0.2),
                             child: Text(
-                              widget.entry.member.firstName[0].toUpperCase(),
+                              entry.member.firstName.isNotEmpty 
+                                  ? entry.member.firstName[0].toUpperCase()
+                                  : 'M',
                               style: TextStyle(
                                 color: colors.primary,
                                 fontWeight: FontWeight.bold,
@@ -232,14 +273,14 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.entry.member.displayName,
+                                entry.member.displayName,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (widget.entry.member.level != null)
+                              if (entry.member.level != null)
                                 Text(
-                                  widget.entry.member.level!.name,
+                                  entry.member.level!.name,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: colors.onSurface.withValues(alpha: 0.6),
                                   ),
@@ -259,17 +300,17 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                     color: const Color(0xFF81C784),
                     child: Row(
                       children: [
-                        if (widget.entry.signedBy.profilePicture != null)
+                        if (entry.signedBy.profilePicture != null)
                           CircleAvatar(
                             radius: 24,
-                            backgroundImage: NetworkImage(widget.entry.signedBy.profilePicture!),
+                            backgroundImage: NetworkImage(entry.signedBy.profilePicture!),
                           )
                         else
                           CircleAvatar(
                             radius: 24,
                             backgroundColor: const Color(0xFF81C784).withValues(alpha: 0.2),
                             child: Text(
-                              widget.entry.signedBy.firstName[0].toUpperCase(),
+                              entry.signedBy.firstName[0].toUpperCase(),
                               style: const TextStyle(
                                 color: Color(0xFF81C784),
                                 fontWeight: FontWeight.bold,
@@ -282,14 +323,14 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.entry.signedBy.displayName,
+                                entry.signedBy.displayName,
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (widget.entry.signedBy.level != null)
+                              if (entry.signedBy.level != null)
                                 Text(
-                                  widget.entry.signedBy.level!.name,
+                                  entry.signedBy.level!.name,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: colors.onSurface.withValues(alpha: 0.6),
                                   ),
@@ -303,15 +344,15 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                   const SizedBox(height: 16),
 
                   // Skills Verified Card
-                  if (widget.entry.skillsVerified.isNotEmpty) ...[
+                  if (entry.skillsVerified.isNotEmpty) ...[
                     _SectionCard(
                       icon: Icons.verified,
-                      title: 'Skills Verified (${widget.entry.skillsVerified.length})',
+                      title: 'Skills Verified (${entry.skillsVerified.length})',
                       color: const Color(0xFFFFB74D),
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: widget.entry.skillsVerified.map((skill) {
+                        children: entry.skillsVerified.map((skill) {
                           return Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -366,13 +407,13 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                   ],
 
                   // Comment Card
-                  if (widget.entry.comment != null && widget.entry.comment!.isNotEmpty) ...[
+                  if (entry.comment != null && entry.comment!.isNotEmpty) ...[
                     _SectionCard(
                       icon: Icons.comment,
                       title: 'Comment',
                       color: const Color(0xFFBA68C8),
                       child: Text(
-                        widget.entry.comment!,
+                        entry.comment!,
                         style: theme.textTheme.bodyMedium,
                       ),
                     ),
@@ -388,19 +429,19 @@ class _LogbookEntryDetailScreenState extends ConsumerState<LogbookEntryDetailScr
                       children: [
                         _InfoRow(
                           label: 'Created',
-                          value: DateFormat('MMM d, y \'at\' h:mm a').format(widget.entry.createdAt),
+                          value: DateFormat('MMM d, y \'at\' h:mm a').format(entry.createdAt),
                         ),
-                        if (widget.entry.updatedAt != null) ...[
+                        if (entry.updatedAt != null) ...[
                           const SizedBox(height: 8),
                           _InfoRow(
                             label: 'Last Updated',
-                            value: DateFormat('MMM d, y \'at\' h:mm a').format(widget.entry.updatedAt!),
+                            value: DateFormat('MMM d, y \'at\' h:mm a').format(entry.updatedAt!),
                           ),
                         ],
                         const SizedBox(height: 8),
                         _InfoRow(
                           label: 'Entry ID',
-                          value: '#${widget.entry.id}',
+                          value: '#${entry.id}',
                         ),
                       ],
                     ),
@@ -559,8 +600,8 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
   @override
   void initState() {
     super.initState();
-    _commentController.text = widget.entry.comment ?? '';
-    _selectedSkillIds = widget.entry.skillsVerified.map((s) => s.id).toList();
+    _commentController.text = entry.comment ?? '';
+    _selectedSkillIds = entry.skillsVerified.map((s) => s.id).toList();
     _loadAvailableSkills();
   }
 
@@ -576,7 +617,7 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
 
     try {
       final response = await _repository.getLogbookSkills(
-        levelGte: widget.entry.trip?.level?.numericLevel,
+        levelGte: entry.trip?.level?.numericLevel,
         pageSize: 100,
       );
 
@@ -611,7 +652,7 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
 
     try {
       await _repository.patchLogbookEntry(
-        id: widget.entry.id,
+        id: entry.id,
         updates: {
           'comment': _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
           'skillsVerified': _selectedSkillIds,
@@ -680,12 +721,12 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
                               ),
                             ),
                             const SizedBox(height: 12),
-                            if (widget.entry.trip != null)
-                              _InfoRow(label: 'Trip', value: widget.entry.trip!.title),
+                            if (entry.trip != null)
+                              _InfoRow(label: 'Trip', value: entry.trip!.title),
                             const SizedBox(height: 8),
-                            _InfoRow(label: 'Member', value: widget.entry.member.displayName),
+                            _InfoRow(label: 'Member', value: entry.member.displayName),
                             const SizedBox(height: 8),
-                            _InfoRow(label: 'Signed By', value: widget.entry.signedBy.displayName),
+                            _InfoRow(label: 'Signed By', value: entry.signedBy.displayName),
                           ],
                         ),
                       ),
