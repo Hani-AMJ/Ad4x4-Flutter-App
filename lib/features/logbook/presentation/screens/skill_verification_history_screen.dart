@@ -30,6 +30,7 @@ class _SkillVerificationHistoryScreenState
   bool _showOnlyWithTrips = false;
   List<LogbookSkillReference>? _enrichedReferences;
   bool _isEnriching = false;
+  int? _lastEnrichedDataHash; // Track which data was enriched to avoid re-enrichment
 
   @override
   void dispose() {
@@ -41,17 +42,27 @@ class _SkillVerificationHistoryScreenState
   Future<void> _enrichReferences(List<LogbookSkillReference> references) async {
     if (_isEnriching) return;
 
+    // Calculate hash to avoid re-enriching same data
+    final dataHash = references.length > 0 ? references.map((r) => r.id).join(',').hashCode : 0;
+    if (_lastEnrichedDataHash == dataHash) {
+      print('🔄 [SkillVerificationHistory] Data already enriched, skipping...');
+      return;
+    }
+
     setState(() {
       _isEnriching = true;
     });
 
     try {
+      print('🔄 [SkillVerificationHistory] Starting enrichment for ${references.length} references...');
       final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
       final enriched = await enrichmentService.enrichSkillReferences(references);
+      print('✅ [SkillVerificationHistory] Enrichment complete!');
 
       if (mounted) {
         setState(() {
           _enrichedReferences = enriched;
+          _lastEnrichedDataHash = dataHash;
           _isEnriching = false;
         });
       }
@@ -60,6 +71,7 @@ class _SkillVerificationHistoryScreenState
       if (mounted) {
         setState(() {
           _enrichedReferences = references; // Fallback to original
+          _lastEnrichedDataHash = dataHash;
           _isEnriching = false;
         });
       }
@@ -199,12 +211,17 @@ class _SkillVerificationHistoryScreenState
           Expanded(
             child: historyAsync.when(
               data: (references) {
-                // Trigger enrichment if not done yet
-                if (_enrichedReferences == null && !_isEnriching) {
-                  Future.microtask(() => _enrichReferences(references));
+                // Trigger enrichment ONCE when data first loads
+                if (_enrichedReferences == null && !_isEnriching && references.isNotEmpty) {
+                  // Use WidgetsBinding to avoid infinite loops
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_enrichedReferences == null && !_isEnriching) {
+                      _enrichReferences(references);
+                    }
+                  });
                 }
 
-                // Use enriched references if available
+                // Use enriched references if available, otherwise show unenriched
                 final referencesToUse = _enrichedReferences ?? references;
                 final filteredReferences = _filterReferences(referencesToUse);
 
