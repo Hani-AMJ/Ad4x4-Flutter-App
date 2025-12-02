@@ -121,6 +121,9 @@ class _SkillVerificationHistoryScreenState
         ref.watch(memberSkillVerificationHistoryProvider(targetMemberId));
     final statsAsync =
         ref.watch(memberVerificationStatsProvider(targetMemberId));
+    
+    // ✅ Watch level config ONCE at top level to avoid nested watching
+    final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
 
     final isViewingOwnHistory = targetMemberId == authState.user?.id;
 
@@ -261,9 +264,7 @@ class _SkillVerificationHistoryScreenState
                   );
                 }
 
-                // ✅ Use async FutureProvider to ensure cache is ready
-                final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
-                
+                // ✅ Use top-level levelConfigAsync to avoid nested watching
                 return levelConfigAsync.when(
                   data: (levelConfig) => Stack(
                     children: [
