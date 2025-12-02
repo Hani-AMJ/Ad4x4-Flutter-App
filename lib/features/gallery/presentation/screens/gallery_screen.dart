@@ -368,16 +368,10 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateGalleryDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('Create Gallery'),
-        tooltip: 'Create new gallery (Board members only)',
-      ),
     );
   }
   
-  // Show create gallery dialog
+  // Show create gallery dialog (REMOVED - Button removed from UI)
   Future<void> _showCreateGalleryDialog() async {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
