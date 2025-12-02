@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 
 /// Member Logbook History Widget
@@ -75,8 +76,14 @@ class _MemberLogbookHistoryWidgetState
           .whereType<LogbookEntry>()
           .toList();
       
+      // ✨ ENRICH ENTRIES to show actual marshal names
+      print('🔄 Member Logbook History: Enriching ${entries.length} entries...');
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
+      print('✅ Member Logbook History: Enrichment complete!');
+      
       setState(() {
-        _entries = entries;
+        _entries = enrichedEntries; // Use enriched entries
         _isLoading = false;
       });
       
