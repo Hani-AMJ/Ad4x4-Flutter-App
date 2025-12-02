@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 
 // ============================================================================
 // LOGBOOK ENTRIES STATE
@@ -71,6 +72,8 @@ class LogbookEntriesNotifier extends StateNotifier<LogbookEntriesState> {
 
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
+      final enrichmentService = _ref.read(logbookEnrichmentServiceProvider);
+      
       final response = await repository.getLogbookEntries(
         memberId: memberId,
         tripId: tripId,
@@ -79,10 +82,15 @@ class LogbookEntriesNotifier extends StateNotifier<LogbookEntriesState> {
       );
 
       final entriesResponse = LogbookEntriesResponse.fromJson(response);
+      
+      // Enrich entries before storing in state
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(
+        entriesResponse.results,
+      );
 
       if (page == 1) {
         state = state.copyWith(
-          entries: entriesResponse.results,
+          entries: enrichedEntries,
           totalCount: entriesResponse.count,
           currentPage: page,
           hasMore: entriesResponse.hasMore,
@@ -90,7 +98,7 @@ class LogbookEntriesNotifier extends StateNotifier<LogbookEntriesState> {
         );
       } else {
         state = state.copyWith(
-          entries: [...state.entries, ...entriesResponse.results],
+          entries: [...state.entries, ...enrichedEntries],
           currentPage: page,
           hasMore: entriesResponse.hasMore,
           isLoading: false,
