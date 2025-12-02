@@ -78,9 +78,21 @@ class _AdminLogbookAnalyticsScreenState
           .toList();
       
       // Step 3: Enrich entries using centralized service
-      print('🔄 Enriching ${entries.length} logbook entries...');
+      print('\n🔄 ANALYTICS: Starting enrichment of ${entries.length} entries...');
       final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
-      print('✅ Enrichment complete!');
+      print('✅ ANALYTICS: Enrichment complete!\n');
+      
+      // Log enriched data sample
+      if (enrichedEntries.isNotEmpty) {
+        print('📋 SAMPLE ENRICHED DATA (first entry):');
+        final sample = enrichedEntries.first;
+        print('   Member: ${sample.member.displayName} (ID: ${sample.member.id})');
+        print('   SignedBy: ${sample.signedBy.displayName} (ID: ${sample.signedBy.id})');
+        if (sample.skillsVerified.isNotEmpty) {
+          print('   First Skill: ${sample.skillsVerified.first.name} (ID: ${sample.skillsVerified.first.id})');
+        }
+        print('');
+      }
 
       // Step 4: Calculate analytics with enriched data
       final analytics = _calculateAnalytics(
@@ -88,10 +100,18 @@ class _AdminLogbookAnalyticsScreenState
         skillsResults.cast<Map<String, dynamic>>(),
       );
 
-      print('📈 Analytics calculated:');
+      print('📈 FINAL ANALYTICS RESULTS:');
       print('   - Total Entries: ${analytics['totalEntries']}');
       print('   - Most Active Marshal: ${analytics['mostActiveMarshal'] ?? "None"}');
       print('   - Top Skills: ${(analytics['topSkills'] as List).length}');
+      if (analytics['topSkills'] is List && (analytics['topSkills'] as List).isNotEmpty) {
+        print('   - Top 3 Skill Names:');
+        final topSkills = analytics['topSkills'] as List;
+        for (var i = 0; i < 3 && i < topSkills.length; i++) {
+          print('     ${i + 1}. ${topSkills[i]['name']} (${topSkills[i]['count']} times)');
+        }
+      }
+      print('');
 
       setState(() {
         _allEntries = enrichedEntries;

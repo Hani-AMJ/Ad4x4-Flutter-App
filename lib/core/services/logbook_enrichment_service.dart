@@ -71,9 +71,14 @@ class LogbookEnrichmentService {
   Future<List<LogbookEntry>> enrichLogbookEntries(
     List<LogbookEntry> entries,
   ) async {
-    if (entries.isEmpty) return [];
+    if (entries.isEmpty) {
+      print('⚠️ enrichLogbookEntries called with empty list');
+      return [];
+    }
 
-    print('🔄 Enriching ${entries.length} logbook entries...');
+    print('═══════════════════════════════════════════════════════');
+    print('🔄 STARTING BATCH ENRICHMENT: ${entries.length} entries');
+    print('═══════════════════════════════════════════════════════');
 
     // Step 1: Pre-fetch skills (small dataset, can load all at once)
     await _prefetchSkills();
@@ -100,19 +105,26 @@ class LogbookEnrichmentService {
     await _batchFetchTrips(uniqueTripIds);
 
     // Step 6: Enrich all entries
-    print('✅ Pre-fetching complete. Enriching entries...');
+    print('\n📋 STEP 6: Enriching all entries...');
     final enrichedEntries = <LogbookEntry>[];
-    for (final entry in entries) {
+    for (var i = 0; i < entries.length; i++) {
+      final entry = entries[i];
       try {
+        print('\n───────────────────────────────────────────────────────');
+        print('Processing entry ${i + 1}/${entries.length}: #${entry.id}');
         final enriched = await enrichLogbookEntry(entry);
         enrichedEntries.add(enriched);
-      } catch (e) {
-        print('⚠️ Failed to enrich entry #${entry.id}: $e');
+        print('✅ Entry #${entry.id} enriched successfully');
+      } catch (e, stackTrace) {
+        print('❌ Failed to enrich entry #${entry.id}: $e');
+        print('Stack trace: $stackTrace');
         enrichedEntries.add(entry); // Use original if enrichment fails
       }
     }
 
-    print('✅ Enrichment complete: ${enrichedEntries.length} entries');
+    print('\n═══════════════════════════════════════════════════════');
+    print('✅ BATCH ENRICHMENT COMPLETE: ${enrichedEntries.length} entries');
+    print('═══════════════════════════════════════════════════════\n');
     return enrichedEntries;
   }
 
@@ -147,11 +159,33 @@ class LogbookEnrichmentService {
     final level = profile['level'] as Map<String, dynamic>?;
 
     // Construct enriched MemberBasicInfo
-    // Use firstName and lastName from API profile directly
-    final finalFirstName = firstName ?? 'Unknown';
-    final finalLastName = lastName ?? '';
+    // IMPORTANT: Use username as the display name by setting it as firstName
+    // This ensures displayName getter returns the username
+    String finalFirstName;
+    String finalLastName = '';
     
-    print('   ✅ Fetched profile: $finalFirstName $finalLastName (username: $username)');
+    if (username != null && username.isNotEmpty) {
+      // Use username directly as firstName so displayName shows username
+      finalFirstName = username;
+      finalLastName = '';  // Empty lastName so displayName is just the username
+      print('   ✅ Using username: "$username" for member $memberId');
+    } else if (displayName != null && displayName.isNotEmpty) {
+      // Fallback to displayName
+      finalFirstName = displayName;
+      finalLastName = '';
+      print('   ⚠️ No username, using displayName: "$displayName" for member $memberId');
+    } else if (firstName != null && firstName.isNotEmpty) {
+      // Last resort: use firstName + lastName
+      finalFirstName = firstName;
+      finalLastName = lastName ?? '';
+      print('   ⚠️ No username/displayName, using firstName+lastName: "$firstName $lastName" for member $memberId');
+    } else {
+      finalFirstName = 'Unknown';
+      finalLastName = '';
+      print('   ❌ No name data available for member $memberId');
+    }
+    
+    print('   → Final displayName will be: "$finalFirstName${finalLastName.isNotEmpty ? " $finalLastName" : ""}"');
     
     return MemberBasicInfo(
       id: member.id,
