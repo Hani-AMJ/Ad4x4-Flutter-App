@@ -182,7 +182,7 @@ class LogbookEnrichmentService {
     } else {
       finalFirstName = 'Unknown';
       finalLastName = '';
-      print('   ❌ No name data available for member $memberId');
+      print('   ❌ No name data available for member ${member.id}');
     }
     
     print('   → Final displayName will be: "$finalFirstName${finalLastName.isNotEmpty ? " $finalLastName" : ""}"');
