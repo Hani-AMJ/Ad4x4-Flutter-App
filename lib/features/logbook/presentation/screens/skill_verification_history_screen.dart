@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/level_configuration_provider.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../../data/providers/skill_verification_history_provider.dart';
 
@@ -27,11 +28,42 @@ class _SkillVerificationHistoryScreenState
   String _searchQuery = '';
   int? _selectedLevel; // Filter by level
   bool _showOnlyWithTrips = false;
+  List<LogbookSkillReference>? _enrichedReferences;
+  bool _isEnriching = false;
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Enrich skill references to resolve member/verifiedBy IDs to names
+  Future<void> _enrichReferences(List<LogbookSkillReference> references) async {
+    if (_isEnriching) return;
+
+    setState(() {
+      _isEnriching = true;
+    });
+
+    try {
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enriched = await enrichmentService.enrichSkillReferences(references);
+
+      if (mounted) {
+        setState(() {
+          _enrichedReferences = enriched;
+          _isEnriching = false;
+        });
+      }
+    } catch (e) {
+      print('⚠️ [SkillVerificationHistory] Enrichment failed: $e');
+      if (mounted) {
+        setState(() {
+          _enrichedReferences = references; // Fallback to original
+          _isEnriching = false;
+        });
+      }
+    }
   }
 
   List<LogbookSkillReference> _filterReferences(
@@ -167,7 +199,14 @@ class _SkillVerificationHistoryScreenState
           Expanded(
             child: historyAsync.when(
               data: (references) {
-                final filteredReferences = _filterReferences(references);
+                // Trigger enrichment if not done yet
+                if (_enrichedReferences == null && !_isEnriching) {
+                  Future.microtask(() => _enrichReferences(references));
+                }
+
+                // Use enriched references if available
+                final referencesToUse = _enrichedReferences ?? references;
+                final filteredReferences = _filterReferences(referencesToUse);
 
                 if (filteredReferences.isEmpty) {
                   return Center(
@@ -209,22 +248,49 @@ class _SkillVerificationHistoryScreenState
                 final levelConfigAsync = ref.watch(levelConfigurationReadyProvider);
                 
                 return levelConfigAsync.when(
-                  data: (levelConfig) => RefreshIndicator(
-                    onRefresh: () async {
-                      ref.invalidate(
-                          memberSkillVerificationHistoryProvider(targetMemberId));
-                    },
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: filteredReferences.length,
-                      itemBuilder: (context, index) {
-                        return _buildVerificationCard(
-                          filteredReferences[index],
-                          theme,
-                          levelConfig,
-                        );
-                      },
-                    ),
+                  data: (levelConfig) => Stack(
+                    children: [
+                      RefreshIndicator(
+                        onRefresh: () async {
+                          setState(() {
+                            _enrichedReferences = null; // Reset enrichment
+                          });
+                          ref.invalidate(
+                              memberSkillVerificationHistoryProvider(targetMemberId));
+                        },
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: filteredReferences.length,
+                          itemBuilder: (context, index) {
+                            return _buildVerificationCard(
+                              filteredReferences[index],
+                              theme,
+                              levelConfig,
+                            );
+                          },
+                        ),
+                      ),
+                      // Show loading indicator while enriching
+                      if (_isEnriching)
+                        Container(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          child: const Center(
+                            child: Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(24),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 16),
+                                    Text('Loading names...'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (e, s) => Center(

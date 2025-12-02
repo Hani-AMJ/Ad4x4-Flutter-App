@@ -494,6 +494,27 @@ class LogbookSkillReference {
       if (comment != null) 'comment': comment,
     };
   }
+
+  /// Create a copy with modified fields
+  LogbookSkillReference copyWith({
+    int? id,
+    MemberBasicInfo? member,
+    LogbookSkillBasicInfo? logbookSkill,
+    TripBasicInfo? trip,
+    MemberBasicInfo? verifiedBy,
+    DateTime? verifiedAt,
+    String? comment,
+  }) {
+    return LogbookSkillReference(
+      id: id ?? this.id,
+      member: member ?? this.member,
+      logbookSkill: logbookSkill ?? this.logbookSkill,
+      trip: trip ?? this.trip,
+      verifiedBy: verifiedBy ?? this.verifiedBy,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
+      comment: comment ?? this.comment,
+    );
+  }
 }
 
 // ============================================================================

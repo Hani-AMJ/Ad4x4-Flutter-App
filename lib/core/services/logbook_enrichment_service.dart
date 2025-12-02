@@ -402,6 +402,55 @@ class LogbookEnrichmentService {
   }
 
   // ============================================================================
+  // SKILL REFERENCE ENRICHMENT
+  // ============================================================================
+
+  /// Enrich a list of LogbookSkillReference objects with actual names
+  /// Similar to enrichLogbookEntries but for skill verification history
+  Future<List<LogbookSkillReference>> enrichSkillReferences(
+    List<LogbookSkillReference> references,
+  ) async {
+    if (references.isEmpty) return references;
+
+    print('🔄 [SkillRefEnrichment] Enriching ${references.length} skill references...');
+
+    // Collect unique IDs
+    final memberIds = <int>{};
+    final verifiedByIds = <int>{};
+    
+    for (final ref in references) {
+      if (_shouldEnrichMember(ref.member)) memberIds.add(ref.member.id);
+      if (_shouldEnrichMember(ref.verifiedBy)) verifiedByIds.add(ref.verifiedBy.id);
+    }
+
+    // Batch fetch missing data
+    await _batchFetchMembers(memberIds);
+    await _batchFetchMembers(verifiedByIds);
+
+    // Enrich each reference
+    final enrichedReferences = <LogbookSkillReference>[];
+    for (final ref in references) {
+      try {
+        final enrichedMember = await _enrichMember(ref.member);
+        final enrichedVerifiedBy = await _enrichMember(ref.verifiedBy);
+
+        enrichedReferences.add(
+          ref.copyWith(
+            member: enrichedMember,
+            verifiedBy: enrichedVerifiedBy,
+          ),
+        );
+      } catch (e) {
+        print('⚠️ [SkillRefEnrichment] Failed to enrich reference: $e');
+        enrichedReferences.add(ref); // Keep original if enrichment fails
+      }
+    }
+
+    print('✅ [SkillRefEnrichment] Successfully enriched ${enrichedReferences.length} references');
+    return enrichedReferences;
+  }
+
+  // ============================================================================
   // UTILITY METHODS
   // ============================================================================
 
