@@ -347,13 +347,19 @@ class LogbookEnrichmentService {
       if (skillDetails != null) {
         // Parse level from skillDetails if available
         LevelBasicInfo levelInfo = skill.level;
-        final levelData = skillDetails['levelRequirement'] as Map<String, dynamic>?;
-        if (levelData != null) {
+        final levelReq = skillDetails['levelRequirement'];
+        
+        // Handle levelRequirement - could be int (ID) or Map (full object)
+        if (levelReq is Map<String, dynamic>) {
           try {
-            levelInfo = LevelBasicInfo.fromJson(levelData);
+            levelInfo = LevelBasicInfo.fromJson(levelReq);
+            print('   → Parsed level from Map for skill ${skill.id}');
           } catch (e) {
-            // Keep original level if parsing fails
+            print('   ⚠️ Failed to parse level Map for skill ${skill.id}: $e');
           }
+        } else if (levelReq is int) {
+          // Level is just an ID - keep original skill level
+          print('   → Level is ID ($levelReq), keeping original level for skill ${skill.id}');
         }
         
         enrichedSkills.add(LogbookSkillBasicInfo(
