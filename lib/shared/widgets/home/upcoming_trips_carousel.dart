@@ -83,7 +83,7 @@ class _UpcomingTripsCarouselState extends State<UpcomingTripsCarousel> {
     }
 
     if (_trips.isEmpty) {
-      return const SizedBox.shrink();
+      return const _EmptyTripsCard();
     }
 
     return SizedBox(
@@ -231,6 +231,103 @@ class _TripCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Empty State Card for No Upcoming Trips
+/// 
+/// Displays when there are no upcoming trips with a "Request Trip" CTA
+class _EmptyTripsCard extends StatelessWidget {
+  const _EmptyTripsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Container(
+      height: 180,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        elevation: 2,
+        child: InkWell(
+          onTap: () => context.push('/trip-requests'),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colors.primary.withValues(alpha: 0.1),
+                  colors.primary.withValues(alpha: 0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Calendar Icon
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.calendar_today_rounded,
+                    size: 32,
+                    color: colors.primary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Main Text
+                Text(
+                  'No Upcoming Trips Yet',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colors.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+
+                // Subtitle
+                Text(
+                  'New trips will be published soon',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+
+                // Request Trip Button
+                ElevatedButton.icon(
+                  onPressed: () => context.push('/trip-requests'),
+                  icon: const Icon(Icons.add_circle_outline, size: 18),
+                  label: const Text('Request a Trip'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.onPrimary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
