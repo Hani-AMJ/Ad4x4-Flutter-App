@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -28,6 +28,10 @@ class _AdminLogbookAnalyticsScreenState
   List<LogbookEntry> _allEntries = [];
   List<Map<String, dynamic>> _allSkills = [];
   Map<String, dynamic> _analytics = {};
+  
+  // Data enrichment caches
+  final Map<int, String> _marshalNameCache = {};
+  final Map<int, String> _skillNameCache = {};
 
   @override
   void initState() {
@@ -44,17 +48,31 @@ class _AdminLogbookAnalyticsScreenState
     try {
       final repository = ref.read(mainApiRepositoryProvider);
 
-      if (kDebugMode) {
-        debugPrint('📊 Loading logbook analytics data...');
-      }
+      print('📊 Loading logbook analytics data...');
 
-      // Load all logbook entries
+      // Step 1: Load all skills and build skill name cache
+      final skillsResponse = await repository.getLogbookSkills(pageSize: 100);
+      final skillsResults = skillsResponse['results'] as List;
+
+      print('✅ Loaded ${skillsResults.length} skills');
+      
+      // Build skill name cache
+      _skillNameCache.clear();
+      for (final skillJson in skillsResults) {
+        final skill = skillJson as Map<String, dynamic>;
+        final id = skill['id'] as int;
+        final name = skill['name'] as String?;
+        if (name != null && name.isNotEmpty) {
+          _skillNameCache[id] = name;
+        }
+      }
+      print('✅ Skill cache built: ${_skillNameCache.length} skills');
+
+      // Step 2: Load all logbook entries
       final entriesResponse = await repository.getLogbookEntries(pageSize: 500);
       final entriesResults = entriesResponse['results'] as List;
 
-      if (kDebugMode) {
-        debugPrint('✅ Loaded ${entriesResults.length} logbook entries');
-      }
+      print('✅ Loaded ${entriesResults.length} logbook entries');
 
       final entries = entriesResults
           .map((json) {
@@ -68,39 +86,52 @@ class _AdminLogbookAnalyticsScreenState
                 type: 'logbook_analytics',
                 context: 'loadAnalyticsData.parseEntry',
               );
-              if (kDebugMode) {
-                debugPrint('⚠️ Failed to parse logbook entry: $e');
-              }
+              print('⚠️ Failed to parse logbook entry: $e');
               return null;
             }
           })
           .whereType<LogbookEntry>()
           .toList();
-
-      // Load all skills
-      final skillsResponse = await repository.getLogbookSkills(pageSize: 100);
-      final skillsResults = skillsResponse['results'] as List;
-
-      if (kDebugMode) {
-        debugPrint('✅ Loaded ${skillsResults.length} skills');
+      
+      // Step 3: Extract unique marshal IDs and fetch their profiles
+      final uniqueMarshalIds = entries.map((e) => e.signedBy.id).toSet();
+      print('🔍 Fetching profiles for ${uniqueMarshalIds.length} unique marshals...');
+      
+      _marshalNameCache.clear();
+      for (final marshalId in uniqueMarshalIds) {
+        try {
+          final profile = await repository.getMemberDetail(marshalId);
+          final username = profile['username'] as String?;
+          final displayName = profile['displayName'] as String?;
+          final firstName = profile['firstName'] as String?;
+          final lastName = profile['lastName'] as String?;
+          
+          // Prefer username, then displayName, then firstName + lastName
+          String finalName = username ?? 
+                             displayName ?? 
+                             ((firstName != null && lastName != null) 
+                                 ? '$firstName $lastName' 
+                                 : 'Marshal #$marshalId');
+          
+          _marshalNameCache[marshalId] = finalName;
+          print('   ✅ Marshal $marshalId → "$finalName"');
+        } catch (e) {
+          print('   ⚠️ Failed to fetch marshal $marshalId: $e');
+          _marshalNameCache[marshalId] = 'Marshal #$marshalId';
+        }
       }
+      print('✅ Marshal cache built: ${_marshalNameCache.length} marshals');
 
-      // Calculate analytics with error logging
+      // Step 4: Calculate analytics with enriched data
       final analytics = _calculateAnalytics(
         entries,
         skillsResults.cast<Map<String, dynamic>>(),
       );
 
-      if (kDebugMode) {
-        debugPrint('📈 Analytics calculated:');
-        debugPrint('   - Total Entries: ${analytics['totalEntries']}');
-        debugPrint(
-          '   - Most Active Marshal: ${analytics['mostActiveMarshal'] ?? "None"}',
-        );
-        debugPrint(
-          '   - Top Skills: ${(analytics['topSkills'] as List).length}',
-        );
-      }
+      print('📈 Analytics calculated:');
+      print('   - Total Entries: ${analytics['totalEntries']}');
+      print('   - Most Active Marshal: ${analytics['mostActiveMarshal'] ?? "None"}');
+      print('   - Top Skills: ${(analytics['topSkills'] as List).length}');
 
       setState(() {
         _allEntries = entries;
@@ -169,18 +200,15 @@ class _AdminLogbookAnalyticsScreenState
 
     for (final entry in entries) {
       final marshalId = entry.signedBy.id;
-      final marshalName = entry.signedBy.displayName;
+      
+      // Use cached marshal name (fetched from API)
+      final marshalName = _marshalNameCache[marshalId] ?? 'Marshal #$marshalId';
 
       // Track activity count
       marshalActivity[marshalId] = (marshalActivity[marshalId] ?? 0) + 1;
 
-      // Store marshal name (latest occurrence)
+      // Store marshal name
       marshalNames[marshalId] = marshalName;
-
-      // Debug logging for marshal data
-      if (kDebugMode && marshalActivity[marshalId] == 1) {
-        debugPrint('🔍 Marshal detected: ID=$marshalId, Name="$marshalName"');
-      }
     }
 
     String? mostActiveMarshal;
@@ -196,30 +224,11 @@ class _AdminLogbookAnalyticsScreenState
       }
     });
 
-    // Validate and log marshal data
-    if (mostActiveMarshal != null && kDebugMode) {
-      debugPrint(
-        '✅ Most Active Marshal: "$mostActiveMarshal" (ID: $mostActiveMarshalId, Entries: $maxActivity)',
-      );
-    } else if (kDebugMode) {
-      debugPrint(
-        '⚠️ No most active marshal found (entries: ${entries.length})',
-      );
-    }
-
-    // Log error if marshal name is missing
-    if (mostActiveMarshalId != null &&
-        (mostActiveMarshal == null ||
-            (mostActiveMarshal?.trim().isEmpty ?? true))) {
-      ErrorLogService().logError(
-        message:
-            'Marshal displayName is missing or empty for ID: $mostActiveMarshalId',
-        stackTrace: StackTrace.current.toString(),
-        type: 'logbook_analytics',
-        context: 'calculateAnalytics.mostActiveMarshal',
-      );
-      // Fallback to ID display
-      mostActiveMarshal = 'Marshal #$mostActiveMarshalId';
+    // Validate marshal data
+    if (mostActiveMarshal != null) {
+      print('✅ Most Active Marshal: "$mostActiveMarshal" (ID: $mostActiveMarshalId, Entries: $maxActivity)');
+    } else {
+      print('⚠️ No most active marshal found (entries: ${entries.length})');
     }
 
     // Skill popularity with enhanced logging
@@ -228,19 +237,16 @@ class _AdminLogbookAnalyticsScreenState
 
     for (final skill in allVerifiedSkills) {
       final skillId = skill.id;
-      final skillName = skill.name;
+      
+      // Use cached skill name (fetched from API)
+      final skillName = _skillNameCache[skillId] ?? 'Skill #$skillId';
 
       // Track verification count
       skillVerificationCounts[skillId] =
           (skillVerificationCounts[skillId] ?? 0) + 1;
 
-      // Store skill name (use latest occurrence)
+      // Store skill name
       skillNames[skillId] = skillName;
-
-      // Debug logging for skill data
-      if (kDebugMode && skillVerificationCounts[skillId] == 1) {
-        debugPrint('🔍 Skill detected: ID=$skillId, Name="$skillName"');
-      }
     }
 
     final sortedSkillCounts = skillVerificationCounts.entries.toList()
@@ -249,24 +255,9 @@ class _AdminLogbookAnalyticsScreenState
     final topSkills = sortedSkillCounts.take(5).map((entry) {
       final skillId = entry.key;
       final skillCount = entry.value;
-      String skillName = skillNames[skillId] ?? 'Skill #$skillId';
+      final skillName = skillNames[skillId] ?? 'Skill #$skillId';
 
-      // Validate skill name
-      if (skillName.isNotEmpty && skillName.trim().isEmpty) {
-        ErrorLogService().logError(
-          message: 'Skill name is empty for ID: $skillId',
-          stackTrace: StackTrace.current.toString(),
-          type: 'logbook_analytics',
-          context: 'calculateAnalytics.topSkills',
-        );
-        skillName = 'Skill #$skillId';
-      }
-
-      if (kDebugMode) {
-        debugPrint(
-          '⭐ Top Skill: "$skillName" (ID: $skillId, Count: $skillCount)',
-        );
-      }
+      print('⭐ Top Skill: "$skillName" (ID: $skillId, Count: $skillCount)');
 
       return {'name': skillName, 'count': skillCount};
     }).toList();
