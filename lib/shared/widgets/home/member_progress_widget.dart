@@ -139,7 +139,7 @@ class _MemberProgressWidgetState extends ConsumerState<MemberProgressWidget>
 
                     // Tab Content
                     SizedBox(
-                      height: 140,
+                      height: 160,
                       child: TabBarView(
                         controller: _tabController,
                         children: [
@@ -219,7 +219,7 @@ class _CurrentLevelTab extends StatelessWidget {
       children: [
         // Level Name
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: colors.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
@@ -228,7 +228,7 @@ class _CurrentLevelTab extends StatelessWidget {
             children: [
               Icon(
                 Icons.school,
-                size: 20,
+                size: 18,
                 color: levelColor,
               ),
               const SizedBox(width: 8),
@@ -242,14 +242,14 @@ class _CurrentLevelTab extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
 
         // Stats Row
         Row(
           children: [
             Expanded(
               child: Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF81C784).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -281,10 +281,10 @@ class _CurrentLevelTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Expanded(
               child: Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF64B5F6).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -318,7 +318,7 @@ class _CurrentLevelTab extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
 
         // Progress Bar
         Column(
@@ -493,14 +493,14 @@ class _NextLevelTab extends StatelessWidget {
         // Arrow Icon
         Icon(
           Icons.arrow_upward_rounded,
-          size: 40,
+          size: 36,
           color: levelColor,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
 
         // Next Level Name
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             color: colors.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
@@ -513,11 +513,11 @@ class _NextLevelTab extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         // Requirements
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: levelColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
