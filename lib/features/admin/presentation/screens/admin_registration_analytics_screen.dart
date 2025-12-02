@@ -37,7 +37,10 @@ class _AdminRegistrationAnalyticsScreenState
   Future<void> _loadTrips() async {
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      final response = await repository.getTrips(pageSize: 50);
+      final response = await repository.getTrips(
+        pageSize: 50,
+        ordering: '-start_time', // ✅ Show newest trips first
+      );
       final results = response['results'] as List<dynamic>?;
       
       if (results != null) {

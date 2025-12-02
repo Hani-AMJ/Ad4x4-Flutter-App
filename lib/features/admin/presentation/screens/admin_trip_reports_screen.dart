@@ -78,7 +78,11 @@ class _AdminTripReportsScreenState
     
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      final tripsResponse = await repository.getTrips(page: 1, pageSize: 50);
+      final tripsResponse = await repository.getTrips(
+        page: 1, 
+        pageSize: 50,
+        ordering: '-start_time', // ✅ Show newest trips first
+      );
       final tripsList = (tripsResponse['results'] as List<dynamic>?)
           ?.map((t) => t as Map<String, dynamic>)
           .toList() ?? [];

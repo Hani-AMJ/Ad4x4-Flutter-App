@@ -63,8 +63,12 @@ class _AdminCreateLogbookEntryScreenState
           ?.map((m) => m as Map<String, dynamic>)
           .toList() ?? [];
       
-      // Load recent trips
-      final tripsResponse = await repository.getTrips(page: 1, pageSize: 50);
+      // Load recent trips (ordered by newest first)
+      final tripsResponse = await repository.getTrips(
+        page: 1, 
+        pageSize: 50,
+        ordering: '-start_time', // ✅ Show newest trips first
+      );
       final tripsList = (tripsResponse['results'] as List<dynamic>?)
           ?.map((t) => t as Map<String, dynamic>)
           .toList() ?? [];
