@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 import 'dart:convert';
 
@@ -84,6 +85,12 @@ class _AdminExportDataScreenState
         .whereType<LogbookEntry>()
         .toList();
     
+    // ✨ ENRICH ENTRIES for export
+    print('🔄 Export Logbook Entries: Enriching ${entries.length} entries...');
+    final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+    entries = await enrichmentService.enrichLogbookEntries(entries);
+    print('✅ Export Logbook Entries: Enrichment complete!');
+    
     // Apply date filters
     if (_filterStartDate != null) {
       entries = entries.where((e) => 
@@ -131,7 +138,7 @@ class _AdminExportDataScreenState
   Future<void> _exportMemberSkills(dynamic repository) async {
     final entriesResponse = await repository.getLogbookEntries(pageSize: 500);
     final entriesResults = entriesResponse['results'] as List;
-    final entries = entriesResults
+    var entries = entriesResults
         .map((json) {
           try {
             return LogbookEntry.fromJson(json as Map<String, dynamic>);
@@ -144,6 +151,12 @@ class _AdminExportDataScreenState
         })
         .whereType<LogbookEntry>()
         .toList();
+    
+    // ✨ ENRICH ENTRIES for member export
+    print('🔄 Export Member Skills: Enriching ${entries.length} entries...');
+    final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+    entries = await enrichmentService.enrichLogbookEntries(entries);
+    print('✅ Export Member Skills: Enrichment complete!');
     
     // Group by member
     final memberStats = <int, Map<String, dynamic>>{};
@@ -202,6 +215,12 @@ class _AdminExportDataScreenState
         })
         .whereType<LogbookEntry>()
         .toList();
+    
+    // ✨ ENRICH ENTRIES for marshal export
+    print('🔄 Export Marshal Activity: Enriching ${entries.length} entries...');
+    final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+    entries = await enrichmentService.enrichLogbookEntries(entries);
+    print('✅ Export Marshal Activity: Enrichment complete!');
     
     // Apply date filters
     if (_filterStartDate != null) {

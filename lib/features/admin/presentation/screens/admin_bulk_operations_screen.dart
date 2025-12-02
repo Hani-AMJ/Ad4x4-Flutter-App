@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 
 /// Admin Bulk Operations Screen
@@ -74,9 +75,15 @@ class _AdminBulkOperationsScreenState
           .whereType<LogbookEntry>()
           .toList();
       
+      // ✨ ENRICH ENTRIES to show actual member names
+      print('🔄 Bulk Operations: Enriching ${entries.length} entries...');
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
+      print('✅ Bulk Operations: Enrichment complete!');
+      
       setState(() {
         _allSkills = skillsResults.cast<Map<String, dynamic>>();
-        _allEntries = entries;
+        _allEntries = enrichedEntries; // Use enriched entries
         _isLoading = false;
       });
     } catch (e) {

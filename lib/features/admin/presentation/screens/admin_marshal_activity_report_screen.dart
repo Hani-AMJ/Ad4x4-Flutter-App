@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 
 /// Admin Marshal Activity Report Screen
@@ -63,8 +64,14 @@ class _AdminMarshalActivityReportScreenState
           .whereType<LogbookEntry>()
           .toList();
       
+      // ✨ ENRICH ENTRIES to show actual marshal names
+      print('🔄 Marshal Activity Report: Enriching ${entries.length} entries...');
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
+      print('✅ Marshal Activity Report: Enrichment complete!');
+      
       setState(() {
-        _allEntries = entries;
+        _allEntries = enrichedEntries; // Use enriched entries
         _isLoading = false;
       });
       
