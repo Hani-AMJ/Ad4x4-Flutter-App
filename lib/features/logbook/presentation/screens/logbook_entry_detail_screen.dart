@@ -600,8 +600,8 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
   @override
   void initState() {
     super.initState();
-    _commentController.text = entry.comment ?? '';
-    _selectedSkillIds = entry.skillsVerified.map((s) => s.id).toList();
+    _commentController.text = widget.entry.comment ?? '';
+    _selectedSkillIds = widget.entry.skillsVerified.map((s) => s.id).toList();
     _loadAvailableSkills();
   }
 
@@ -617,7 +617,7 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
 
     try {
       final response = await _repository.getLogbookSkills(
-        levelGte: entry.trip?.level?.numericLevel,
+        levelGte: widget.entry.trip?.level?.numericLevel,
         pageSize: 100,
       );
 
@@ -652,7 +652,7 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
 
     try {
       await _repository.patchLogbookEntry(
-        id: entry.id,
+        id: widget.entry.id,
         updates: {
           'comment': _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
           'skillsVerified': _selectedSkillIds,
@@ -721,12 +721,12 @@ class _LogbookEntryEditScreenState extends ConsumerState<LogbookEntryEditScreen>
                               ),
                             ),
                             const SizedBox(height: 12),
-                            if (entry.trip != null)
-                              _InfoRow(label: 'Trip', value: entry.trip!.title),
+                            if (widget.entry.trip != null)
+                              _InfoRow(label: 'Trip', value: widget.entry.trip!.title),
                             const SizedBox(height: 8),
-                            _InfoRow(label: 'Member', value: entry.member.displayName),
+                            _InfoRow(label: 'Member', value: widget.entry.member.displayName),
                             const SizedBox(height: 8),
-                            _InfoRow(label: 'Signed By', value: entry.signedBy.displayName),
+                            _InfoRow(label: 'Signed By', value: widget.entry.signedBy.displayName),
                           ],
                         ),
                       ),

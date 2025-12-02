@@ -132,6 +132,13 @@ class LogbookEnrichmentService {
   // MEMBER ENRICHMENT
   // ============================================================================
 
+  /// Check if a member needs enrichment (is a placeholder)
+  bool _shouldEnrichMember(MemberBasicInfo member) {
+    return member.firstName == 'Member' || 
+           member.firstName == 'Marshal' ||
+           member.lastName.startsWith('#');
+  }
+
   /// Enrich a member with actual profile data
   Future<MemberBasicInfo> _enrichMember(MemberBasicInfo member) async {
     // Check if this is a placeholder
