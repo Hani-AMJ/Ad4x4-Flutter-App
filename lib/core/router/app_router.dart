@@ -86,9 +86,9 @@ import '../../features/admin/presentation/screens/admin_sign_off_skills_screen.d
 import '../../features/admin/presentation/screens/admin_bulk_operations_screen.dart';
 import '../../features/admin/presentation/screens/admin_export_data_screen.dart';
 import '../../features/admin/presentation/screens/admin_audit_log_screen.dart';
-// TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT - Imports commented out
-// import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart';
-// import '../../features/admin/presentation/screens/quick_trip_report_screen.dart';
+// Trip Reports Feature - Now Active
+import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart';
+import '../../features/admin/presentation/screens/quick_trip_report_screen.dart';
 // Phase 3B - Enhanced Trip Management Screens
 import '../../features/admin/presentation/screens/gallery_admin_center_screen.dart';
 import '../../features/admin/presentation/screens/admin_comments_moderation_screen.dart';
