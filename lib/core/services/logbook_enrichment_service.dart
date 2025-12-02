@@ -205,6 +205,19 @@ class LogbookEnrichmentService {
 
   /// Fetch member profile from cache or API
   Future<Map<String, dynamic>> _fetchMemberProfile(int memberId) async {
+    // CRITICAL FIX: Skip API call for member ID 0 (placeholder for missing/unknown members)
+    if (memberId == 0) {
+      print('   ⚠️ Skipping API call for member ID 0 (placeholder)');
+      final fallback = {
+        'id': 0,
+        'username': 'Unknown Marshal',
+        'firstName': 'Unknown',
+        'lastName': 'Marshal',
+      };
+      _memberCache[0] = fallback;
+      return fallback;
+    }
+
     // Check cache first
     if (_memberCache.containsKey(memberId)) {
       return _memberCache[memberId]!;
