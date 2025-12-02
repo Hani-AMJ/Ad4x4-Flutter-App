@@ -8,6 +8,7 @@ import '../../../../data/models/logbook_model.dart';
 import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Trip History with Logbook Context Screen
@@ -140,7 +141,11 @@ class _TripHistoryWithLogbookScreenState
           }
         }
 
-        _tripLogbookEntries[trip.tripId] = entries;
+        // Enrich entries
+        final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+        final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
+        
+        _tripLogbookEntries[trip.tripId] = enrichedEntries;
       } catch (e) {
         print('⚠️ Failed to load logbook entries for trip ${trip.tripId}: $e');
         _tripLogbookEntries[trip.tripId] = [];

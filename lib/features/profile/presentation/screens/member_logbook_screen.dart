@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../../../trips/presentation/widgets/skills_matrix_widget.dart';
 import '../../../trips/presentation/widgets/member_logbook_history_widget.dart';
@@ -81,9 +82,13 @@ class _MemberLogbookScreenState extends ConsumerState<MemberLogbookScreen>
           .whereType<LogbookEntry>()
           .toList();
       
+      // Enrich entries
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
+      
       setState(() {
         _allSkills = skillsResults.cast<Map<String, dynamic>>();
-        _logbookEntries = entries;
+        _logbookEntries = enrichedEntries;
         _isLoadingSkills = false;
       });
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 
 import '../../../../shared/widgets/widgets.dart';
 import 'logbook_entry_detail_screen.dart';
@@ -81,11 +82,16 @@ class _LogbookTimelineScreenState extends ConsumerState<LogbookTimelineScreen> {
 
       print('✅ [Logbook] Loaded ${newEntries.length} entries');
 
+      // Enrich entries with actual names
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(newEntries);
+      print('✅ [Logbook] Enriched ${enrichedEntries.length} entries');
+
       setState(() {
         if (isLoadMore) {
-          _entries.addAll(newEntries);
+          _entries.addAll(enrichedEntries);
         } else {
-          _entries = newEntries;
+          _entries = enrichedEntries;
         }
         _isLoading = false;
         _isLoadingMore = false;
