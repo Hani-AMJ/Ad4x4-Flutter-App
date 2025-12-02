@@ -7,6 +7,7 @@ import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/level_configuration_provider.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Skills Matrix Screen
@@ -124,8 +125,14 @@ class _SkillsMatrixScreenState extends ConsumerState<SkillsMatrixScreen> {
         print('⚠️ [SkillsMatrix] Response is not a List!');
       }
       
+      // Enrich skill references to resolve verifiedBy IDs to names
+      print('🔄 [SkillsMatrix] Enriching ${skillReferences.length} skill references...');
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      final enrichedReferences = await enrichmentService.enrichSkillReferences(skillReferences);
+      print('✅ [SkillsMatrix] Enrichment complete');
+      
       // Convert skill references to member skill status objects
-      final List<MemberSkillStatus> memberSkills = skillReferences.map((ref) {
+      final List<MemberSkillStatus> memberSkills = enrichedReferences.map((ref) {
         return MemberSkillStatus(
           id: ref.id,
           skill: ref.logbookSkill,
