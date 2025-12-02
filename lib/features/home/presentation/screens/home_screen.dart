@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../shared/widgets/home/upcoming_trips_carousel.dart';
 import '../../../../shared/widgets/home/member_progress_widget.dart';
+import '../../../../shared/widgets/home/sponsors_carousel.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -162,6 +163,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 16),
               const UpcomingTripsCarousel(),
+              const SizedBox(height: 32),
+
+              // Sponsors Section
+              Text(
+                'Our Sponsors',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Supporting AD4x4 Off-Road Club',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const SponsorsCarousel(),
               const SizedBox(height: 24),
             ],
           ),
