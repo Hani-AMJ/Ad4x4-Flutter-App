@@ -168,17 +168,17 @@ class LogbookEnrichmentService {
       // Use username directly as firstName so displayName shows username
       finalFirstName = username;
       finalLastName = '';  // Empty lastName so displayName is just the username
-      print('   ✅ Using username: "$username" for member $memberId');
+      print('   ✅ Using username: "$username" for member ${member.id}');
     } else if (displayName != null && displayName.isNotEmpty) {
       // Fallback to displayName
       finalFirstName = displayName;
       finalLastName = '';
-      print('   ⚠️ No username, using displayName: "$displayName" for member $memberId');
+      print('   ⚠️ No username, using displayName: "$displayName" for member ${member.id}');
     } else if (firstName != null && firstName.isNotEmpty) {
       // Last resort: use firstName + lastName
       finalFirstName = firstName;
       finalLastName = lastName ?? '';
-      print('   ⚠️ No username/displayName, using firstName+lastName: "$firstName $lastName" for member $memberId');
+      print('   ⚠️ No username/displayName, using firstName+lastName: "$firstName $lastName" for member ${member.id}');
     } else {
       finalFirstName = 'Unknown';
       finalLastName = '';
