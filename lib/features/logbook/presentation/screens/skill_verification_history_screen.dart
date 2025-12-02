@@ -28,9 +28,6 @@ class _SkillVerificationHistoryScreenState
   String _searchQuery = '';
   int? _selectedLevel; // Filter by level
   bool _showOnlyWithTrips = false;
-  List<LogbookSkillReference>? _enrichedReferences;
-  bool _isEnriching = false;
-  int? _lastEnrichedDataHash; // Track which data was enriched to avoid re-enrichment
 
   @override
   void dispose() {
@@ -38,45 +35,8 @@ class _SkillVerificationHistoryScreenState
     super.dispose();
   }
 
-  /// Enrich skill references to resolve member/verifiedBy IDs to names
-  Future<void> _enrichReferences(List<LogbookSkillReference> references) async {
-    if (_isEnriching) return;
-
-    // Calculate hash to avoid re-enriching same data
-    final dataHash = references.length > 0 ? references.map((r) => r.id).join(',').hashCode : 0;
-    if (_lastEnrichedDataHash == dataHash) {
-      print('🔄 [SkillVerificationHistory] Data already enriched, skipping...');
-      return;
-    }
-
-    setState(() {
-      _isEnriching = true;
-    });
-
-    try {
-      print('🔄 [SkillVerificationHistory] Starting enrichment for ${references.length} references...');
-      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
-      final enriched = await enrichmentService.enrichSkillReferences(references);
-      print('✅ [SkillVerificationHistory] Enrichment complete!');
-
-      if (mounted) {
-        setState(() {
-          _enrichedReferences = enriched;
-          _lastEnrichedDataHash = dataHash;
-          _isEnriching = false;
-        });
-      }
-    } catch (e) {
-      print('⚠️ [SkillVerificationHistory] Enrichment failed: $e');
-      if (mounted) {
-        setState(() {
-          _enrichedReferences = references; // Fallback to original
-          _lastEnrichedDataHash = dataHash;
-          _isEnriching = false;
-        });
-      }
-    }
-  }
+  // Enrichment is now handled by the provider layer
+  // See memberSkillVerificationHistoryEnrichedProvider
 
   List<LogbookSkillReference> _filterReferences(
       List<LogbookSkillReference> references) {
@@ -117,8 +77,9 @@ class _SkillVerificationHistoryScreenState
     final authState = ref.watch(authProviderV2);
     final targetMemberId = widget.memberId ?? authState.user?.id;
 
+    // Use ENRICHED provider to get references with resolved names
     final historyAsync =
-        ref.watch(memberSkillVerificationHistoryProvider(targetMemberId));
+        ref.watch(memberSkillVerificationHistoryEnrichedProvider(targetMemberId));
     final statsAsync =
         ref.watch(memberVerificationStatsProvider(targetMemberId));
     
@@ -214,19 +175,8 @@ class _SkillVerificationHistoryScreenState
           Expanded(
             child: historyAsync.when(
               data: (references) {
-                // Trigger enrichment ONCE when data first loads
-                if (_enrichedReferences == null && !_isEnriching && references.isNotEmpty) {
-                  // Use WidgetsBinding to avoid infinite loops
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_enrichedReferences == null && !_isEnriching) {
-                      _enrichReferences(references);
-                    }
-                  });
-                }
-
-                // Use enriched references if available, otherwise show unenriched
-                final referencesToUse = _enrichedReferences ?? references;
-                final filteredReferences = _filterReferences(referencesToUse);
+                // References are already enriched by the provider
+                final filteredReferences = _filterReferences(references);
 
                 if (filteredReferences.isEmpty) {
                   return Center(
@@ -270,11 +220,9 @@ class _SkillVerificationHistoryScreenState
                     children: [
                       RefreshIndicator(
                         onRefresh: () async {
-                          setState(() {
-                            _enrichedReferences = null; // Reset enrichment
-                          });
+                          // Invalidate the enriched provider to force refresh
                           ref.invalidate(
-                              memberSkillVerificationHistoryProvider(targetMemberId));
+                              memberSkillVerificationHistoryEnrichedProvider(targetMemberId));
                         },
                         child: ListView.builder(
                           padding: const EdgeInsets.all(16),
@@ -288,26 +236,6 @@ class _SkillVerificationHistoryScreenState
                           },
                         ),
                       ),
-                      // Show loading indicator while enriching
-                      if (_isEnriching)
-                        Container(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          child: const Center(
-                            child: Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(24),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircularProgressIndicator(),
-                                    SizedBox(height: 16),
-                                    Text('Loading names...'),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                   loading: () => const Center(child: CircularProgressIndicator()),

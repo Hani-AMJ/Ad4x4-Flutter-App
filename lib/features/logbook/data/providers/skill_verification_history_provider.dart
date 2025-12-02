@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 
-/// Provider for fetching member's skill verification history
+/// Provider for fetching member's skill verification history (RAW DATA)
 /// Returns list of LogbookSkillReference sorted by verification date (newest first)
+/// NOTE: Use memberSkillVerificationHistoryEnrichedProvider for enriched data with names
 final memberSkillVerificationHistoryProvider = FutureProvider.autoDispose
     .family<List<LogbookSkillReference>, int?>((ref, memberId) async {
   final authState = ref.watch(authProviderV2);
@@ -40,6 +42,32 @@ final memberSkillVerificationHistoryProvider = FutureProvider.autoDispose
   references.sort((a, b) => b.verifiedAt.compareTo(a.verifiedAt));
 
   return references;
+});
+
+/// Provider for enriched member's skill verification history
+/// Returns references with resolved member/verifiedBy names
+/// This provider automatically enriches the data when it changes
+final memberSkillVerificationHistoryEnrichedProvider = FutureProvider.autoDispose
+    .family<List<LogbookSkillReference>, int?>((ref, memberId) async {
+  // Get raw references first
+  final rawReferences = await ref.watch(memberSkillVerificationHistoryProvider(memberId).future);
+  
+  if (rawReferences.isEmpty) {
+    return rawReferences;
+  }
+
+  // Enrich the references with actual names
+  final enrichmentService = ref.watch(logbookEnrichmentServiceProvider);
+  print('🔄 [EnrichedProvider] Auto-enriching ${rawReferences.length} references...');
+  
+  try {
+    final enriched = await enrichmentService.enrichSkillReferences(rawReferences);
+    print('✅ [EnrichedProvider] Successfully enriched ${enriched.length} references');
+    return enriched;
+  } catch (e) {
+    print('⚠️ [EnrichedProvider] Enrichment failed: $e');
+    return rawReferences; // Fallback to raw data
+  }
 });
 
 /// Provider for fetching verifications for a specific skill
