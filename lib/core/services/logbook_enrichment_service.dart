@@ -35,12 +35,16 @@ class LogbookEnrichmentService {
   /// Enrich a single logbook entry with actual names
   Future<LogbookEntry> enrichLogbookEntry(LogbookEntry entry) async {
     print('🔄 Enriching logbook entry #${entry.id}...');
+    print('   Member: ${entry.member.firstName} ${entry.member.lastName} (ID: ${entry.member.id})');
+    print('   SignedBy: ${entry.signedBy.firstName} ${entry.signedBy.lastName} (ID: ${entry.signedBy.id})');
 
     // Enrich member
     final enrichedMember = await _enrichMember(entry.member);
+    print('   → Enriched Member: ${enrichedMember.displayName}');
 
     // Enrich signedBy (marshal)
     final enrichedSignedBy = await _enrichMember(entry.signedBy);
+    print('   → Enriched Marshal: ${enrichedSignedBy.displayName}');
 
     // Enrich trip
     final enrichedTrip = entry.trip != null 
@@ -118,14 +122,18 @@ class LogbookEnrichmentService {
 
   /// Enrich a member with actual profile data
   Future<MemberBasicInfo> _enrichMember(MemberBasicInfo member) async {
-    // Check if this is a placeholder (firstName = 'Member' or 'Marshal')
+    // Check if this is a placeholder
+    // Look for 'Member', 'Marshal', or lastName starting with '#'
     final isPlaceholder = member.firstName == 'Member' || 
-                          member.firstName == 'Marshal';
+                          member.firstName == 'Marshal' ||
+                          member.lastName.startsWith('#');
 
     if (!isPlaceholder) {
       // Already enriched, return as-is
       return member;
     }
+    
+    print('🔍 Enriching ${member.firstName} ${member.lastName} (ID: ${member.id})...');
 
     // Fetch from cache or API
     final profile = await _fetchMemberProfile(member.id);
