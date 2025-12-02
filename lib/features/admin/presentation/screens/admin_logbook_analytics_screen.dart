@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/services/error_log_service.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 
 /// Admin Logbook Analytics Screen
@@ -28,10 +29,6 @@ class _AdminLogbookAnalyticsScreenState
   List<LogbookEntry> _allEntries = [];
   List<Map<String, dynamic>> _allSkills = [];
   Map<String, dynamic> _analytics = {};
-  
-  // Data enrichment caches
-  final Map<int, String> _marshalNameCache = {};
-  final Map<int, String> _skillNameCache = {};
 
   @override
   void initState() {
@@ -47,31 +44,18 @@ class _AdminLogbookAnalyticsScreenState
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
 
       print('📊 Loading logbook analytics data...');
 
-      // Step 1: Load all skills and build skill name cache
+      // Step 1: Load all skills
       final skillsResponse = await repository.getLogbookSkills(pageSize: 100);
       final skillsResults = skillsResponse['results'] as List;
-
       print('✅ Loaded ${skillsResults.length} skills');
-      
-      // Build skill name cache
-      _skillNameCache.clear();
-      for (final skillJson in skillsResults) {
-        final skill = skillJson as Map<String, dynamic>;
-        final id = skill['id'] as int;
-        final name = skill['name'] as String?;
-        if (name != null && name.isNotEmpty) {
-          _skillNameCache[id] = name;
-        }
-      }
-      print('✅ Skill cache built: ${_skillNameCache.length} skills');
 
       // Step 2: Load all logbook entries
       final entriesResponse = await repository.getLogbookEntries(pageSize: 500);
       final entriesResults = entriesResponse['results'] as List;
-
       print('✅ Loaded ${entriesResults.length} logbook entries');
 
       final entries = entriesResults
@@ -93,38 +77,14 @@ class _AdminLogbookAnalyticsScreenState
           .whereType<LogbookEntry>()
           .toList();
       
-      // Step 3: Extract unique marshal IDs and fetch their profiles
-      final uniqueMarshalIds = entries.map((e) => e.signedBy.id).toSet();
-      print('🔍 Fetching profiles for ${uniqueMarshalIds.length} unique marshals...');
-      
-      _marshalNameCache.clear();
-      for (final marshalId in uniqueMarshalIds) {
-        try {
-          final profile = await repository.getMemberDetail(marshalId);
-          final username = profile['username'] as String?;
-          final displayName = profile['displayName'] as String?;
-          final firstName = profile['firstName'] as String?;
-          final lastName = profile['lastName'] as String?;
-          
-          // Prefer username, then displayName, then firstName + lastName
-          String finalName = username ?? 
-                             displayName ?? 
-                             ((firstName != null && lastName != null) 
-                                 ? '$firstName $lastName' 
-                                 : 'Marshal #$marshalId');
-          
-          _marshalNameCache[marshalId] = finalName;
-          print('   ✅ Marshal $marshalId → "$finalName"');
-        } catch (e) {
-          print('   ⚠️ Failed to fetch marshal $marshalId: $e');
-          _marshalNameCache[marshalId] = 'Marshal #$marshalId';
-        }
-      }
-      print('✅ Marshal cache built: ${_marshalNameCache.length} marshals');
+      // Step 3: Enrich entries using centralized service
+      print('🔄 Enriching ${entries.length} logbook entries...');
+      final enrichedEntries = await enrichmentService.enrichLogbookEntries(entries);
+      print('✅ Enrichment complete!');
 
       // Step 4: Calculate analytics with enriched data
       final analytics = _calculateAnalytics(
-        entries,
+        enrichedEntries,
         skillsResults.cast<Map<String, dynamic>>(),
       );
 
@@ -134,7 +94,7 @@ class _AdminLogbookAnalyticsScreenState
       print('   - Top Skills: ${(analytics['topSkills'] as List).length}');
 
       setState(() {
-        _allEntries = entries;
+        _allEntries = enrichedEntries;
         _allSkills = skillsResults.cast<Map<String, dynamic>>();
         _analytics = analytics;
         _isLoading = false;
@@ -201,8 +161,8 @@ class _AdminLogbookAnalyticsScreenState
     for (final entry in entries) {
       final marshalId = entry.signedBy.id;
       
-      // Use cached marshal name (fetched from API)
-      final marshalName = _marshalNameCache[marshalId] ?? 'Marshal #$marshalId';
+      // Use enriched displayName directly (already enriched by service)
+      final marshalName = entry.signedBy.displayName;
 
       // Track activity count
       marshalActivity[marshalId] = (marshalActivity[marshalId] ?? 0) + 1;
@@ -238,8 +198,8 @@ class _AdminLogbookAnalyticsScreenState
     for (final skill in allVerifiedSkills) {
       final skillId = skill.id;
       
-      // Use cached skill name (fetched from API)
-      final skillName = _skillNameCache[skillId] ?? 'Skill #$skillId';
+      // Use enriched skill name directly (already enriched by service)
+      final skillName = skill.name;
 
       // Track verification count
       skillVerificationCounts[skillId] =
