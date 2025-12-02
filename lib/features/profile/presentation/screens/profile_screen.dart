@@ -1006,7 +1006,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
           ),
           const SizedBox(height: 16),
           
-          // Clean feedback card with centered content
+          // Compact feedback card
           Card(
             elevation: 2,
             shape: RoundedRectangleBorder(
@@ -1014,82 +1014,91 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             ),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Large feedback icon with gradient background
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          colors.primaryContainer,
-                          colors.secondaryContainer,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  // Compact header with icon and title
+                  Row(
+                    children: [
+                      // Smaller icon with gradient
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              colors.primaryContainer,
+                              colors.secondaryContainer,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.feedback_outlined,
+                          size: 20,
+                          color: colors.primary,
+                        ),
                       ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.feedback_outlined,
-                      size: 48,
-                      color: colors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Main heading
-                  Text(
-                    'We Value Your Feedback!',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colors.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
+                      const SizedBox(width: 12),
+                      
+                      // Title and description inline
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'We Value Your Feedback!',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colors.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Share thoughts, report bugs, or suggest features',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                                fontSize: 11,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   
-                  // Description text
-                  Text(
-                    'Help us improve by sharing your thoughts, reporting bugs, or suggesting new features.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.7),
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Feature highlights
+                  // Compact feature chips in a grid
                   Wrap(
-                    spacing: 16,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _buildFeatureChip(
                         context,
                         icon: Icons.bug_report,
-                        label: 'Report Bugs',
+                        label: 'Bugs',
                         colors: colors,
                       ),
                       _buildFeatureChip(
                         context,
                         icon: Icons.lightbulb_outline,
-                        label: 'Suggest Features',
+                        label: 'Features',
                         colors: colors,
                       ),
                       _buildFeatureChip(
                         context,
                         icon: Icons.chat_bubble_outline,
-                        label: 'General Feedback',
+                        label: 'General',
                         colors: colors,
                       ),
                       _buildFeatureChip(
                         context,
                         icon: Icons.help_outline,
-                        label: 'Get Support',
+                        label: 'Support',
                         colors: colors,
                       ),
                     ],
@@ -1111,10 +1120,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     required ColorScheme colors,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: colors.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: colors.outline.withValues(alpha: 0.2),
         ),
@@ -1122,12 +1131,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: colors.primary),
-          const SizedBox(width: 6),
+          Icon(icon, size: 14, color: colors.primary),
+          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w500,
               color: colors.onSurface.withValues(alpha: 0.8),
             ),
