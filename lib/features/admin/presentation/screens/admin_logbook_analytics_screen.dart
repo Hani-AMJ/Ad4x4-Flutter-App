@@ -4,25 +4,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/error_log_service.dart';
 import '../../../../data/models/logbook_model.dart';
 
 /// Admin Logbook Analytics Screen
-/// 
+///
 /// Comprehensive dashboard for logbook system analytics
 /// Shows system-wide statistics, trends, and insights
 class AdminLogbookAnalyticsScreen extends ConsumerStatefulWidget {
   const AdminLogbookAnalyticsScreen({super.key});
 
   @override
-  ConsumerState<AdminLogbookAnalyticsScreen> createState() => 
+  ConsumerState<AdminLogbookAnalyticsScreen> createState() =>
       _AdminLogbookAnalyticsScreenState();
 }
 
-class _AdminLogbookAnalyticsScreenState 
+class _AdminLogbookAnalyticsScreenState
     extends ConsumerState<AdminLogbookAnalyticsScreen> {
   bool _isLoading = false;
   String? _error;
-  
+
   // Analytics data
   List<LogbookEntry> _allEntries = [];
   List<Map<String, dynamic>> _allSkills = [];
@@ -42,15 +43,31 @@ class _AdminLogbookAnalyticsScreenState
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      
+
+      if (kDebugMode) {
+        debugPrint('📊 Loading logbook analytics data...');
+      }
+
       // Load all logbook entries
       final entriesResponse = await repository.getLogbookEntries(pageSize: 500);
       final entriesResults = entriesResponse['results'] as List;
+
+      if (kDebugMode) {
+        debugPrint('✅ Loaded ${entriesResults.length} logbook entries');
+      }
+
       final entries = entriesResults
           .map((json) {
             try {
               return LogbookEntry.fromJson(json as Map<String, dynamic>);
-            } catch (e) {
+            } catch (e, stackTrace) {
+              // Log parsing errors
+              ErrorLogService().logError(
+                'Failed to parse logbook entry',
+                stackTrace,
+                type: 'logbook_analytics',
+                context: 'loadAnalyticsData.parseEntry',
+              );
               if (kDebugMode) {
                 debugPrint('⚠️ Failed to parse logbook entry: $e');
               }
@@ -59,21 +76,47 @@ class _AdminLogbookAnalyticsScreenState
           })
           .whereType<LogbookEntry>()
           .toList();
-      
+
       // Load all skills
       final skillsResponse = await repository.getLogbookSkills(pageSize: 100);
       final skillsResults = skillsResponse['results'] as List;
-      
-      // Calculate analytics
-      final analytics = _calculateAnalytics(entries, skillsResults.cast<Map<String, dynamic>>());
-      
+
+      if (kDebugMode) {
+        debugPrint('✅ Loaded ${skillsResults.length} skills');
+      }
+
+      // Calculate analytics with error logging
+      final analytics = _calculateAnalytics(
+        entries,
+        skillsResults.cast<Map<String, dynamic>>(),
+      );
+
+      if (kDebugMode) {
+        debugPrint('📈 Analytics calculated:');
+        debugPrint('   - Total Entries: ${analytics['totalEntries']}');
+        debugPrint(
+          '   - Most Active Marshal: ${analytics['mostActiveMarshal'] ?? "None"}',
+        );
+        debugPrint(
+          '   - Top Skills: ${(analytics['topSkills'] as List).length}',
+        );
+      }
+
       setState(() {
         _allEntries = entries;
         _allSkills = skillsResults.cast<Map<String, dynamic>>();
         _analytics = analytics;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Log critical loading error
+      ErrorLogService().logError(
+        'Failed to load logbook analytics: ${e.toString()}',
+        stackTrace,
+        type: 'logbook_analytics',
+        context: 'loadAnalyticsData',
+      );
+
       setState(() {
         _error = 'Failed to load analytics: $e';
         _isLoading = false;
@@ -88,93 +131,155 @@ class _AdminLogbookAnalyticsScreenState
     // Total counts
     final totalEntries = entries.length;
     final totalSkills = skills.length;
-    
+
     // Unique members and marshals
-    final uniqueMembers = entries
-        .map((e) => e.member.id)
-        .toSet()
-        .length;
-    
-    final uniqueMarshals = entries
-        .map((e) => e.signedBy.id)
-        .toSet()
-        .length;
-    
+    final uniqueMembers = entries.map((e) => e.member.id).toSet().length;
+
+    final uniqueMarshals = entries.map((e) => e.signedBy.id).toSet().length;
+
     // Skills verified statistics
-    final allVerifiedSkills = entries
-        .expand((e) => e.skillsVerified)
-        .toList();
-    
+    final allVerifiedSkills = entries.expand((e) => e.skillsVerified).toList();
+
     final uniqueSkillsVerified = allVerifiedSkills
         .map((s) => s.id)
         .toSet()
         .length;
-    
+
     final totalSkillVerifications = allVerifiedSkills.length;
-    final avgSkillsPerEntry = totalEntries > 0 
+    final avgSkillsPerEntry = totalEntries > 0
         ? (totalSkillVerifications / totalEntries).toStringAsFixed(1)
         : '0';
-    
+
     // Time-based analytics
     final now = DateTime.now();
     final last30Days = now.subtract(const Duration(days: 30));
     final last7Days = now.subtract(const Duration(days: 7));
-    
+
     final entriesLast30Days = entries
         .where((e) => e.createdAt.isAfter(last30Days))
         .length;
-    
+
     final entriesLast7Days = entries
         .where((e) => e.createdAt.isAfter(last7Days))
         .length;
-    
-    // Most active marshal
+
+    // Most active marshal with enhanced logging
     final marshalActivity = <int, int>{};
+    final marshalNames = <int, String>{}; // Track marshal ID to name mapping
+
     for (final entry in entries) {
-      marshalActivity[entry.signedBy.id] = 
-          (marshalActivity[entry.signedBy.id] ?? 0) + 1;
-    }
-    
-    String? mostActiveMarshal;
-    int maxActivity = 0;
-    for (final entry in entries) {
-      final activity = marshalActivity[entry.signedBy.id] ?? 0;
-      if (activity > maxActivity) {
-        maxActivity = activity;
-        mostActiveMarshal = entry.signedBy.displayName;
+      final marshalId = entry.signedBy.id;
+      final marshalName = entry.signedBy.displayName;
+
+      // Track activity count
+      marshalActivity[marshalId] = (marshalActivity[marshalId] ?? 0) + 1;
+
+      // Store marshal name (latest occurrence)
+      marshalNames[marshalId] = marshalName;
+
+      // Debug logging for marshal data
+      if (kDebugMode && marshalActivity[marshalId] == 1) {
+        debugPrint('🔍 Marshal detected: ID=$marshalId, Name="$marshalName"');
       }
     }
-    
-    // Skill popularity
-    final skillVerificationCounts = <int, int>{};
-    for (final skill in allVerifiedSkills) {
-      skillVerificationCounts[skill.id] = 
-          (skillVerificationCounts[skill.id] ?? 0) + 1;
+
+    String? mostActiveMarshal;
+    int? mostActiveMarshalId;
+    int maxActivity = 0;
+
+    // Find most active marshal
+    marshalActivity.forEach((marshalId, activityCount) {
+      if (activityCount > maxActivity) {
+        maxActivity = activityCount;
+        mostActiveMarshalId = marshalId;
+        mostActiveMarshal = marshalNames[marshalId];
+      }
+    });
+
+    // Validate and log marshal data
+    if (mostActiveMarshal != null && kDebugMode) {
+      debugPrint(
+        '✅ Most Active Marshal: "$mostActiveMarshal" (ID: $mostActiveMarshalId, Entries: $maxActivity)',
+      );
+    } else if (kDebugMode) {
+      debugPrint(
+        '⚠️ No most active marshal found (entries: ${entries.length})',
+      );
     }
-    
+
+    // Log error if marshal name is missing
+    if (mostActiveMarshalId != null &&
+        (mostActiveMarshal == null || mostActiveMarshal.trim().isEmpty)) {
+      ErrorLogService().logError(
+        'Marshal displayName is missing or empty for ID: $mostActiveMarshalId',
+        StackTrace.current,
+        type: 'logbook_analytics',
+        context: 'calculateAnalytics.mostActiveMarshal',
+      );
+      // Fallback to ID display
+      mostActiveMarshal = 'Marshal #$mostActiveMarshalId';
+    }
+
+    // Skill popularity with enhanced logging
+    final skillVerificationCounts = <int, int>{};
+    final skillNames = <int, String>{}; // Track skill ID to name mapping
+
+    for (final skill in allVerifiedSkills) {
+      final skillId = skill.id;
+      final skillName = skill.name;
+
+      // Track verification count
+      skillVerificationCounts[skillId] =
+          (skillVerificationCounts[skillId] ?? 0) + 1;
+
+      // Store skill name (use latest occurrence)
+      skillNames[skillId] = skillName;
+
+      // Debug logging for skill data
+      if (kDebugMode && skillVerificationCounts[skillId] == 1) {
+        debugPrint('🔍 Skill detected: ID=$skillId, Name="$skillName"');
+      }
+    }
+
     final sortedSkillCounts = skillVerificationCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    
+
     final topSkills = sortedSkillCounts.take(5).map((entry) {
-      final skillData = allVerifiedSkills
-          .firstWhere((s) => s.id == entry.key);
-      return {
-        'name': skillData.name,
-        'count': entry.value,
-      };
+      final skillId = entry.key;
+      final skillCount = entry.value;
+      String skillName = skillNames[skillId] ?? 'Skill #$skillId';
+
+      // Validate skill name
+      if (skillName.trim().isEmpty) {
+        ErrorLogService().logError(
+          'Skill name is empty for ID: $skillId',
+          StackTrace.current,
+          type: 'logbook_analytics',
+          context: 'calculateAnalytics.topSkills',
+        );
+        skillName = 'Skill #$skillId';
+      }
+
+      if (kDebugMode) {
+        debugPrint(
+          '⭐ Top Skill: "$skillName" (ID: $skillId, Count: $skillCount)',
+        );
+      }
+
+      return {'name': skillName, 'count': skillCount};
     }).toList();
-    
+
     // Growth trend (last 6 months)
     final monthlyGrowth = <String, int>{};
     final sixMonthsAgo = DateTime(now.year, now.month - 6, 1);
-    
+
     for (final entry in entries) {
       if (entry.createdAt.isAfter(sixMonthsAgo)) {
         final monthKey = DateFormat('yyyy-MM').format(entry.createdAt);
         monthlyGrowth[monthKey] = (monthlyGrowth[monthKey] ?? 0) + 1;
       }
     }
-    
+
     return {
       'totalEntries': totalEntries,
       'totalSkills': totalSkills,
@@ -245,29 +350,29 @@ class _AdminLogbookAnalyticsScreenState
         children: [
           // Header
           _buildHeader(theme, colors),
-          
+
           const SizedBox(height: 24),
-          
+
           // Key metrics cards
           _buildKeyMetrics(theme, colors),
-          
+
           const SizedBox(height: 24),
-          
+
           // Activity overview
           _buildActivityOverview(theme, colors),
-          
+
           const SizedBox(height: 24),
-          
+
           // Top skills chart
           _buildTopSkillsChart(theme, colors),
-          
+
           const SizedBox(height: 24),
-          
+
           // Growth trend
           _buildGrowthTrend(theme, colors),
-          
+
           const SizedBox(height: 24),
-          
+
           // Quick actions
           _buildQuickActions(theme, colors),
         ],
@@ -329,7 +434,7 @@ class _AdminLogbookAnalyticsScreenState
           ),
         ),
         const SizedBox(height: 12),
-        
+
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -362,7 +467,8 @@ class _AdminLogbookAnalyticsScreenState
             _buildMetricCard(
               icon: Icons.psychology,
               label: 'Unique Skills',
-              value: '${_analytics['uniqueSkillsVerified']}/${_analytics['totalSkills']}',
+              value:
+                  '${_analytics['uniqueSkillsVerified']}/${_analytics['totalSkills']}',
               color: const Color(0xFFFF9800),
               theme: theme,
             ),
@@ -428,7 +534,7 @@ class _AdminLogbookAnalyticsScreenState
               ],
             ),
             const SizedBox(height: 16),
-            
+
             _buildActivityRow(
               'Last 7 Days',
               _analytics['entriesLast7Days']?.toString() ?? '0',
@@ -452,7 +558,7 @@ class _AdminLogbookAnalyticsScreenState
               colors.tertiary,
               theme,
             ),
-            
+
             if (_analytics['mostActiveMarshal'] != null) ...[
               const Divider(),
               _buildActivityRow(
@@ -512,13 +618,13 @@ class _AdminLogbookAnalyticsScreenState
 
   Widget _buildTopSkillsChart(ThemeData theme, ColorScheme colors) {
     final topSkills = _analytics['topSkills'] as List? ?? [];
-    
+
     if (topSkills.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     final maxCount = topSkills.first['count'] as int;
-    
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -539,12 +645,12 @@ class _AdminLogbookAnalyticsScreenState
               ],
             ),
             const SizedBox(height: 16),
-            
+
             ...topSkills.map((skill) {
               final name = skill['name'] as String;
               final count = skill['count'] as int;
               final percentage = maxCount > 0 ? (count / maxCount) : 0.0;
-              
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
@@ -577,7 +683,9 @@ class _AdminLogbookAnalyticsScreenState
                         value: percentage,
                         minHeight: 8,
                         backgroundColor: colors.surfaceContainerHighest,
-                        valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colors.primary,
+                        ),
                       ),
                     ),
                   ],
@@ -591,15 +699,17 @@ class _AdminLogbookAnalyticsScreenState
   }
 
   Widget _buildGrowthTrend(ThemeData theme, ColorScheme colors) {
-    final monthlyGrowth = _analytics['monthlyGrowth'] as Map<String, dynamic>? ?? {};
-    
+    final monthlyGrowth =
+        _analytics['monthlyGrowth'] as Map<String, dynamic>? ?? {};
+
     if (monthlyGrowth.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     final sortedMonths = monthlyGrowth.keys.toList()..sort();
-    final maxValue = monthlyGrowth.values.reduce((a, b) => a > b ? a : b) as int;
-    
+    final maxValue =
+        monthlyGrowth.values.reduce((a, b) => a > b ? a : b) as int;
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -620,7 +730,7 @@ class _AdminLogbookAnalyticsScreenState
               ],
             ),
             const SizedBox(height: 16),
-            
+
             SizedBox(
               height: 120,
               child: Row(
@@ -629,7 +739,7 @@ class _AdminLogbookAnalyticsScreenState
                 children: sortedMonths.map((monthKey) {
                   final count = monthlyGrowth[monthKey] as int;
                   final heightPercent = maxValue > 0 ? (count / maxValue) : 0.0;
-                  
+
                   return Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -655,9 +765,9 @@ class _AdminLogbookAnalyticsScreenState
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            DateFormat('MMM').format(
-                              DateFormat('yyyy-MM').parse(monthKey)
-                            ),
+                            DateFormat(
+                              'MMM',
+                            ).format(DateFormat('yyyy-MM').parse(monthKey)),
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontSize: 10,
                             ),
@@ -686,7 +796,7 @@ class _AdminLogbookAnalyticsScreenState
           ),
         ),
         const SizedBox(height: 12),
-        
+
         Card(
           child: Column(
             children: [
