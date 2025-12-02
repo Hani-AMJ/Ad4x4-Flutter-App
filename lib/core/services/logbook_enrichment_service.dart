@@ -147,35 +147,11 @@ class LogbookEnrichmentService {
     final level = profile['level'] as Map<String, dynamic>?;
 
     // Construct enriched MemberBasicInfo
-    // Prefer username, then displayName, then firstName+lastName
-    String finalFirstName;
-    String finalLastName;
+    // Use firstName and lastName from API profile directly
+    final finalFirstName = firstName ?? 'Unknown';
+    final finalLastName = lastName ?? '';
     
-    if (username != null && username.isNotEmpty) {
-      // Use username as display name
-      final nameParts = username.split(' ');
-      if (nameParts.length >= 2) {
-        finalFirstName = nameParts[0];
-        finalLastName = nameParts.sublist(1).join(' ');
-      } else {
-        finalFirstName = username;
-        finalLastName = '';
-      }
-    } else if (displayName != null && displayName.isNotEmpty) {
-      // Use displayName
-      final nameParts = displayName.split(' ');
-      if (nameParts.length >= 2) {
-        finalFirstName = nameParts[0];
-        finalLastName = nameParts.sublist(1).join(' ');
-      } else {
-        finalFirstName = displayName;
-        finalLastName = '';
-      }
-    } else {
-      // Use firstName + lastName from profile
-      finalFirstName = firstName ?? 'Unknown';
-      finalLastName = lastName ?? '';
-    }
+    print('   ✅ Fetched profile: $finalFirstName $finalLastName (username: $username)');
     
     return MemberBasicInfo(
       id: member.id,
