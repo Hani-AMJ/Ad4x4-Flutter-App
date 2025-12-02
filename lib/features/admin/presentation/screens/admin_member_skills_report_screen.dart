@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 import 'package:go_router/go_router.dart';
 
@@ -46,6 +47,7 @@ class _AdminMemberSkillsReportScreenState
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
       
       // Load all logbook entries
       final entriesResponse = await repository.getLogbookEntries(pageSize: 500);
@@ -64,15 +66,20 @@ class _AdminMemberSkillsReportScreenState
           .whereType<LogbookEntry>()
           .toList();
       
+      // ✨ ENRICH ENTRIES to show actual member names
+      print('🔄 Member Skills Report: Enriching ${entries.length} entries...');
+      final enrichedEntries = await enrichmentService.enrichBatch(entries);
+      print('✅ Member Skills Report: Enrichment complete!');
+      
       // Load all skills
       final skillsResponse = await repository.getLogbookSkills(pageSize: 100);
       final skillsResults = skillsResponse['results'] as List;
       
-      // Calculate member progress
-      final memberProgress = _calculateMemberProgress(entries);
+      // Calculate member progress with enriched entries
+      final memberProgress = _calculateMemberProgress(enrichedEntries);
       
       setState(() {
-        _allEntries = entries;
+        _allEntries = enrichedEntries; // Use enriched entries
         _allSkills = skillsResults.cast<Map<String, dynamic>>();
         _memberProgress = memberProgress;
         _isLoading = false;
