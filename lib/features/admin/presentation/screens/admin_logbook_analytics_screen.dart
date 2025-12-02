@@ -63,8 +63,8 @@ class _AdminLogbookAnalyticsScreenState
             } catch (e, stackTrace) {
               // Log parsing errors
               ErrorLogService().logError(
-                'Failed to parse logbook entry',
-                stackTrace,
+                message: 'Failed to parse logbook entry: ${e.toString()}',
+                stackTrace: stackTrace.toString(),
                 type: 'logbook_analytics',
                 context: 'loadAnalyticsData.parseEntry',
               );
@@ -111,8 +111,8 @@ class _AdminLogbookAnalyticsScreenState
     } catch (e, stackTrace) {
       // Log critical loading error
       ErrorLogService().logError(
-        'Failed to load logbook analytics: ${e.toString()}',
-        stackTrace,
+        message: 'Failed to load logbook analytics: ${e.toString()}',
+        stackTrace: stackTrace.toString(),
         type: 'logbook_analytics',
         context: 'loadAnalyticsData',
       );
@@ -209,10 +209,12 @@ class _AdminLogbookAnalyticsScreenState
 
     // Log error if marshal name is missing
     if (mostActiveMarshalId != null &&
-        (mostActiveMarshal == null || mostActiveMarshal.trim().isEmpty)) {
+        (mostActiveMarshal == null ||
+            (mostActiveMarshal?.trim().isEmpty ?? true))) {
       ErrorLogService().logError(
-        'Marshal displayName is missing or empty for ID: $mostActiveMarshalId',
-        StackTrace.current,
+        message:
+            'Marshal displayName is missing or empty for ID: $mostActiveMarshalId',
+        stackTrace: StackTrace.current.toString(),
         type: 'logbook_analytics',
         context: 'calculateAnalytics.mostActiveMarshal',
       );
@@ -250,10 +252,10 @@ class _AdminLogbookAnalyticsScreenState
       String skillName = skillNames[skillId] ?? 'Skill #$skillId';
 
       // Validate skill name
-      if (skillName.trim().isEmpty) {
+      if (skillName.isNotEmpty && skillName.trim().isEmpty) {
         ErrorLogService().logError(
-          'Skill name is empty for ID: $skillId',
-          StackTrace.current,
+          message: 'Skill name is empty for ID: $skillId',
+          stackTrace: StackTrace.current.toString(),
           type: 'logbook_analytics',
           context: 'calculateAnalytics.topSkills',
         );
