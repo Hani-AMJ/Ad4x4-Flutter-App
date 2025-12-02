@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/logbook_enrichment_service.dart';
 import '../../../../data/models/logbook_model.dart';
 
 /// Admin Logbook History Screen
@@ -59,7 +60,7 @@ class _AdminAuditLogScreenState extends ConsumerState<AdminAuditLogScreen> {
       // Load all logbook entries (sorted by date)
       final entriesResponse = await repository.getLogbookEntries(pageSize: 500);
       final entriesResults = entriesResponse['results'] as List;
-      final entries = entriesResults
+      var entries = entriesResults
           .map((json) {
             try {
               return LogbookEntry.fromJson(json as Map<String, dynamic>);
@@ -72,6 +73,12 @@ class _AdminAuditLogScreenState extends ConsumerState<AdminAuditLogScreen> {
           })
           .whereType<LogbookEntry>()
           .toList();
+      
+      // ✨ ENRICH ENTRIES to show actual names
+      print('🔄 Audit Log (Logbook History): Enriching ${entries.length} entries...');
+      final enrichmentService = ref.read(logbookEnrichmentServiceProvider);
+      entries = await enrichmentService.enrichLogbookEntries(entries);
+      print('✅ Audit Log (Logbook History): Enrichment complete!');
       
       // Sort by created date (most recent first)
       entries.sort((a, b) => b.createdAt.compareTo(a.createdAt));
