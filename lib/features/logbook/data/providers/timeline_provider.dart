@@ -1,16 +1,47 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/logbook_model.dart';
+import '../../../../core/providers/repository_providers.dart';
 import '../models/timeline_models.dart';
-import 'skill_verification_history_provider.dart';
 
 /// Provider for timeline entries
-/// Converts skill verifications into timeline entries with milestone detection
+/// Converts logbook entries into timeline entries with milestone detection
+/// ✅ REFACTORED: Now uses /api/logbookentries/ instead of /api/logbookskillreferences/
+/// This gives us proper marshal names via signedBy field
 final timelineEntriesProvider = FutureProvider.autoDispose
     .family<List<TimelineEntry>, int?>((ref, memberId) async {
-  // Get verification history
-  final verifications = await ref.watch(
-      memberSkillVerificationHistoryProvider(memberId).future);
+  if (memberId == null) return [];
+
+  // Get logbook entries from repository
+  final repository = ref.watch(mainApiRepositoryProvider);
+  final response = await repository.getLogbookEntries(
+    memberId: memberId,
+    pageSize: 200, // Get all entries for timeline
+  );
+
+  final entriesResponse = LogbookEntriesResponse.fromJson(response);
+  
+  if (entriesResponse.results.isEmpty) {
+    return [];
+  }
+
+  // Flatten entries into individual skill verifications
+  // Each entry can have multiple skills, so we create one verification per skill
+  final verifications = <LogbookSkillReference>[];
+  
+  for (final entry in entriesResponse.results) {
+    for (final skill in entry.skillsVerified) {
+      // Create a LogbookSkillReference from the entry data
+      verifications.add(LogbookSkillReference(
+        id: 0, // Not relevant for timeline
+        member: entry.member,
+        logbookSkill: skill,
+        trip: entry.trip,
+        verifiedBy: entry.signedBy, // ✅ Has proper marshal name!
+        verifiedAt: entry.createdAt,
+      ));
+    }
+  }
 
   if (verifications.isEmpty) {
     return [];

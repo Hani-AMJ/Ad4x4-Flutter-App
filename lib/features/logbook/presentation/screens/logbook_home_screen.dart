@@ -153,13 +153,6 @@ class LogbookHomeScreen extends ConsumerWidget {
         onTap: () => context.push('/logbook/trip-history-enhanced'),
       ),
       _QuickActionData(
-        icon: Icons.history,
-        title: 'Verification History',
-        subtitle: 'Sign-offs',
-        color: const Color(0xFF7E57C2),
-        onTap: () => context.push('/logbook/verification-history'),
-      ),
-      _QuickActionData(
         icon: Icons.calendar_today,
         title: 'Trip Planning',
         subtitle: 'Plan goals',

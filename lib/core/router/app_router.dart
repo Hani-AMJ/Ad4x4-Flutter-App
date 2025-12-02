@@ -39,7 +39,6 @@ import '../../features/logbook/presentation/screens/trip_history_with_logbook_sc
 import '../../features/logbook/presentation/screens/member_upgrade_requests_screen.dart';
 import '../../features/logbook/presentation/screens/create_upgrade_request_screen.dart';
 import '../../features/logbook/presentation/screens/marshal_quick_signoff_screen.dart';
-import '../../features/logbook/presentation/screens/skill_verification_history_screen.dart';
 import '../../features/logbook/presentation/screens/trip_skill_planning_screen.dart';
 import '../../features/logbook/presentation/screens/logbook_timeline_visualization_screen.dart';
 import '../../features/logbook/presentation/screens/skill_recommendations_screen.dart';
@@ -471,17 +470,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/logbook/upgrade-requests/create',
         name: 'create-upgrade-request',
         builder: (context, state) => const CreateUpgradeRequestScreen(),
-      ),
-      GoRoute(
-        path: '/logbook/verification-history',
-        name: 'skill-verification-history',
-        builder: (context, state) {
-          final memberIdStr = state.uri.queryParameters['memberId'];
-          final memberId = memberIdStr != null
-              ? int.tryParse(memberIdStr)
-              : null;
-          return SkillVerificationHistoryScreen(memberId: memberId);
-        },
       ),
       GoRoute(
         path: '/logbook/trip-planning',
