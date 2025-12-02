@@ -147,7 +147,9 @@ class _MemberUpgradeRequestsScreenState extends ConsumerState<MemberUpgradeReque
     final user = authState.user;
     
     // Check if user can create upgrade requests
-    final canCreateRequest = user?.hasPermission('create_upgrade_req_for_self') ?? false;
+    // ✅ FIX: Allow all authenticated users to create upgrade requests
+    // The backend will enforce proper permission checks
+    final canCreateRequest = user != null;
 
     return Scaffold(
       appBar: AppBar(
