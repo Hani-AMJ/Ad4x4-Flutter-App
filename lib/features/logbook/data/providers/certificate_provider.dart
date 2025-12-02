@@ -24,10 +24,16 @@ class CertificatesNotifier extends StateNotifier<AsyncValue<List<SkillCertificat
   CertificateFilter get filter => _filter;
 
   /// Load all certificates for member
+  /// ✅ CLIENT-SIDE ENRICHMENT: Fetches full objects for member, skill, marshal, trip
+  /// Backend returns only IDs despite expand parameter, so we enrich client-side
   Future<void> _loadCertificates() async {
     state = const AsyncValue.loading();
 
     try {
+      if (kDebugMode) {
+        debugPrint('🔍 [Certificates] Loading certificates for member $memberId...');
+      }
+
       // Fetch skill references (verified skills) for the member
       final response = await _repository.getMemberLogbookSkills(
         memberId: memberId,
@@ -35,30 +41,175 @@ class CertificatesNotifier extends StateNotifier<AsyncValue<List<SkillCertificat
         pageSize: 200,
       );
       
-      final List<LogbookSkillReference> skillRefs = [];
+      final List<Map<String, dynamic>> rawData = [];
       final data = response['results'] ?? response['data'] ?? response;
 
       if (data is List) {
         for (var item in data) {
           if (item != null && item is Map<String, dynamic>) {
-            try {
-              skillRefs.add(LogbookSkillReference.fromJson(item));
-            } catch (e) {
-              if (kDebugMode) {
-                debugPrint('Failed to parse skill reference: $e');
-              }
-            }
+            rawData.add(item);
           }
         }
       }
 
-      // Generate certificates from skill references
+      if (kDebugMode) {
+        debugPrint('🔍 [Certificates] Loaded ${rawData.length} skill references (ID-only), starting enrichment...');
+      }
+
+      // Collect all unique IDs for batch fetching
+      final memberIds = <int>{};
+      final skillIds = <int>{};
+      final tripIds = <int>{};
+
+      for (final item in rawData) {
+        if (item['member'] is int) memberIds.add(item['member'] as int);
+        if (item['logbookSkill'] is int) skillIds.add(item['logbookSkill'] as int);
+        if (item['trip'] is int) tripIds.add(item['trip'] as int);
+        // Note: API doesn't return verifiedBy/signedBy field for this endpoint
+      }
+
+      if (kDebugMode) {
+        debugPrint('🔍 [Certificates] Collected IDs - Members: ${memberIds.length}, Skills: ${skillIds.length}, Trips: ${tripIds.length}');
+      }
+
+      // Fetch all members
+      final memberCache = <int, MemberBasicInfo>{};
+      for (final id in memberIds) {
+        try {
+          final memberResponse = await _repository.getMemberProfile(id);
+          memberCache[id] = MemberBasicInfo.fromJson(memberResponse);
+          if (kDebugMode) {
+            debugPrint('✅ [Certificates] Cached member $id: ${memberCache[id]?.displayName}');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('⚠️ [Certificates] Failed to fetch member $id: $e');
+          }
+          memberCache[id] = MemberBasicInfo(
+            id: id,
+            firstName: 'Member',
+            lastName: '#$id',
+          );
+        }
+      }
+
+      // Fetch all skills
+      final skillCache = <int, LogbookSkillBasicInfo>{};
+      final skillsResponse = await _repository.getLogbookSkills(page: 1, pageSize: 100);
+      final skillsData = skillsResponse['results'] as List<dynamic>? ?? [];
+      for (final json in skillsData) {
+        try {
+          final skill = LogbookSkill.fromJson(json as Map<String, dynamic>);
+          skillCache[skill.id] = LogbookSkillBasicInfo(
+            id: skill.id,
+            name: skill.name,
+            description: skill.description,
+            order: skill.order,
+            level: skill.level,
+          );
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('⚠️ [Certificates] Failed to parse skill: $e');
+          }
+        }
+      }
+      if (kDebugMode) {
+        debugPrint('✅ [Certificates] Cached ${skillCache.length} skills');
+      }
+
+      // Fetch all trips
+      final tripCache = <int, TripBasicInfo>{};
+      for (final id in tripIds) {
+        try {
+          final tripResponse = await _repository.getTrip(id);
+          tripCache[id] = TripBasicInfo.fromJson(tripResponse);
+          if (kDebugMode) {
+            debugPrint('✅ [Certificates] Cached trip $id: ${tripCache[id]?.title}');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('⚠️ [Certificates] Failed to fetch trip $id: $e');
+          }
+          tripCache[id] = TripBasicInfo(
+            id: id,
+            title: 'Trip #$id',
+            startTime: DateTime.now(),
+          );
+        }
+      }
+
+      // Enrich skill references
+      final List<LogbookSkillReference> skillRefs = [];
+      for (var item in rawData) {
+        try {
+          // Extract IDs
+          final memberId = item['member'] as int?;
+          final skillId = item['logbookSkill'] as int?;
+          final tripId = item['trip'] as int?;
+
+          if (memberId == null || skillId == null) continue;
+
+          // Enrich with cached data
+          final enrichedMember = memberCache[memberId] ?? MemberBasicInfo(
+            id: memberId,
+            firstName: 'Member',
+            lastName: '#$memberId',
+          );
+
+          final enrichedSkill = skillCache[skillId] ?? LogbookSkillBasicInfo(
+            id: skillId,
+            name: 'Skill #$skillId',
+            description: '',
+            order: 0,
+            level: SkillLevel(
+              id: 1,
+              name: 'Unknown',
+              numericLevel: 1,
+              displayName: 'Unknown',
+              active: true,
+            ),
+          );
+
+          final enrichedTrip = tripId != null ? (tripCache[tripId] ?? TripBasicInfo(
+            id: tripId,
+            title: 'Trip #$tripId',
+            startTime: DateTime.now(),
+          )) : null;
+
+          // Note: API doesn't provide verifiedBy for this endpoint
+          // Use placeholder marshal
+          final placeholderMarshal = MemberBasicInfo(
+            id: 0,
+            firstName: 'Marshal',
+            lastName: 'Unknown',
+          );
+
+          skillRefs.add(LogbookSkillReference(
+            id: item['id'] as int? ?? 0,
+            member: enrichedMember,
+            logbookSkill: enrichedSkill,
+            trip: enrichedTrip,
+            verifiedBy: placeholderMarshal,
+            verifiedAt: DateTime.now(), // API doesn't provide this field
+          ));
+        } catch (e) {
+          if (kDebugMode) {
+            debugPrint('⚠️ [Certificates] Failed to enrich skill reference: $e');
+          }
+        }
+      }
+
+      if (kDebugMode) {
+        debugPrint('✅ [Certificates] Enrichment complete! Created ${skillRefs.length} enriched skill references');
+      }
+
+      // Generate certificates from enriched skill references
       final certificates = await _generateCertificatesFromSkillReferences(skillRefs);
 
       state = AsyncValue.data(certificates);
     } catch (e, stack) {
       if (kDebugMode) {
-        debugPrint('Error loading certificates: $e');
+        debugPrint('❌ [Certificates] Error loading certificates: $e');
       }
       state = AsyncValue.error(e, stack);
     }

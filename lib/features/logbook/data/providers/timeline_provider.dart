@@ -6,8 +6,8 @@ import '../models/timeline_models.dart';
 
 /// Provider for timeline entries
 /// Converts logbook entries into timeline entries with milestone detection
-/// ✅ REFACTORED: Now uses /api/logbookentries/ instead of /api/logbookskillreferences/
-/// This gives us proper marshal names via signedBy field
+/// ✅ CLIENT-SIDE ENRICHMENT: Fetches full objects for member, marshal, skill, trip
+/// Backend returns only IDs despite expand parameter, so we enrich client-side
 final timelineEntriesProvider = FutureProvider.autoDispose
     .family<List<TimelineEntry>, int?>((ref, memberId) async {
   if (memberId == null) return [];
@@ -25,23 +25,112 @@ final timelineEntriesProvider = FutureProvider.autoDispose
     return [];
   }
 
-  // Flatten entries into individual skill verifications
-  // Each entry can have multiple skills, so we create one verification per skill
+  print('🔍 [Timeline] Loaded ${entriesResponse.results.length} entries, starting enrichment...');
+
+  // Collect all unique IDs for batch fetching
+  final memberIds = <int>{};
+  final marshalIds = <int>{};
+  final skillIds = <int>{};
+  final tripIds = <int>{};
+
+  for (final entry in entriesResponse.results) {
+    // Extract IDs from entries (backend returns only IDs, not objects)
+    if (entry.member.id > 0) memberIds.add(entry.member.id);
+    if (entry.signedBy.id > 0) marshalIds.add(entry.signedBy.id);
+    if (entry.trip?.id != null && entry.trip!.id > 0) tripIds.add(entry.trip!.id);
+    for (final skill in entry.skillsVerified) {
+      if (skill.id > 0) skillIds.add(skill.id);
+    }
+  }
+
+  print('🔍 [Timeline] Collected IDs - Members: ${memberIds.length}, Marshals: ${marshalIds.length}, Skills: ${skillIds.length}, Trips: ${tripIds.length}');
+
+  // Fetch all members (includes marshals)
+  final allMemberIds = {...memberIds, ...marshalIds};
+  final memberCache = <int, MemberBasicInfo>{};
+  
+  for (final id in allMemberIds) {
+    try {
+      final memberResponse = await repository.getMemberProfile(id);
+      memberCache[id] = MemberBasicInfo.fromJson(memberResponse);
+      print('✅ [Timeline] Cached member $id: ${memberCache[id]?.displayName}');
+    } catch (e) {
+      print('⚠️ [Timeline] Failed to fetch member $id: $e');
+      memberCache[id] = MemberBasicInfo(
+        id: id,
+        firstName: 'Member',
+        lastName: '#$id',
+      );
+    }
+  }
+
+  // Fetch all skills
+  final skillCache = <int, LogbookSkillBasicInfo>{};
+  final skillsResponse = await repository.getLogbookSkills(page: 1, pageSize: 100);
+  final skillsData = skillsResponse['results'] as List<dynamic>? ?? [];
+  for (final json in skillsData) {
+    try {
+      final skill = LogbookSkill.fromJson(json as Map<String, dynamic>);
+      skillCache[skill.id] = LogbookSkillBasicInfo(
+        id: skill.id,
+        name: skill.name,
+        description: skill.description,
+        order: skill.order,
+        level: skill.level,
+      );
+    } catch (e) {
+      print('⚠️ [Timeline] Failed to parse skill: $e');
+    }
+  }
+  print('✅ [Timeline] Cached ${skillCache.length} skills');
+
+  // Fetch all trips
+  final tripCache = <int, TripBasicInfo>{};
+  for (final id in tripIds) {
+    try {
+      final tripResponse = await repository.getTrip(id);
+      tripCache[id] = TripBasicInfo.fromJson(tripResponse);
+      print('✅ [Timeline] Cached trip $id: ${tripCache[id]?.title}');
+    } catch (e) {
+      print('⚠️ [Timeline] Failed to fetch trip $id: $e');
+      tripCache[id] = TripBasicInfo(
+        id: id,
+        title: 'Trip #$id',
+        startTime: DateTime.now(),
+      );
+    }
+  }
+
+  // Flatten entries into individual skill verifications with enrichment
   final verifications = <LogbookSkillReference>[];
   
   for (final entry in entriesResponse.results) {
+    // Enrich member
+    final enrichedMember = memberCache[entry.member.id] ?? entry.member;
+    
+    // Enrich marshal (signedBy)
+    final enrichedMarshal = memberCache[entry.signedBy.id] ?? entry.signedBy;
+    
+    // Enrich trip
+    final enrichedTrip = entry.trip != null ? (tripCache[entry.trip!.id] ?? entry.trip) : null;
+    
+    // Create verification for each skill in the entry
     for (final skill in entry.skillsVerified) {
-      // Create a LogbookSkillReference from the entry data
+      // Enrich skill
+      final enrichedSkill = skillCache[skill.id] ?? skill;
+      
       verifications.add(LogbookSkillReference(
         id: 0, // Not relevant for timeline
-        member: entry.member,
-        logbookSkill: skill,
-        trip: entry.trip,
-        verifiedBy: entry.signedBy, // ✅ Has proper marshal name!
+        member: enrichedMember,
+        logbookSkill: enrichedSkill,
+        trip: enrichedTrip,
+        verifiedBy: enrichedMarshal, // ✅ Now has proper marshal name!
         verifiedAt: entry.createdAt,
       ));
     }
   }
+
+  print('✅ [Timeline] Enrichment complete! Created ${verifications.length} skill verifications');
 
   if (verifications.isEmpty) {
     return [];
