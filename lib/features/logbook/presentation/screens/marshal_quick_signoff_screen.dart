@@ -761,20 +761,27 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
                     },
                   ),
                   const SizedBox(width: 8),
-                  ...([1, 2, 3, 4, 5].map((level) {
+                  // ✅ Dynamic level filters based on actual levels with skills
+                  ...skillsByLevel.keys.toList()..sort().map((levelId) {
+                    final level = levelConfig.getLevelById(levelId);
+                    if (level == null) return const SizedBox.shrink();
+                    
+                    final cleanName = levelConfig.getCleanLevelName(level.name);
+                    final emoji = levelConfig.getLevelEmoji(levelId);
+                    
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
-                        label: Text(_getLevelName(level)),
-                        selected: _selectedLevelFilter == level,
+                        label: Text('$emoji $cleanName'),
+                        selected: _selectedLevelFilter == levelId,
                         onSelected: (selected) {
                           setState(() {
-                            _selectedLevelFilter = selected ? level : null;
+                            _selectedLevelFilter = selected ? levelId : null;
                           });
                         },
                       ),
                     );
-                  })),
+                  }),
                 ],
               ),
             ),
@@ -819,7 +826,12 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
               ),
               const SizedBox(width: 8),
               Text(
-                levelConfig.getCleanLevelName(_getLevelName(levelId)),
+                () {
+                  final level = levelConfig.getLevelById(levelId);
+                  return level != null 
+                      ? levelConfig.getCleanLevelName(level.name)
+                      : 'Level $levelId';
+                }(),
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -875,22 +887,6 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
     );
   }
 
-  String _getLevelName(int levelId) {
-    switch (levelId) {
-      case 1:
-        return 'Beginner';
-      case 2:
-        return 'Intermediate';
-      case 3:
-        return 'Advanced';
-      case 4:
-        return 'Expert';
-      case 5:
-        return 'Master';
-      default:
-        return 'Unknown';
-    }
-  }
-
-
+  // ✅ Removed hardcoded _getLevelName() function
+  // Now using LevelConfigurationService for dynamic level names from API
 }
