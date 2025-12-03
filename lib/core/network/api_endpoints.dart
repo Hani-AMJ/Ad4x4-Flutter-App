@@ -4,14 +4,17 @@ class ApiEndpoints {
   static const String mainApi = 'https://ap.ad4x4.com';
   static const String galleryApi = 'https://media.ad4x4.com';
 
-  // Auth Endpoints
-  static const String login = '/api/auth/login';
-  static const String register = '/api/auth/register';
-  static const String logout = '/api/auth/logout';
-  static const String refreshToken = '/api/auth/refresh';
-  static const String forgotPassword = '/api/auth/forgot-password';
-  static const String resetPassword = '/api/auth/reset-password';
-  static const String verifyEmail = '/api/auth/verify-email';
+  // Auth Endpoints (trailing slashes required to prevent 301 redirects)
+  static const String login = '/api/auth/login/';
+  static const String register = '/api/auth/register/';
+  static const String logout = '/api/auth/logout/';
+  static const String refreshToken = '/api/auth/refresh/';
+  static const String forgotPassword = '/api/auth/forgot-password/';
+  static const String resetPassword = '/api/auth/reset-password/';
+  static const String verifyEmail = '/api/auth/verify-email/';
+  
+  // Validators endpoint for live form validation
+  static const String validators = '/api/validators/';
 
   // User Endpoints
   static const String userProfile = '/api/users/profile';

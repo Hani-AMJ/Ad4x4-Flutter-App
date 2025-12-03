@@ -1,0 +1,209 @@
+{
+  "timestamp": "2025-12-03T05:33:10.904283",
+  "base_url": "https://ap.ad4x4.com",
+  "tests": [
+    {
+      "test_name": "Register (no slash)",
+      "endpoint": "/api/auth/register",
+      "method": "POST",
+      "status_code": 405,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:11.371973",
+      "response_data": {
+        "detail": "Method \"GET\" not allowed."
+      }
+    },
+    {
+      "test_name": "Register (with slash)",
+      "endpoint": "/api/auth/register/",
+      "method": "POST",
+      "status_code": 500,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:12.994550",
+      "response_data": {
+        "raw_response": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "test_name": "Login (no slash)",
+      "endpoint": "/api/auth/login",
+      "method": "POST",
+      "status_code": 405,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:13.415087",
+      "response_data": {
+        "detail": "Method \"GET\" not allowed."
+      }
+    },
+    {
+      "test_name": "Login (with slash)",
+      "endpoint": "/api/auth/login/",
+      "method": "POST",
+      "status_code": 400,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:13.822334",
+      "response_data": {
+        "detail": "Login or password invalid."
+      }
+    },
+    {
+      "test_name": "Validate existing username",
+      "endpoint": "/api/validators/",
+      "method": "POST",
+      "status_code": 200,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:14.158271",
+      "response_data": {
+        "username": {
+          "value": "Hani AMJ",
+          "valid": false,
+          "error": "Username is already taken"
+        }
+      }
+    },
+    {
+      "test_name": "Validate new username",
+      "endpoint": "/api/validators/",
+      "method": "POST",
+      "status_code": 200,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:14.305592",
+      "response_data": {
+        "username": {
+          "value": "test_available_user_12345",
+          "valid": true,
+          "error": ""
+        }
+      }
+    },
+    {
+      "test_name": "Validate existing email",
+      "endpoint": "/api/validators/",
+      "method": "POST",
+      "status_code": 200,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:14.672156",
+      "response_data": {
+        "email": {
+          "value": "hani_janem@hotmail.com",
+          "valid": false,
+          "error": "Email is already taken"
+        }
+      }
+    },
+    {
+      "test_name": "Validate new email",
+      "endpoint": "/api/validators/",
+      "method": "POST",
+      "status_code": 200,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:14.828699",
+      "response_data": {
+        "email": {
+          "value": "test_available_email_12345@test.com",
+          "valid": true,
+          "error": ""
+        }
+      }
+    },
+    {
+      "test_name": "Validate existing phone",
+      "endpoint": "/api/validators/",
+      "method": "POST",
+      "status_code": 200,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:14.954563",
+      "response_data": {
+        "phone": {
+          "value": "+971501166676",
+          "valid": true,
+          "error": ""
+        }
+      }
+    },
+    {
+      "test_name": "Validate new phone",
+      "endpoint": "/api/validators/",
+      "method": "POST",
+      "status_code": 200,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:15.088725",
+      "response_data": {
+        "phone": {
+          "value": "+971500000000",
+          "valid": true,
+          "error": ""
+        }
+      }
+    },
+    {
+      "test_name": "Validate multiple fields",
+      "endpoint": "/api/validators/",
+      "method": "POST",
+      "status_code": 200,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:15.483996",
+      "response_data": {
+        "username": {
+          "value": "test_multi",
+          "valid": true,
+          "error": ""
+        },
+        "email": {
+          "value": "test_multi@test.com",
+          "valid": true,
+          "error": ""
+        },
+        "phone": {
+          "value": "+971500000001",
+          "valid": true,
+          "error": ""
+        }
+      }
+    },
+    {
+      "test_name": "Profile (no auth)",
+      "endpoint": "/api/auth/profile/",
+      "method": "GET",
+      "status_code": 401,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:15.606712",
+      "response_data": {
+        "detail": "Authentication credentials were not provided."
+      }
+    },
+    {
+      "test_name": "Profile (with slash, no auth)",
+      "endpoint": "/api/auth/profile/",
+      "method": "GET",
+      "status_code": 401,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:15.728139",
+      "response_data": {
+        "detail": "Authentication credentials were not provided."
+      }
+    },
+    {
+      "test_name": "Logout",
+      "endpoint": "/api/auth/logout/",
+      "method": "POST",
+      "status_code": 401,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:16.063416",
+      "response_data": {
+        "detail": "Authentication credentials were not provided."
+      }
+    },
+    {
+      "test_name": "Change password",
+      "endpoint": "/api/auth/change-password/",
+      "method": "POST",
+      "status_code": 401,
+      "success": true,
+      "timestamp": "2025-12-03T05:33:16.188846",
+      "response_data": {
+        "detail": "Authentication credentials were not provided."
+      }
+    }
+  ]
+}

@@ -12,8 +12,11 @@ import '../../../../core/providers/gender_provider.dart';
 import '../../../../core/providers/car_brand_provider.dart';
 import '../../../../core/providers/emirate_provider.dart';
 import '../../../../core/providers/country_provider.dart';
+import '../../../../core/providers/validator_provider.dart';
+import '../../../../core/utils/password_validator.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../../../shared/widgets/animated_logo.dart';
+import '../../../../shared/widgets/password_strength_indicator.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -369,6 +372,237 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
+  /// Build username field with live validation
+  Widget _buildUsernameField(ThemeData theme, ColorScheme colors) {
+    final usernameValidation = ref.watch(usernameValidationProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomTextField(
+          label: 'Username',
+          hint: 'Choose a unique username',
+          controller: _usernameController,
+          prefixIcon: const Icon(Icons.account_circle_outlined),
+          onChanged: (value) {
+            // Trigger live validation with debouncing
+            ref.read(usernameValidationProvider.notifier).validate(value);
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a username';
+            }
+            if (value.length < 3) {
+              return 'Username must be at least 3 characters';
+            }
+            if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+              return 'Username can only contain letters, numbers, and underscores';
+            }
+            // Check live validation result
+            if (usernameValidation.isInvalid) {
+              return usernameValidation.result!.error;
+            }
+            return null;
+          },
+        ),
+        // Live validation feedback
+        if (usernameValidation.isValidating)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 12),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Checking availability...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colors.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (usernameValidation.isValid && _usernameController.text.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 12),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, size: 16, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(
+                  'Available',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (usernameValidation.isInvalid && _usernameController.text.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 12),
+            child: Row(
+              children: [
+                Icon(Icons.cancel, size: 16, color: Colors.red),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    usernameValidation.result!.error,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Build email field with live validation
+  Widget _buildEmailField(ThemeData theme, ColorScheme colors) {
+    final emailValidation = ref.watch(emailValidationProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomTextField(
+          label: 'Email',
+          hint: 'Enter your email',
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon: const Icon(Icons.email_outlined),
+          onChanged: (value) {
+            // Trigger live validation with debouncing
+            ref.read(emailValidationProvider.notifier).validate(value);
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your email';
+            }
+            if (!value.contains('@')) {
+              return 'Please enter a valid email';
+            }
+            // Check live validation result
+            if (emailValidation.isInvalid) {
+              return emailValidation.result!.error;
+            }
+            return null;
+          },
+        ),
+        // Live validation feedback
+        if (emailValidation.isValidating)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 12),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.primary),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Checking availability...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colors.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (emailValidation.isValid && _emailController.text.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 12),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, size: 16, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(
+                  'Available',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (emailValidation.isInvalid && _emailController.text.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 12),
+            child: Row(
+              children: [
+                Icon(Icons.cancel, size: 16, color: Colors.red),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    emailValidation.result!.error,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Build password field with strength indicator
+  Widget _buildPasswordField(ThemeData theme, ColorScheme colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomTextField(
+          label: 'Password',
+          hint: 'Enter your password',
+          controller: _passwordController,
+          obscureText: true,
+          prefixIcon: const Icon(Icons.lock_outlined),
+          onChanged: (value) {
+            // Trigger rebuild to update password strength indicator
+            setState(() {});
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a password';
+            }
+            // Use PasswordValidator for comprehensive validation
+            final errors = PasswordValidator.validate(
+              value,
+              username: _usernameController.text,
+              email: _emailController.text,
+            );
+            if (errors.isNotEmpty) {
+              return 'Password does not meet requirements';
+            }
+            return null;
+          },
+        ),
+        // Password strength indicator
+        PasswordStrengthIndicator(
+          password: _passwordController.text,
+          username: _usernameController.text,
+          email: _emailController.text,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -515,63 +749,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Username
-                CustomTextField(
-                  label: 'Username',
-                  hint: 'Choose a unique username',
-                  controller: _usernameController,
-                  prefixIcon: const Icon(Icons.account_circle_outlined),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a username';
-                    }
-                    if (value.length < 3) {
-                      return 'Username must be at least 3 characters';
-                    }
-                    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
-                      return 'Username can only contain letters, numbers, and underscores';
-                    }
-                    return null;
-                  },
-                ),
+                // Username with live validation
+                _buildUsernameField(theme, colors),
                 const SizedBox(height: 20),
 
-                // Email
-                CustomTextField(
-                  label: 'Email',
-                  hint: 'Enter your email',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
+                // Email with live validation
+                _buildEmailField(theme, colors),
                 const SizedBox(height: 20),
 
-                // Password
-                CustomTextField(
-                  label: 'Password',
-                  hint: 'Enter your password',
-                  controller: _passwordController,
-                  obscureText: true,
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
+                // Password with strength indicator
+                _buildPasswordField(theme, colors),
                 const SizedBox(height: 20),
 
                 // Confirm Password
