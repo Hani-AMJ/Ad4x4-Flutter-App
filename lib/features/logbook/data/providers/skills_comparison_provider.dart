@@ -1,9 +1,9 @@
 /// Skills Comparison Provider
 /// 
 /// Provides skill comparison data between two members
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../data/models/logbook_model.dart';
 import '../models/skills_comparison.dart';

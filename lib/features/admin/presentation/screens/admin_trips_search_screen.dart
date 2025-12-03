@@ -7,7 +7,6 @@ import '../../../../data/models/trip_model.dart';
 import '../../../../core/utils/status_helpers.dart';
 import '../../../../core/utils/level_display_helper.dart';
 import '../providers/admin_trips_search_provider.dart';
-import '../widgets/trip_lead_autocomplete.dart';
 import '../widgets/advanced_filters_modal.dart';
 import '../../../../data/models/approval_status_choice_model.dart';
 import '../providers/approval_status_provider.dart';

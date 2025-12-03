@@ -39,8 +39,9 @@ class GalleryApiRepository {
     final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
     if (sortBy != null) queryParams['sort_by'] = sortBy;
-    if (tripLevel != null && tripLevel != 'all')
+    if (tripLevel != null && tripLevel != 'all') {
       queryParams['trip_level'] = tripLevel;
+    }
     if (filter != null && filter != 'all') queryParams['filter'] = filter;
 
     final response = await _apiClient.get(

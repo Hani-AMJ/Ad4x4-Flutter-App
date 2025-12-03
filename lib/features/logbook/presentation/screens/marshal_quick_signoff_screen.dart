@@ -190,7 +190,7 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
       int parseSuccessCount = 0;
       int parseFailCount = 0;
       
-      for (final json in results as List<dynamic>) {
+      for (final json in results) {
         try {
           final member = UserModel.fromJson(json as Map<String, dynamic>);
           members.add(member);

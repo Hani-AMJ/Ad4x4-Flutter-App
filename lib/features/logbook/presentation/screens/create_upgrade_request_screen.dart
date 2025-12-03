@@ -240,7 +240,7 @@ class _CreateUpgradeRequestScreenState extends ConsumerState<CreateUpgradeReques
                     const SizedBox(height: 12),
                     
                     DropdownButtonFormField<int>(
-                      value: _selectedLevelId,
+                      initialValue: _selectedLevelId,
                       decoration: InputDecoration(
                         border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.trending_up),

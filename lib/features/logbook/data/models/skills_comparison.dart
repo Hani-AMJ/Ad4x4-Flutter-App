@@ -1,6 +1,7 @@
 /// Skills Matrix Comparison Models
 /// 
 /// Data structures for comparing skill verification between members
+library;
 
 import '../../../../data/models/logbook_model.dart';
 

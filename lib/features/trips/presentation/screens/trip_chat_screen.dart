@@ -150,7 +150,7 @@ class _TripChatScreenState extends ConsumerState<TripChatScreen> {
       body: Column(
         children: [
           // Trip context header (pinned)
-          if (trip != null) _TripContextHeader(trip: trip),
+          if (trip case final tripValue) _TripContextHeader(trip: tripValue),
           
           // Messages list
           Expanded(

@@ -2,8 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/trip_skill_planning.dart';
-import '../../../../core/providers/auth_provider_v2.dart';
-import '../../../../core/providers/repository_providers.dart';
 
 /// Skill Planning Goals Provider
 /// 
@@ -21,7 +19,7 @@ class SkillPlanningGoalsNotifier extends StateNotifier<List<SkillPlanningGoal>> 
   Future<void> _loadGoals() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final String? goalsJson = prefs.getString('$_storageKey\_$memberId');
+      final String? goalsJson = prefs.getString('${_storageKey}_$memberId');
       
       if (goalsJson != null) {
         final List<dynamic> goalsList = json.decode(goalsJson);
@@ -47,7 +45,7 @@ class SkillPlanningGoalsNotifier extends StateNotifier<List<SkillPlanningGoal>> 
       final goalsJson = json.encode(
         state.map((goal) => goal.toJson()).toList(),
       );
-      await prefs.setString('$_storageKey\_$memberId', goalsJson);
+      await prefs.setString('${_storageKey}_$memberId', goalsJson);
     } catch (e) {
       // Silently fail - goals will be lost but won't crash app
     }

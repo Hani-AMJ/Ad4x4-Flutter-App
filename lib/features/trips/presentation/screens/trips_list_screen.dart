@@ -74,7 +74,7 @@ class _TripsListScreenState extends ConsumerState<TripsListScreen>
     final myTrips = tripsState.getMyTrips(currentUserId);
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: colors.surface,
         elevation: 0,

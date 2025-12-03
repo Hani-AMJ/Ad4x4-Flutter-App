@@ -1,6 +1,7 @@
 /// Skill Recommendation Models
 /// 
 /// Data structures for intelligent skill recommendations
+library;
 
 import '../../../../data/models/logbook_model.dart';
 

@@ -934,7 +934,7 @@ class _RequestTripFormState extends State<_RequestTripForm> {
                   const Center(child: CircularProgressIndicator())
                 else
                   DropdownButtonFormField<int>(
-                    value: _selectedLevelId,
+                    initialValue: _selectedLevelId,
                     decoration: InputDecoration(
                       labelText: 'Trip Level (Optional)',
                       prefixIcon: const Icon(Icons.terrain),
@@ -955,7 +955,7 @@ class _RequestTripFormState extends State<_RequestTripForm> {
 
                 // Time of Day dropdown (Optional)
                 DropdownButtonFormField<String>(
-                  value: _selectedTimeOfDay,
+                  initialValue: _selectedTimeOfDay,
                   decoration: InputDecoration(
                     labelText: 'Time of Day (Optional)',
                     prefixIcon: const Icon(Icons.access_time),
@@ -977,7 +977,7 @@ class _RequestTripFormState extends State<_RequestTripForm> {
 
                 // Area dropdown (Optional)
                 DropdownButtonFormField<String>(
-                  value: _selectedArea,
+                  initialValue: _selectedArea,
                   decoration: InputDecoration(
                     labelText: 'Area (Optional)',
                     prefixIcon: const Icon(Icons.location_on),

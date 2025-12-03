@@ -10,10 +10,10 @@
 /// - Batch operations with checkboxes
 /// 
 /// Permission Required: edit_trip_registrations
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../data/models/trip_model.dart';
 import '../../../../data/models/registration_analytics_model.dart';
@@ -318,7 +318,7 @@ class _AdminWaitlistManagementScreenState extends ConsumerState<AdminWaitlistMan
           : tripsState.errorMessage != null
               ? Text('Error loading trips: ${tripsState.errorMessage}')
               : DropdownButtonFormField<int>(
-                  value: _selectedTripId,
+                  initialValue: _selectedTripId,
                   decoration: const InputDecoration(
                     labelText: 'Select Trip',
                     border: OutlineInputBorder(),

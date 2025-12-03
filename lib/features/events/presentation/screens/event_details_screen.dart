@@ -97,7 +97,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     final timeFormat = DateFormat('h:mm a');
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       body: CustomScrollView(
         slivers: [
           // App Bar with Image

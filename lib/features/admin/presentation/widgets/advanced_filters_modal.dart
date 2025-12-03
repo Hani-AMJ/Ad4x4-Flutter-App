@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../data/models/trip_search_criteria.dart';
 import '../../../../core/utils/level_display_helper.dart';
 import '../providers/admin_trips_search_provider.dart';
 import '../../../trips/presentation/providers/levels_provider.dart';
@@ -344,7 +343,7 @@ class _AdvancedFiltersModalState extends ConsumerState<AdvancedFiltersModal> {
     ];
 
     return DropdownButtonFormField<String>(
-      value: _meetingPointArea,
+      initialValue: _meetingPointArea,
       decoration: InputDecoration(
         labelText: 'Meeting Point Area',
         hintText: 'All areas',

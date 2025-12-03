@@ -331,7 +331,7 @@ class _AdminMemberSkillsReportScreenState
                 // Sort dropdown
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _sortBy,
+                    initialValue: _sortBy,
                     decoration: InputDecoration(
                       labelText: 'Sort By',
                       prefixIcon: const Icon(Icons.sort, size: 20),
@@ -359,7 +359,7 @@ class _AdminMemberSkillsReportScreenState
                 // Level filter
                 Expanded(
                   child: DropdownButtonFormField<int?>(
-                    value: _filterByLevel,
+                    initialValue: _filterByLevel,
                     decoration: InputDecoration(
                       labelText: 'Level',
                       prefixIcon: const Icon(Icons.filter_list, size: 20),

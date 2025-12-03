@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,7 +6,6 @@ import '../../core/config/api_config.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_endpoints.dart';
 import '../../core/network/main_api_endpoints.dart';
-import '../models/trip_model.dart';
 
 /// Main API Repository
 ///
@@ -298,8 +296,9 @@ class MainApiRepository {
 
     // Time filters
     if (startTimeAfter != null) queryParams['startTimeAfter'] = startTimeAfter;
-    if (startTimeBefore != null)
+    if (startTimeBefore != null) {
       queryParams['startTimeBefore'] = startTimeBefore;
+    }
     if (endTimeAfter != null) queryParams['endTimeAfter'] = endTimeAfter;
     if (endTimeBefore != null) queryParams['endTimeBefore'] = endTimeBefore;
     if (cutOffAfter != null) queryParams['cutOffAfter'] = cutOffAfter;
@@ -310,15 +309,18 @@ class MainApiRepository {
 
     // Level filters
     if (levelId != null) queryParams['level_Id'] = levelId;
-    if (levelNumericLevel != null)
+    if (levelNumericLevel != null) {
       queryParams['level_NumericLevel'] = levelNumericLevel;
-    if (levelNumericLevelRange != null)
+    }
+    if (levelNumericLevelRange != null) {
       queryParams['level_NumericLevel_Range'] = levelNumericLevelRange;
+    }
 
     // Meeting point filters
     if (meetingPoint != null) queryParams['meetingPoint'] = meetingPoint;
-    if (meetingPointArea != null)
+    if (meetingPointArea != null) {
       queryParams['meetingPoint_Area'] = meetingPointArea;
+    }
 
     // Lead filters
     if (lead != null) queryParams['lead'] = lead;
@@ -780,11 +782,13 @@ class MainApiRepository {
 
     // Name filters
     if (firstName != null) queryParams['firstName'] = firstName;
-    if (firstNameContains != null)
+    if (firstNameContains != null) {
       queryParams['firstName_Icontains'] = firstNameContains;
+    }
     if (lastName != null) queryParams['lastName'] = lastName;
-    if (lastNameContains != null)
+    if (lastNameContains != null) {
       queryParams['lastName_Icontains'] = lastNameContains;
+    }
 
     // Contact filters
     if (email != null) queryParams['email'] = email;
@@ -798,19 +802,23 @@ class MainApiRepository {
 
     // Car filters
     if (carBrand != null) queryParams['carBrand'] = carBrand;
-    if (carBrandContains != null)
+    if (carBrandContains != null) {
       queryParams['carBrand_Icontains'] = carBrandContains;
+    }
     if (carYear != null) queryParams['carYear'] = carYear;
     if (carYearRange != null) queryParams['carYear_Range'] = carYearRange;
 
     // Level filters
     if (levelName != null) queryParams['level_Name'] = levelName;
-    if (levelNameContains != null)
+    if (levelNameContains != null) {
       queryParams['level_Name_Icontains'] = levelNameContains;
-    if (levelNumericLevel != null)
+    }
+    if (levelNumericLevel != null) {
       queryParams['level_NumericLevel'] = levelNumericLevel;
-    if (levelNumericLevelRange != null)
+    }
+    if (levelNumericLevelRange != null) {
       queryParams['level_NumericLevel_Range'] = levelNumericLevelRange;
+    }
 
     // Activity filters
     if (tripCount != null) queryParams['tripCount'] = tripCount;
@@ -827,6 +835,86 @@ class MainApiRepository {
   Future<Map<String, dynamic>> getMemberDetail(int id) async {
     final response = await _apiClient.get(MainApiEndpoints.memberDetail(id));
     return response.data;
+  }
+
+  /// Get member statistics grouped by level
+  /// 
+  /// Returns a list of levels with member counts for each level.
+  /// Only includes active levels with at least 1 member.
+  /// Uses efficient API calls to fetch only counts, not full member data.
+  Future<List<Map<String, dynamic>>> getMemberLevelStatistics() async {
+    try {
+      print('📊 [Repository] Fetching member level statistics...');
+      
+      // Step 1: Fetch all levels
+      final levelsResponse = await _apiClient.get('/api/levels/');
+      final levelsData = levelsResponse.data['results'] as List;
+      
+      print('✅ [Repository] Found ${levelsData.length} total levels');
+      
+      // Step 2: Fetch member count for each active level
+      List<Map<String, dynamic>> stats = [];
+      for (var levelJson in levelsData) {
+        final levelMap = levelJson as Map<String, dynamic>;
+        final active = levelMap['active'] as bool? ?? true;
+        final levelName = levelMap['name'] as String;
+        
+        if (!active) {
+          print('⏩ [Repository] Skipping inactive level: $levelName');
+          continue; // Skip inactive levels
+        }
+        
+        // Get member count for this level (efficient - only fetch count)
+        int count = 0;
+        try {
+          print('🔄 [Repository] Fetching count for $levelName...');
+          
+          final membersResponse = await _apiClient.get(
+            MainApiEndpoints.members,
+            queryParameters: {
+              'level_Name': levelName,
+              'pageSize': 1, // We only need the count, not the actual members
+              'page': 1, // Always fetch page 1
+            },
+          );
+          
+          count = membersResponse.data['count'] as int;
+          print('✅ [Repository] $levelName: $count members');
+          
+          // Small delay to avoid overwhelming the API
+          await Future.delayed(const Duration(milliseconds: 200));
+        } catch (e) {
+          // If API returns error or connection fails, assume 0 members
+          print('⚠️ [Repository] Error fetching $levelName count: $e');
+          print('⚠️ [Repository] Assuming 0 members for $levelName');
+          count = 0;
+        }
+        
+        // Skip levels with 0 members
+        if (count > 0) {
+          stats.add({
+            'id': levelMap['id'],
+            'name': levelName,
+            'displayName': levelMap['displayName'] ?? levelName,
+            'numericLevel': levelMap['numericLevel'],
+            'memberCount': count,
+            'active': active,
+          });
+        } else {
+          print('⏩ [Repository] Skipping empty level: $levelName');
+        }
+      }
+      
+      // Sort by numeric level (ascending)
+      stats.sort((a, b) => (a['numericLevel'] as int).compareTo(b['numericLevel'] as int));
+      
+      print('✅ [Repository] Returning ${stats.length} level statistics');
+      
+      return stats;
+    } catch (e) {
+      print('❌ [Repository] Error fetching member level stats: $e');
+      rethrow;
+    }
   }
 
   /// Update member (admin) - full update
@@ -1217,18 +1305,24 @@ class MainApiRepository {
     List<int>? newTripAlertsLevelFilter,
   }) async {
     final data = <String, dynamic>{};
-    if (clubNewsEnabledEmail != null)
+    if (clubNewsEnabledEmail != null) {
       data['clubNewsEnabledEmail'] = clubNewsEnabledEmail;
-    if (clubNewsEnabledAppPush != null)
+    }
+    if (clubNewsEnabledAppPush != null) {
       data['clubNewsEnabledAppPush'] = clubNewsEnabledAppPush;
-    if (newTripAlertsEnabledEmail != null)
+    }
+    if (newTripAlertsEnabledEmail != null) {
       data['newTripAlertsEnabledEmail'] = newTripAlertsEnabledEmail;
-    if (newTripAlertsEnabledAppPush != null)
+    }
+    if (newTripAlertsEnabledAppPush != null) {
       data['newTripAlertsEnabledAppPush'] = newTripAlertsEnabledAppPush;
-    if (upgradeRequestReminderEmail != null)
+    }
+    if (upgradeRequestReminderEmail != null) {
       data['upgradeRequestReminderEmail'] = upgradeRequestReminderEmail;
-    if (newTripAlertsLevelFilter != null)
+    }
+    if (newTripAlertsLevelFilter != null) {
       data['newTripAlertsLevelFilter'] = newTripAlertsLevelFilter;
+    }
 
     final response = await _apiClient.put(
       MainApiEndpoints.notificationSettings,

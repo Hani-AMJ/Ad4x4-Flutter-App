@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,7 +61,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   File? _avatarImage;
   Uint8List? _avatarImageBytes; // For web platform
   String? _avatarUrl;
-  bool _isUploadingAvatar = false;
+  final bool _isUploadingAvatar = false;
   
   // Section expansion state
   bool _showVehicleInfo = false;
@@ -861,7 +860,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     final gendersAsync = ref.watch(genderChoicesProvider);
                     return gendersAsync.when(
                       data: (genders) => DropdownButtonFormField<String>(
-                        value: _selectedGender,
+                        initialValue: _selectedGender,
                         decoration: InputDecoration(
                           labelText: 'Gender (Optional)',
                           prefixIcon: const Icon(Icons.person_outline),
@@ -900,7 +899,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         },
                       ),
                       error: (e, s) => DropdownButtonFormField<String>(
-                        value: _selectedGender,
+                        initialValue: _selectedGender,
                         decoration: InputDecoration(
                           labelText: 'Gender (Optional)',
                           prefixIcon: const Icon(Icons.person_outline),
@@ -931,7 +930,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     final emiratesAsync = ref.watch(emirateChoicesProvider);
                     return emiratesAsync.when(
                       data: (emirates) => DropdownButtonFormField<String>(
-                        value: _selectedCity,
+                        initialValue: _selectedCity,
                         decoration: InputDecoration(
                           labelText: 'Emirate / City',
                           prefixIcon: const Icon(Icons.location_city_outlined),
@@ -973,7 +972,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         },
                       ),
                       error: (e, s) => DropdownButtonFormField<String>(
-                        value: _selectedCity,
+                        initialValue: _selectedCity,
                         decoration: InputDecoration(
                           labelText: 'Emirate / City',
                           prefixIcon: const Icon(Icons.location_city_outlined),
@@ -1053,7 +1052,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       final brandsAsync = ref.watch(carBrandChoicesProvider);
                       return brandsAsync.when(
                         data: (brands) => DropdownButtonFormField<String>(
-                          value: _carBrandController.text.isNotEmpty ? _carBrandController.text : null,
+                          initialValue: _carBrandController.text.isNotEmpty ? _carBrandController.text : null,
                           decoration: InputDecoration(
                             labelText: 'Car Brand',
                             hintText: 'Select your vehicle brand',

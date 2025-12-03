@@ -2,6 +2,7 @@
 /// 
 /// Displays all captured errors in a user-friendly list format.
 /// Allows viewing details, copying, sharing, and clearing logs.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

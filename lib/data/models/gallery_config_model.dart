@@ -9,6 +9,7 @@
 /// - Admins can modify settings without app updates
 /// 
 /// Backend API: GET /api/settings/gallery-config/
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

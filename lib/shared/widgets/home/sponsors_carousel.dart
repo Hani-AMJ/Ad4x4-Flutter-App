@@ -30,17 +30,15 @@ class _SponsorsCarouselState extends State<SponsorsCarousel> {
       final response = await _repository.getSponsors();
       
       final List<Sponsor> sponsors = [];
-      if (response is List) {
-        for (var item in response) {
-          try {
-            final sponsor = Sponsor.fromJson(item as Map<String, dynamic>);
-            sponsors.add(sponsor);
-          } catch (e) {
-            print('⚠️ [SponsorsCarousel] Error parsing sponsor: $e');
-          }
+      for (var item in response) {
+        try {
+          final sponsor = Sponsor.fromJson(item as Map<String, dynamic>);
+          sponsors.add(sponsor);
+        } catch (e) {
+          print('⚠️ [SponsorsCarousel] Error parsing sponsor: $e');
         }
       }
-
+    
       // Sort by priority (lower number = higher priority)
       sponsors.sort((a, b) => a.priority.compareTo(b.priority));
 

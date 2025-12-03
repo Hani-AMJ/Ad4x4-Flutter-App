@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
@@ -54,7 +53,7 @@ final upcomingTripsWithSkillsProvider = FutureProvider.autoDispose<List<TripWith
         
         print('✅ [TripPlanning] Parsed trip #${trip.id}: ${trip.title}');
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       print('❌ [TripPlanning] Failed to parse trip #$i: $e');
       print('   Level data: ${json['level']}');
       print('   Full JSON: $json');

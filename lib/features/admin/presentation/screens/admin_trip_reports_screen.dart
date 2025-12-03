@@ -515,7 +515,7 @@ class _AdminTripReportsScreenState
           
           // Trip selection
           DropdownButtonFormField<int>(
-            value: _selectedTripId,
+            initialValue: _selectedTripId,
             decoration: InputDecoration(
               labelText: 'Select Trip',
               prefixIcon: const Icon(Icons.directions_car),

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../core/providers/repository_providers.dart';
-import '../../../../core/providers/auth_provider_v2.dart';
 import '../providers/logbook_provider.dart';
 import 'package:go_router/go_router.dart';
 

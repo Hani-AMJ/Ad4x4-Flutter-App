@@ -218,7 +218,7 @@ class PermissionDebugScreen extends ConsumerWidget {
                                   ],
                                 ),
                               );
-                            }).toList(),
+                            }),
                         ],
                       ),
                     ),

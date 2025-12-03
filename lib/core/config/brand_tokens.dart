@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'dart:ui' show Color;
 
 /// Brand tokens loaded from brand_tokens.json (v1.1)
 class BrandTokens {

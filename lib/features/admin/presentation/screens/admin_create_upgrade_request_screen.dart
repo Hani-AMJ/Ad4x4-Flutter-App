@@ -271,7 +271,7 @@ class _AdminCreateUpgradeRequestScreenState extends ConsumerState<AdminCreateUpg
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
-                  value: _selectedMemberId,
+                  initialValue: _selectedMemberId,
                   decoration: InputDecoration(
                     hintText: 'Choose a member',
                     border: OutlineInputBorder(

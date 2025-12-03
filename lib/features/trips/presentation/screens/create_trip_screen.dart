@@ -7,17 +7,13 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../data/models/trip_model.dart';
 import '../../../../data/models/level_model.dart';
 import '../../../../data/models/meeting_point_model.dart';
-import '../../../../data/models/user_model.dart';
 import '../../../../data/models/vehicle_modifications_model.dart';
 import '../../../../data/models/trip_area_choice_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/trip_area_provider.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/utils/status_helpers.dart';
 import '../../../../core/utils/level_display_helper.dart';
 import '../../../../core/services/vehicle_modifications_cache_service.dart';
 
@@ -487,7 +483,7 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           
           // Difficulty Level
           DropdownButtonFormField<int>(
-            value: _selectedLevelId,
+            initialValue: _selectedLevelId,
             decoration: const InputDecoration(
               labelText: 'Difficulty Level *',
               prefixIcon: Icon(Icons.trending_up),
@@ -1755,7 +1751,7 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     required String Function(T) getDisplay,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -1771,7 +1767,7 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
             value: item,
             child: Text(getDisplay(item)),
           );
-        }).toList(),
+        }),
       ],
       onChanged: onChanged,
     );

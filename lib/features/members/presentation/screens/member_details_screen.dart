@@ -22,8 +22,17 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
   
   UserModel? _member;
   List<TripListItem> _tripHistory = [];
+  Map<String, dynamic>? _tripStatistics;  // ✅ NEW: Phase 2 - Trip statistics
+  List<Map<String, dynamic>> _upgradeHistory = [];  // ✅ NEW: Phase 3 - Upgrade requests
+  List<Map<String, dynamic>> _tripRequests = [];  // ✅ NEW: Phase 3 - Trip requests
+  List<Map<String, dynamic>> _memberFeedback = [];  // ✅ NEW: Phase 3 - Member feedback
+  
   bool _isLoading = true;
   bool _isLoadingTrips = true;
+  bool _isLoadingStats = true;  // ✅ NEW: Phase 2
+  bool _isLoadingUpgrades = true;  // ✅ NEW: Phase 3
+  bool _isLoadingRequests = true;  // ✅ NEW: Phase 3
+  bool _isLoadingFeedback = true;  // ✅ NEW: Phase 3
   String? _error;
 
   @override
@@ -43,7 +52,9 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
       final memberId = int.parse(widget.memberId);
       
       // Load member profile
-      print('👤 [MemberDetails] Fetching profile for member $memberId...');
+      if (kDebugMode) {
+        print('👤 [MemberDetails] Fetching profile for member $memberId...');
+      }
       final profileResponse = await _repository.getMemberDetail(memberId);
       final member = UserModel.fromJson(profileResponse['data'] ?? profileResponse);
       
@@ -52,10 +63,16 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
         _isLoading = false;
       });
 
-      // Load trip history in background
+      // Load all additional data in background
       _loadTripHistory(memberId);
+      _loadTripStatistics(memberId);  // ✅ NEW: Phase 2
+      _loadUpgradeHistory(memberId);  // ✅ NEW: Phase 3
+      _loadTripRequests(memberId);  // ✅ NEW: Phase 3
+      _loadMemberFeedback(memberId);  // ✅ NEW: Phase 3
     } catch (e) {
-      print('❌ [MemberDetails] Error: $e');
+      if (kDebugMode) {
+        print('❌ [MemberDetails] Error: $e');
+      }
       setState(() {
         _error = 'Failed to load member profile';
         _isLoading = false;
@@ -72,15 +89,18 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
     }
   }
 
-  /// Load trip history
+  /// Load trip history (completed trips only)
   Future<void> _loadTripHistory(int memberId) async {
     setState(() => _isLoadingTrips = true);
 
     try {
-      print('🚗 [MemberDetails] Fetching trip history for member $memberId...');
+      if (kDebugMode) {
+        print('🚗 [MemberDetails] Fetching completed trip history for member $memberId...');
+      }
       
       final response = await _repository.getMemberTripHistory(
         memberId: memberId,
+        checkedIn: true,  // ✅ FIXED: Only fetch trips where member was checked in
         page: 1,
         pageSize: 10,
       );
@@ -91,25 +111,202 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
       if (data is List) {
         for (var item in data) {
           try {
-            trips.add(TripListItem.fromJson(item as Map<String, dynamic>));
+            final trip = TripListItem.fromJson(item as Map<String, dynamic>);
+            // ✅ FIXED: Additional filter for completed trips only
+            if (trip.status == 'completed' || DateTime.now().isAfter(trip.endTime)) {
+              trips.add(trip);
+            }
           } catch (e) {
-            print('⚠️ [MemberDetails] Error parsing trip: $e');
+            if (kDebugMode) {
+              print('⚠️ [MemberDetails] Error parsing trip: $e');
+            }
           }
         }
       }
 
-      print('✅ [MemberDetails] Loaded ${trips.length} trips');
+      if (kDebugMode) {
+        print('✅ [MemberDetails] Loaded ${trips.length} completed trips');
+      }
       setState(() {
         _tripHistory = trips;
         _isLoadingTrips = false;
       });
     } catch (e) {
-      print('❌ [MemberDetails] Error loading trips: $e');
+      if (kDebugMode) {
+        print('❌ [MemberDetails] Error loading trips: $e');
+      }
       setState(() {
         _tripHistory = [];
         _isLoadingTrips = false;
       });
     }
+  }
+
+  /// Load trip statistics (Phase 2)
+  /// ✅ NEW: Shows breakdown of trips by level
+  Future<void> _loadTripStatistics(int memberId) async {
+    setState(() => _isLoadingStats = true);
+
+    try {
+      if (kDebugMode) {
+        print('📊 [MemberDetails] Fetching trip statistics for member $memberId...');
+      }
+      
+      final response = await _repository.getMemberTripCounts(memberId);
+
+      if (kDebugMode) {
+        print('✅ [MemberDetails] Loaded trip statistics');
+      }
+      setState(() {
+        _tripStatistics = response['data'] ?? response;
+        _isLoadingStats = false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [MemberDetails] Error loading trip statistics: $e');
+      }
+      setState(() {
+        _tripStatistics = null;
+        _isLoadingStats = false;
+      });
+    }
+  }
+
+  /// Load upgrade history (Phase 3)
+  /// ✅ NEW: Shows member's level progression timeline
+  Future<void> _loadUpgradeHistory(int memberId) async {
+    setState(() => _isLoadingUpgrades = true);
+
+    try {
+      if (kDebugMode) {
+        print('⬆️ [MemberDetails] Fetching upgrade history for member $memberId...');
+      }
+      
+      final response = await _repository.getMemberUpgradeRequests(memberId: memberId, page: 1, pageSize: 10);
+
+      final List<Map<String, dynamic>> upgrades = [];
+      final data = response['data'] ?? response['results'] ?? response;
+      
+      if (data is List) {
+        for (var item in data) {
+          upgrades.add(item as Map<String, dynamic>);
+        }
+      }
+
+      if (kDebugMode) {
+        print('✅ [MemberDetails] Loaded ${upgrades.length} upgrade requests');
+      }
+      setState(() {
+        _upgradeHistory = upgrades;
+        _isLoadingUpgrades = false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [MemberDetails] Error loading upgrade history: $e');
+      }
+      setState(() {
+        _upgradeHistory = [];
+        _isLoadingUpgrades = false;
+      });
+    }
+  }
+
+  /// Load trip requests (Phase 3)
+  /// ✅ NEW: Shows trips member has requested from marshals
+  Future<void> _loadTripRequests(int memberId) async {
+    setState(() => _isLoadingRequests = true);
+
+    try {
+      if (kDebugMode) {
+        print('📝 [MemberDetails] Fetching trip requests for member $memberId...');
+      }
+      
+      final response = await _repository.getMemberTripRequests(memberId: memberId, page: 1, pageSize: 10);
+
+      final List<Map<String, dynamic>> requests = [];
+      final data = response['data'] ?? response['results'] ?? response;
+      
+      if (data is List) {
+        for (var item in data) {
+          requests.add(item as Map<String, dynamic>);
+        }
+      }
+
+      if (kDebugMode) {
+        print('✅ [MemberDetails] Loaded ${requests.length} trip requests');
+      }
+      setState(() {
+        _tripRequests = requests;
+        _isLoadingRequests = false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [MemberDetails] Error loading trip requests: $e');
+      }
+      setState(() {
+        _tripRequests = [];
+        _isLoadingRequests = false;
+      });
+    }
+  }
+
+  /// Load member feedback (Phase 3)
+  /// ✅ NEW: Shows ratings and reviews for member
+  Future<void> _loadMemberFeedback(int memberId) async {
+    setState(() => _isLoadingFeedback = true);
+
+    try {
+      if (kDebugMode) {
+        print('⭐ [MemberDetails] Fetching feedback for member $memberId...');
+      }
+      
+      final response = await _repository.getMemberFeedback(memberId: memberId, page: 1, pageSize: 10);
+
+      final List<Map<String, dynamic>> feedback = [];
+      final data = response['data'] ?? response['results'] ?? response;
+      
+      if (data is List) {
+        for (var item in data) {
+          feedback.add(item as Map<String, dynamic>);
+        }
+      }
+
+      if (kDebugMode) {
+        print('✅ [MemberDetails] Loaded ${feedback.length} feedback entries');
+      }
+      setState(() {
+        _memberFeedback = feedback;
+        _isLoadingFeedback = false;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ [MemberDetails] Error loading feedback: $e');
+      }
+      setState(() {
+        _memberFeedback = [];
+        _isLoadingFeedback = false;
+      });
+    }
+  }
+
+  /// Get level stars emoji based on level name
+  /// Uses the same logic as LevelConfigurationService
+  String _getLevelStars(UserLevel? level) {
+    if (level == null) return '⭐';
+    
+    final levelName = level.displayName ?? level.name ?? '';
+    final cleanName = levelName.toLowerCase();
+    
+    // Match the logic from LevelConfigurationService.getLevelEmoji()
+    if (cleanName.contains('board')) return '🎖️'; // Badge for Board Member
+    if (cleanName.contains('marshal')) return '⭐⭐⭐⭐⭐'; // 5 stars
+    if (cleanName.contains('expert') || cleanName.contains('explorer')) return '⭐⭐⭐⭐'; // 4 stars
+    if (cleanName.contains('advanced') || cleanName.contains('advance')) return '⭐⭐⭐'; // 3 stars
+    if (cleanName.contains('intermediate')) return '⭐⭐'; // 2 stars
+    if (cleanName.contains('anit')) return '⭐'; // 1 star (same as Newbie)
+    if (cleanName.contains('newbie') || cleanName.contains('beginner')) return '⭐'; // 1 star
+    
+    return '⭐'; // Default: 1 star
   }
 
   @override
@@ -142,7 +339,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
         slivers: [
           // App Bar with Member Header
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 280,  // ✅ FIXED: Increased from 200 to prevent cropping
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -206,6 +403,18 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                                 ),
                         ),
                       ),
+                      // ✅ NEW: Phase 2 - Member Since Date
+                      if (member.dateJoined != null && member.dateJoined!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            'Member since ${_formatMemberSinceDate(member.dateJoined!)}',
+                            style: TextStyle(
+                              color: colors.onSurface.withValues(alpha: 0.6),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -232,8 +441,8 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                     child: _StatCard(
                       icon: Icons.star,
                       label: 'Level',
-                      value: '${member.level?.numericLevel ?? 0}',
-                      color: const Color(0xFFFFB74D),
+                      value: _getLevelStars(member.level),  // ✅ FIXED: Show stars instead of text
+                      color: LevelDisplayHelper.getLevelColor(member.level?.numericLevel ?? 0),  // ✅ FIXED: Dynamic color
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -324,6 +533,153 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                 ),
               ),
             ),
+
+          // ✅ NEW: Phase 2 - Trip Statistics Section
+          if (!_isLoadingStats && _tripStatistics != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Trip Statistics',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _TripStatisticsCard(statistics: _tripStatistics!),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+
+          // ✅ NEW: Phase 3 - Upgrade History Section
+          if (!_isLoadingUpgrades && _upgradeHistory.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Level Progress',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+
+          // ✅ NEW: Phase 3 - Upgrade History List
+          if (!_isLoadingUpgrades && _upgradeHistory.isNotEmpty)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final upgrade = _upgradeHistory[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: _UpgradeHistoryCard(upgrade: upgrade),
+                  );
+                },
+                childCount: _upgradeHistory.length,
+              ),
+            ),
+
+          if (!_isLoadingUpgrades && _upgradeHistory.isNotEmpty)
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+          // ✅ NEW: Phase 3 - Trip Requests Section
+          if (!_isLoadingRequests && _tripRequests.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Trip Requests',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Trips requested from marshals',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+
+          // ✅ NEW: Phase 3 - Trip Requests List
+          if (!_isLoadingRequests && _tripRequests.isNotEmpty)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final request = _tripRequests[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: _TripRequestCard(request: request),
+                  );
+                },
+                childCount: _tripRequests.length,
+              ),
+            ),
+
+          if (!_isLoadingRequests && _tripRequests.isNotEmpty)
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+          // ✅ NEW: Phase 3 - Member Feedback Section
+          if (!_isLoadingFeedback && _memberFeedback.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Member Feedback',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+
+          // ✅ NEW: Phase 3 - Member Feedback List
+          if (!_isLoadingFeedback && _memberFeedback.isNotEmpty)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final feedback = _memberFeedback[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: _MemberFeedbackCard(feedback: feedback),
+                  );
+                },
+                childCount: _memberFeedback.length,
+              ),
+            ),
+
+          if (!_isLoadingFeedback && _memberFeedback.isNotEmpty)
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
           // Trip History Section
           SliverToBoxAdapter(
@@ -421,6 +777,16 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
     );
   }
 
+  /// Format member since date
+  /// ✅ NEW: Phase 2 - Helper method
+  String _formatMemberSinceDate(String dateJoined) {
+    try {
+      final date = DateTime.parse(dateJoined);
+      return DateFormat('MMMM yyyy').format(date);  // e.g., "January 2020"
+    } catch (e) {
+      return 'Recently';
+    }
+  }
 
 }
 
@@ -570,5 +936,474 @@ class _TripHistoryCard extends StatelessWidget {
       default:
         return Colors.grey;
     }
+  }
+}
+
+/// ✅ NEW: Phase 2 - Trip Statistics Card Widget
+class _TripStatisticsCard extends StatelessWidget {
+  final Map<String, dynamic> statistics;
+
+  const _TripStatisticsCard({required this.statistics});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    // Parse statistics data
+    final tripsByLevel = statistics['tripsByLevel'] as Map<String, dynamic>? ?? {};
+    final totalTrips = statistics['totalTrips'] as int? ?? 0;
+    final completionRate = statistics['completionRate'] as num? ?? 0.0;
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with total and completion rate
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$totalTrips',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colors.primary,
+                      ),
+                    ),
+                    Text(
+                      'Total Trips',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+                if (completionRate > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF388E3C).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${completionRate.toStringAsFixed(1)}% Complete',
+                      style: TextStyle(
+                        color: const Color(0xFF388E3C),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            
+            if (tripsByLevel.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 12),
+              
+              // Trips by level breakdown
+              ...tripsByLevel.entries.map((entry) {
+                final levelName = entry.key;
+                final count = entry.value as int? ?? 0;
+                // Map level name to numeric value
+                int numericLevel = 0;
+                switch (levelName.toLowerCase()) {
+                  case 'club event': numericLevel = 5; break;
+                  case 'newbie': case 'anit': numericLevel = 10; break;
+                  case 'intermediate': numericLevel = 100; break;
+                  case 'advanced': numericLevel = 200; break;
+                  case 'expert': numericLevel = 300; break;
+                  case 'explorer': numericLevel = 400; break;
+                  case 'marshal': numericLevel = 600; break;
+                  case 'board member': numericLevel = 800; break;
+                }
+                final color = LevelDisplayHelper.getLevelColor(numericLevel);
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          levelName,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                      Text(
+                        '$count',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ✅ NEW: Phase 3 - Upgrade History Card Widget
+class _UpgradeHistoryCard extends StatelessWidget {
+  final Map<String, dynamic> upgrade;
+
+  const _UpgradeHistoryCard({required this.upgrade});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    // Parse upgrade data
+    final requestedLevel = upgrade['requestedLevel'] ?? upgrade['requested_level'];
+    final currentLevel = upgrade['currentLevel'] ?? upgrade['current_level'];
+    final status = (upgrade['status'] as String? ?? 'PENDING').toUpperCase();
+    final created = upgrade['created'] as String?;
+
+    // Get level names
+    String requestedLevelName = 'Unknown';
+    String currentLevelName = 'Unknown';
+
+    if (requestedLevel is Map) {
+      requestedLevelName = requestedLevel['name'] ?? requestedLevel['displayName'] ?? 'Unknown';
+    } else if (requestedLevel is String) {
+      requestedLevelName = requestedLevel;
+    }
+
+    if (currentLevel is Map) {
+      currentLevelName = currentLevel['name'] ?? currentLevel['displayName'] ?? 'Unknown';
+    } else if (currentLevel is String) {
+      currentLevelName = currentLevel;
+    }
+
+    // Status color
+    Color statusColor;
+    switch (status) {
+      case 'APPROVED':
+        statusColor = const Color(0xFF388E3C);
+        break;
+      case 'REJECTED':
+      case 'DECLINED':
+        statusColor = const Color(0xFFD32F2F);
+        break;
+      default:
+        statusColor = const Color(0xFFFFA726);
+    }
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // Arrow Icon
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                status == 'APPROVED'
+                    ? Icons.arrow_upward
+                    : status.contains('REJECT') || status.contains('DECLINE')
+                        ? Icons.close
+                        : Icons.pending,
+                color: statusColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Upgrade Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$currentLevelName → $requestedLevelName',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (created != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat('MMM d, y').format(DateTime.parse(created)),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Status Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                status,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ✅ NEW: Phase 3 - Trip Request Card Widget
+class _TripRequestCard extends StatelessWidget {
+  final Map<String, dynamic> request;
+
+  const _TripRequestCard({required this.request});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    // Parse request data
+    final level = request['level'];
+    final area = request['area'] as String? ?? 'Unknown Area';
+    final date = request['date'] as String?;
+    final timeOfDay = request['timeOfDay'] ?? request['time_of_day'] as String? ?? 'Unknown Time';
+    final status = (request['status'] as String? ?? 'PENDING').toUpperCase();
+
+    // Get level name
+    String levelName = 'Unknown';
+    if (level is Map) {
+      levelName = level['name'] ?? level['displayName'] ?? 'Unknown';
+    } else if (level is String) {
+      levelName = level;
+    }
+
+    // Status color
+    Color statusColor;
+    switch (status) {
+      case 'APPROVED':
+      case 'SCHEDULED':
+        statusColor = const Color(0xFF388E3C);
+        break;
+      case 'REJECTED':
+      case 'DECLINED':
+        statusColor = const Color(0xFFD32F2F);
+        break;
+      default:
+        statusColor = const Color(0xFFFFA726);
+    }
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // Trip Icon
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.calendar_today,
+                color: colors.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Request Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$levelName • $area',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    date != null
+                        ? '${DateFormat('MMM d, y').format(DateTime.parse(date))} • $timeOfDay'
+                        : timeOfDay,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Status Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                status,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ✅ NEW: Phase 3 - Member Feedback Card Widget
+class _MemberFeedbackCard extends StatelessWidget {
+  final Map<String, dynamic> feedback;
+
+  const _MemberFeedbackCard({required this.feedback});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    // Parse feedback data
+    final rating = feedback['rating'] as int? ?? 0;
+    final comment = feedback['comment'] as String? ?? '';
+    final created = feedback['created'] as String?;
+    final author = feedback['author'];
+
+    // Get author name
+    String authorName = 'Anonymous';
+    if (author is Map) {
+      final firstName = author['firstName'] ?? author['first_name'] ?? '';
+      final lastName = author['lastName'] ?? author['last_name'] ?? '';
+      if (firstName.isNotEmpty || lastName.isNotEmpty) {
+        authorName = '$firstName $lastName'.trim();
+      } else {
+        authorName = author['username'] ?? 'Anonymous';
+      }
+    } else if (author is String) {
+      authorName = author;
+    }
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with stars and author
+            Row(
+              children: [
+                // Star rating
+                Row(
+                  children: List.generate(5, (index) {
+                    return Icon(
+                      index < rating ? Icons.star : Icons.star_border,
+                      color: const Color(0xFFFFA726),
+                      size: 16,
+                    );
+                  }),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '($rating/5)',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+
+            if (comment.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                comment,
+                style: theme.textTheme.bodyMedium,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+
+            const SizedBox(height: 8),
+            // Footer with author and date
+            Row(
+              children: [
+                Text(
+                  authorName,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (created != null) ...[
+                  Text(
+                    ' • ',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  Text(
+                    DateFormat('MMM d, y').format(DateTime.parse(created)),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

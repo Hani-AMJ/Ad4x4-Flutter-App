@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../../data/models/trip_model.dart';
 import '../../../../data/models/logbook_model.dart';
-import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/services/logbook_enrichment_service.dart';
@@ -33,7 +31,7 @@ class _TripHistoryWithLogbookScreenState
   final _repository = MainApiRepository();
 
   List<TripHistoryItem> _tripHistory = [];
-  Map<int, List<LogbookEntry>> _tripLogbookEntries = {};
+  final Map<int, List<LogbookEntry>> _tripLogbookEntries = {};
   bool _isLoading = true;
   bool _hasMore = true;
   int _currentPage = 1;

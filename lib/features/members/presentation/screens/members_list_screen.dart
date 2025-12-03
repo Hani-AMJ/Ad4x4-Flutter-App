@@ -9,7 +9,14 @@ import '../../../../core/utils/level_display_helper.dart';
 import 'dart:async';
 
 class MembersListScreen extends ConsumerStatefulWidget {
-  const MembersListScreen({super.key});
+  final String? levelFilter;
+  final String? searchQuery;
+  
+  const MembersListScreen({
+    super.key,
+    this.levelFilter,
+    this.searchQuery,
+  });
 
   @override
   ConsumerState<MembersListScreen> createState() => _MembersListScreenState();
@@ -44,6 +51,24 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // Apply level filter if provided
+    if (widget.levelFilter != null) {
+      _selectedLevel = widget.levelFilter;
+      _hasActiveFilters = true;
+      if (kDebugMode) {
+        print('📋 [MembersList] Filtering by level: ${widget.levelFilter}');
+      }
+    }
+    
+    // Apply search query if provided
+    if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
+      _searchController.text = widget.searchQuery!;
+      if (kDebugMode) {
+        print('🔍 [MembersList] Searching for: ${widget.searchQuery}');
+      }
+    }
+    
     _loadMembers();
     _scrollController.addListener(_onScroll);
   }
@@ -66,7 +91,9 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
     }
 
     try {
-      print('📋 [Members] Fetching page $_currentPage...');
+      if (kDebugMode) {
+        print('📋 [Members] Fetching page $_currentPage...');
+      }
       
       final response = await _repository.getMembers(
         page: _currentPage,
@@ -90,12 +117,21 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
           try {
             newMembers.add(UserModel.fromJson(item as Map<String, dynamic>));
           } catch (e) {
-            print('⚠️ [Members] Error parsing member: $e');
+            if (kDebugMode) {
+              print('⚠️ [Members] Error parsing member: $e');
+            }
           }
         }
       }
 
-      print('✅ [Members] Loaded ${newMembers.length} members');
+      // ✅ FIXED: Use total count from API to determine if there are more pages
+      final totalCount = response['count'] ?? 0;
+      final loadedCount = isLoadMore ? _members.length + newMembers.length : newMembers.length;
+      final hasMorePages = loadedCount < totalCount;
+
+      if (kDebugMode) {
+        print('✅ [Members] Loaded ${newMembers.length} members (total loaded: $loadedCount / $totalCount)');
+      }
 
       setState(() {
         if (isLoadMore) {
@@ -105,17 +141,33 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
         }
         _isLoading = false;
         _isSearching = false;
-        _hasMore = newMembers.length >= 20;  // Has more if we got a full page
+        _hasMore = hasMorePages;  // ✅ FIXED: Use accurate pagination
       });
     } catch (e) {
-      print('❌ [Members] Error: $e');
+      // ✅ FIXED: Better error handling for 404 (Invalid page)
+      final errorMessage = e.toString();
+      final is404Error = errorMessage.contains('404') || errorMessage.contains('Invalid page');
+      
+      if (kDebugMode) {
+        print('❌ [Members] Error: $e');
+      }
+      
       setState(() {
-        _error = 'Failed to load members';
+        // ✅ FIXED: Stop pagination on 404
+        if (is404Error) {
+          _hasMore = false;  // No more pages available
+          if (kDebugMode) {
+            print('🛑 [Members] No more pages - stopping pagination');
+          }
+        } else {
+          _error = 'Failed to load members';
+        }
         _isLoading = false;
         _isSearching = false;
       });
 
-      if (mounted) {
+      // ✅ FIXED: Only show error snackbar for non-404 errors
+      if (mounted && !is404Error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load members: $e'),
@@ -232,9 +284,17 @@ class _MembersListScreenState extends ConsumerState<MembersListScreen> {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
+    // Build dynamic title based on context
+    String title = 'Members';
+    if (widget.levelFilter != null) {
+      title = '${widget.levelFilter} Members';
+    } else if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
+      title = 'Search: ${widget.searchQuery}';
+    }
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Members'),
+        title: Text(title),
         actions: [
           // ✅ NEW: Filter button with badge
           Stack(

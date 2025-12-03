@@ -37,7 +37,7 @@ class _AdminBulkOperationsScreenState
   // Operation results
   int _successCount = 0;
   int _failCount = 0;
-  List<String> _errors = [];
+  final List<String> _errors = [];
 
   @override
   void initState() {

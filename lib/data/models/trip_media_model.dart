@@ -2,6 +2,7 @@
 /// 
 /// Models for handling trip photos, videos, galleries, and upload requests.
 /// Supports admin moderation workflow with approval status.
+library;
 
 import 'trip_model.dart';
 

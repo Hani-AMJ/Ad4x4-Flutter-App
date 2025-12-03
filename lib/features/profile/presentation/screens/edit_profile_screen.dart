@@ -712,7 +712,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         }
         
         return DropdownButtonFormField<String>(
-          value: validatedValue,
+          initialValue: validatedValue,
           decoration: InputDecoration(
             labelText: 'Gender (Optional)',
             border: OutlineInputBorder(
@@ -797,7 +797,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         }
         
         return DropdownButtonFormField<String>(
-          value: validatedValue,
+          initialValue: validatedValue,
           decoration: InputDecoration(
             labelText: 'Nationality (Optional)',
             border: OutlineInputBorder(
@@ -882,7 +882,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         }
         
         return DropdownButtonFormField<String>(
-          value: validatedValue,
+          initialValue: validatedValue,
           decoration: InputDecoration(
             labelText: 'Car Brand (Optional)',
             border: OutlineInputBorder(
@@ -952,7 +952,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final years = List.generate(50, (index) => currentYear - index);
     
     return DropdownButtonFormField<int>(
-      value: _selectedCarYear,
+      initialValue: _selectedCarYear,
       decoration: InputDecoration(
         labelText: 'Car Year (Optional)',
         border: OutlineInputBorder(

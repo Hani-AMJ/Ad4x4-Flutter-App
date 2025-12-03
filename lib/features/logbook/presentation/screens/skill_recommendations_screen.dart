@@ -1,6 +1,7 @@
 /// Skill Recommendations Screen
 /// 
 /// Displays intelligent skill recommendations with filtering and details
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

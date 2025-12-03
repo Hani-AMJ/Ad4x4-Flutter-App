@@ -1,4 +1,3 @@
-import 'user_model.dart';
 import 'meeting_point_model.dart' as mp;
 import '../../core/utils/status_helpers.dart';
 
@@ -580,13 +579,18 @@ class TripListItem {
   String get difficulty => level.name;
   bool get isFull => registeredCount >= capacity;
   
-  // ✅ FIXED: Use status helpers to correctly check backend codes (A, P, D)
+  // ✅ FIXED: Check dates FIRST for trip history compatibility (approval_status may be missing)
   String get status {
     final now = DateTime.now();
+    
+    // Priority 1: Check dates first (works for trip history API)
+    if (now.isAfter(endTime)) return 'completed';
+    if (now.isBefore(startTime)) return 'upcoming';
+    
+    // Priority 2: Check approval status (for current/future trips)
     if (isDeclined(approvalStatus)) return 'cancelled';
     if (isPending(approvalStatus)) return 'pending';
-    if (now.isBefore(startTime)) return 'upcoming';
-    if (now.isAfter(endTime)) return 'completed';
+    
     return 'ongoing';
   }
 

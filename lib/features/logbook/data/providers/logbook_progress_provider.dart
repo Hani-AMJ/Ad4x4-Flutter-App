@@ -119,8 +119,8 @@ final logbookProgressProvider = FutureProvider.autoDispose<LogbookProgressStats?
     final verifiedCurrentLevel = verifiedSkills.where((s) => s.level.id == currentLevelId).toList();
     
     print('📊 [LogbookProgress] Current Level Skills:');
-    print('   Total for ${currentLevelName}: ${currentLevelSkills.length}');
-    print('   Verified for ${currentLevelName}: ${verifiedCurrentLevel.length}');
+    print('   Total for $currentLevelName: ${currentLevelSkills.length}');
+    print('   Verified for $currentLevelName: ${verifiedCurrentLevel.length}');
     
     // Calculate breakdown for ALL levels (for skills matrix)
     final allLevelsBreakdown = _calculateAllLevelsBreakdown(allSkills, verifiedSkills);

@@ -1,6 +1,7 @@
 /// Skill Recommendation Provider
 /// 
 /// Intelligent skill recommendations based on progression, trips, and peers
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/auth_provider_v2.dart';

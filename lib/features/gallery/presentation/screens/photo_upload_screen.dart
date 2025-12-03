@@ -2,9 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dio/dio.dart';
 import '../../../../data/repositories/gallery_api_repository.dart';
-import '../../../../core/providers/gallery_auth_provider.dart';
 import '../../../../shared/widgets/widgets.dart';
 import '../../../../core/services/error_log_service.dart';
 
@@ -47,7 +45,7 @@ class _PhotoUploadScreenState extends ConsumerState<PhotoUploadScreen> {
   final _galleryRepository = GalleryApiRepository();
   final _imagePicker = ImagePicker();
 
-  List<UploadItem> _uploadItems = [];
+  final List<UploadItem> _uploadItems = [];
   String? _sessionId;
   bool _isCreatingSession = false;
   bool _isUploading = false;

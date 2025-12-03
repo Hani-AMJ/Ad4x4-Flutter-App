@@ -257,9 +257,12 @@ class LevelConfigurationService {
     } else if (cleanName.contains('advanced') || cleanName.contains('advance')) {
       print('   ✅ Matched: Advanced → ⭐⭐⭐');
       return '⭐⭐⭐'; // 3 stars for Advanced
-    } else if (cleanName.contains('intermediate') || cleanName.contains('anit')) {
-      print('   ✅ Matched: Intermediate/ANIT → ⭐⭐');
-      return '⭐⭐'; // 2 stars for Intermediate (ANIT = Advanced Newbie In Training?)
+    } else if (cleanName.contains('intermediate')) {
+      print('   ✅ Matched: Intermediate → ⭐⭐');
+      return '⭐⭐'; // 2 stars for Intermediate
+    } else if (cleanName.contains('anit')) {
+      print('   ✅ Matched: ANIT → ⭐');
+      return '⭐'; // 1 star for ANIT (same as Newbie)
     } else if (cleanName.contains('newbie') || cleanName.contains('beginner')) {
       print('   ✅ Matched: Newbie/Beginner → ⭐');
       return '⭐'; // 1 star for Newbie/Beginner
@@ -286,11 +289,13 @@ class LevelConfigurationService {
     final level = levelsWithSkills[index];
     final cleanName = getCleanLevelName(level.name).toLowerCase();
     
-    if (cleanName.contains('board')) return '🎖️';
-    else if (cleanName.contains('marshal')) return '⭐⭐⭐⭐⭐';
+    if (cleanName.contains('board')) {
+      return '🎖️';
+    } else if (cleanName.contains('marshal')) return '⭐⭐⭐⭐⭐';
     else if (cleanName.contains('expert') || cleanName.contains('explorer')) return '⭐⭐⭐⭐';
     else if (cleanName.contains('advanced') || cleanName.contains('advance')) return '⭐⭐⭐';
     else if (cleanName.contains('intermediate')) return '⭐⭐';
+    else if (cleanName.contains('anit')) return '⭐'; // 1 star for ANIT (same as Newbie)
     else if (cleanName.contains('newbie') || cleanName.contains('beginner')) return '⭐';
     
     final starCount = min(index + 1, 5);

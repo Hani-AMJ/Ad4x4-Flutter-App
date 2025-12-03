@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
-import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../data/models/trip_comment_model.dart';
 
 /// Trip Chat State - Manages comments/chat data

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/logbook_model.dart';
-import '../../../../data/models/user_model.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../providers/logbook_provider.dart';
 import '../widgets/member_search_dialog.dart';
@@ -550,7 +549,7 @@ class _AdminLogbookEntriesScreenState
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: colors.surfaceVariant.withOpacity(0.5),
+                    color: colors.surfaceContainerHighest.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(

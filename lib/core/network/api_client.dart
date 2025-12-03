@@ -47,12 +47,25 @@ class ApiClient {
         case DioExceptionType.connectionTimeout:
         case DioExceptionType.sendTimeout:
         case DioExceptionType.receiveTimeout:
-          errorMessage = 'Connection timeout: $method $path (${error.type.name})';
+          errorMessage = 'Connection timeout: $method $path (Server took too long to respond)';
           errorType = 'network_timeout';
           break;
         case DioExceptionType.badResponse:
           final responseData = error.response?.data;
           String detail = 'Unknown error';
+          
+          // Handle authentication errors specifically
+          if (statusCode == 401) {
+            detail = 'Authentication failed. Please login again.';
+            errorType = 'auth_unauthorized';
+            errorMessage = 'Auth Error: $method $path - $detail';
+            break;
+          } else if (statusCode == 403) {
+            detail = 'Access forbidden. You don\'t have permission for this action.';
+            errorType = 'auth_forbidden';
+            errorMessage = 'Auth Error: $method $path - $detail';
+            break;
+          }
           
           if (responseData is Map<String, dynamic>) {
             detail = responseData['message'] ?? 
@@ -73,8 +86,14 @@ class ApiClient {
           errorType = 'network_cancelled';
           break;
         case DioExceptionType.connectionError:
-          errorMessage = 'Connection failed: $method $path (No internet or server unreachable)';
-          errorType = 'network_connection';
+          // Check if it's actually an auth issue masquerading as connection error
+          if (statusCode == 401) {
+            errorMessage = 'Auth Error: $method $path - Authentication failed. Please login again.';
+            errorType = 'auth_unauthorized';
+          } else {
+            errorMessage = 'Connection failed: $method $path (No internet or server unreachable)';
+            errorType = 'network_connection';
+          }
           break;
         default:
           errorMessage = 'Network error: $method $path - ${error.message ?? "Unknown"}';
@@ -83,11 +102,9 @@ class ApiClient {
       }
       
       // Build stack trace summary
-      String? stackTraceSummary;
-      if (error.stackTrace != null) {
-        final lines = error.stackTrace.toString().split('\n');
-        stackTraceSummary = lines.take(10).join('\n'); // First 10 lines only
-      }
+      final stackTrace = error.stackTrace;
+      final lines = stackTrace.toString().split('\n');
+      final stackTraceSummary = lines.take(10).join('\n'); // First 10 lines only
       
       // Log the error
       await errorLog.logError(

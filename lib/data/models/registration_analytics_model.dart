@@ -2,6 +2,7 @@
 /// 
 /// Models for tracking registration statistics, analytics, export data,
 /// and bulk operation requests for trip registration management.
+library;
 
 import 'trip_model.dart';
 

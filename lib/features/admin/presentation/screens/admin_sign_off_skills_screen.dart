@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../data/models/logbook_model.dart';
-import '../../../../data/models/user_model.dart';
-import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../providers/logbook_provider.dart';
 import '../widgets/member_search_dialog.dart';
@@ -35,7 +33,7 @@ class _AdminSignOffSkillsScreenState
   
   List<MemberSkillStatus>? _memberSkills;
   
-  Set<int> _skillsToSignOff = {};
+  final Set<int> _skillsToSignOff = {};
   final Map<int, TextEditingController> _commentControllers = {};
   
   bool _isLoadingSkills = false;

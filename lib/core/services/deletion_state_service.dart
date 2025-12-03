@@ -34,8 +34,9 @@ class DeletionStateService {
   
   /// Get user-specific key for deletion requested flag
   String get _keyDeletionRequested {
-    if (_userId != null && _userId!.isNotEmpty) {
-      return 'deletion_requested_$_userId';
+    final userId = _userId;
+    if (userId != null && userId.isNotEmpty) {
+      return 'deletion_requested_$userId';
     }
     // Fallback to global key (backward compatibility)
     return 'deletion_requested';
@@ -43,8 +44,9 @@ class DeletionStateService {
   
   /// Get user-specific key for deletion request date
   String get _keyDeletionRequestDate {
-    if (_userId != null && _userId!.isNotEmpty) {
-      return 'deletion_request_date_$_userId';
+    final userId = _userId;
+    if (userId != null && userId.isNotEmpty) {
+      return 'deletion_request_date_$userId';
     }
     // Fallback to global key (backward compatibility)
     return 'deletion_request_date';

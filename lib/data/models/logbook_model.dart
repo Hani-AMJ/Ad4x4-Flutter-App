@@ -1,6 +1,7 @@
 /// Logbook Models
 /// 
 /// Models for logbook entries, skills, and skill references
+library;
 
 import 'package:flutter/foundation.dart';
 import '../../shared/constants/level_constants.dart';

@@ -10,6 +10,7 @@
 /// - Timestamp and stack trace recording
 /// - Export functionality for sharing logs
 /// - Clear all logs functionality
+library;
 
 import 'dart:convert';
 import 'package:flutter/foundation.dart';

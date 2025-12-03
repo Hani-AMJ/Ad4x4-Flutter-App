@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart'; // V2 - Clean implementation
 import '../../../../shared/widgets/widgets.dart';
 import '../../../../data/repositories/main_api_repository.dart'; // ✅ NEW
 import '../../../../core/services/deletion_state_service.dart';
-import '../../../../core/services/error_log_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -183,7 +182,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('Club News (Email)'),
                 subtitle: const Text('Receive club news via email'),
                 value: _clubNewsEmail,
-                activeColor: colors.primary,
+                activeThumbColor: colors.primary,
                 onChanged: (value) {
                   setState(() => _clubNewsEmail = value);
                   _saveNotificationSettings();
@@ -194,7 +193,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('Club News (Push)'),
                 subtitle: const Text('Receive club news via push notifications'),
                 value: _clubNewsPush,
-                activeColor: colors.primary,
+                activeThumbColor: colors.primary,
                 onChanged: (value) {
                   setState(() => _clubNewsPush = value);
                   _saveNotificationSettings();
@@ -209,7 +208,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('New Trip Alerts (Email)'),
                 subtitle: const Text('Email alerts for new trips'),
                 value: _newTripAlertsEmail,
-                activeColor: colors.primary,
+                activeThumbColor: colors.primary,
                 onChanged: (value) {
                   setState(() => _newTripAlertsEmail = value);
                   _saveNotificationSettings();
@@ -220,7 +219,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('New Trip Alerts (Push)'),
                 subtitle: const Text('Push notifications for new trips'),
                 value: _newTripAlertsPush,
-                activeColor: colors.primary,
+                activeThumbColor: colors.primary,
                 onChanged: (value) {
                   setState(() => _newTripAlertsPush = value);
                   _saveNotificationSettings();
@@ -235,7 +234,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('Upgrade Request Reminders'),
                 subtitle: const Text('Email reminders for upgrade requests'),
                 value: _upgradeRequestReminderEmail,
-                activeColor: colors.primary,
+                activeThumbColor: colors.primary,
                 onChanged: (value) {
                   setState(() => _upgradeRequestReminderEmail = value);
                   _saveNotificationSettings();
@@ -270,7 +269,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: const Text('Location Sharing'),
               subtitle: const Text('Share location during trips'),
               value: _locationSharing,
-              activeColor: colors.primary,
+              activeThumbColor: colors.primary,
               onChanged: (value) {
                 setState(() {
                   _locationSharing = value;

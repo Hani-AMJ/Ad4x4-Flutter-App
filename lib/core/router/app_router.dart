@@ -51,6 +51,7 @@ import '../../features/settings/presentation/screens/error_logs_screen.dart';
 import '../../features/settings/presentation/screens/terms_conditions_screen.dart';
 import '../../features/settings/presentation/screens/privacy_policy_screen.dart';
 import '../../features/members/presentation/screens/members_list_screen.dart';
+import '../../features/members/presentation/screens/members_landing_screen.dart';
 import '../../features/members/presentation/screens/member_details_screen.dart';
 import '../../features/vehicles/presentation/screens/vehicles_list_screen.dart';
 import '../../features/vehicles/presentation/screens/add_vehicle_screen.dart';
@@ -403,7 +404,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/members',
         name: 'members',
-        builder: (context, state) => const MembersListScreen(),
+        builder: (context, state) => const MembersLandingScreen(),
+      ),
+      GoRoute(
+        path: '/members/level/:levelName',
+        name: 'members-by-level',
+        builder: (context, state) {
+          final levelName = state.pathParameters['levelName']!;
+          return MembersListScreen(levelFilter: levelName);
+        },
+      ),
+      GoRoute(
+        path: '/members/search',
+        name: 'members-search',
+        builder: (context, state) {
+          final query = state.uri.queryParameters['q'] ?? '';
+          return MembersListScreen(searchQuery: query);
+        },
       ),
       GoRoute(
         path: '/members/:id',

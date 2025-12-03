@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/logbook_model.dart';
-import '../../../../data/models/user_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../providers/logbook_provider.dart';
@@ -32,7 +31,7 @@ class _AdminCreateLogbookEntryScreenState
   List<Map<String, dynamic>> _members = [];
   List<Map<String, dynamic>> _trips = [];
   List<LogbookSkill> _skills = [];
-  Set<int> _selectedSkillIds = {};
+  final Set<int> _selectedSkillIds = {};
   
   bool _isLoadingData = true;
   bool _isSubmitting = false;
@@ -241,7 +240,7 @@ class _AdminCreateLogbookEntryScreenState
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          value: _selectedMemberId,
+          initialValue: _selectedMemberId,
           decoration: InputDecoration(
             hintText: 'Select member',
             prefixIcon: const Icon(Icons.person),
@@ -292,7 +291,7 @@ class _AdminCreateLogbookEntryScreenState
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          value: _selectedTripId,
+          initialValue: _selectedTripId,
           decoration: InputDecoration(
             hintText: 'Select trip',
             prefixIcon: const Icon(Icons.directions_car),

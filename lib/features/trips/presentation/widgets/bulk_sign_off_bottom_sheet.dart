@@ -479,7 +479,7 @@ class _BulkSignOffBottomSheetState extends ConsumerState<BulkSignOffBottomSheet>
             final hasEntry = widget.existingEntries[memberId] != null;
             
             return _buildMemberCheckbox(member, isSelected, hasEntry, theme, colors);
-          }).toList(),
+          }),
         
         const SizedBox(height: 24),
         const Divider(),
@@ -558,7 +558,7 @@ class _BulkSignOffBottomSheetState extends ConsumerState<BulkSignOffBottomSheet>
               activeColor: colors.primary,
             ),
           );
-        }).toList(),
+        }),
         
         const SizedBox(height: 24),
         

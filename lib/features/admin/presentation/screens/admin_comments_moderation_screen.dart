@@ -712,7 +712,7 @@ class _BanUserDialogState extends State<_BanUserDialog> {
           const Text('Duration:'),
           const SizedBox(height: 8),
           DropdownButtonFormField<BanDuration>(
-            value: _duration,
+            initialValue: _duration,
             decoration: const InputDecoration(border: OutlineInputBorder()),
             items: BanDuration.values
                 .map((d) => DropdownMenuItem(

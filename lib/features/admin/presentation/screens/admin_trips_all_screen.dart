@@ -7,7 +7,6 @@ import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/utils/status_helpers.dart';
 import '../../../../core/utils/level_display_helper.dart';
 import '../widgets/admin_trip_filters_bar.dart';
-import '../providers/logbook_provider.dart';
 import 'package:go_router/go_router.dart';
 
 /// Admin Trip List Screen

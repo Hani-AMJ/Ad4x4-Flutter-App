@@ -116,7 +116,7 @@ class _AdminRegistrationAnalyticsScreenState
             padding: const EdgeInsets.all(16),
             color: colors.surfaceContainerHighest,
             child: DropdownButtonFormField<int>(
-              value: _selectedTripId,
+              initialValue: _selectedTripId,
               decoration: const InputDecoration(
                 labelText: 'Select Trip',
                 border: OutlineInputBorder(),

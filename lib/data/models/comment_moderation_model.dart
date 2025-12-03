@@ -2,6 +2,7 @@
 /// 
 /// Extended models for trip comment moderation including approval workflow,
 /// flagging system, and moderation history tracking.
+library;
 
 import 'trip_model.dart';
 import 'trip_comment_model.dart';

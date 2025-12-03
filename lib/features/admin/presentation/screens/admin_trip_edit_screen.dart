@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -716,7 +714,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
             
             // Difficulty Level
             DropdownButtonFormField<int>(
-              value: _selectedLevelId,
+              initialValue: _selectedLevelId,
               decoration: const InputDecoration(
                 labelText: 'Difficulty Level *',
                 border: OutlineInputBorder(),
@@ -761,7 +759,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
                 
                 return areasAsync.when(
                   data: (areas) => DropdownButtonFormField<String>(
-                    value: _selectedAreaValue,
+                    initialValue: _selectedAreaValue,
                     decoration: const InputDecoration(
                       labelText: 'Trip Area (Optional)',
                       border: OutlineInputBorder(),
@@ -830,7 +828,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
                     },
                   ),
                   loading: () => DropdownButtonFormField<String>(
-                    value: null,
+                    initialValue: null,
                     decoration: const InputDecoration(
                       labelText: 'Trip Area (Optional)',
                       border: OutlineInputBorder(),
@@ -840,7 +838,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
                     onChanged: null,
                   ),
                   error: (e, s) => DropdownButtonFormField<String>(
-                    value: _selectedAreaValue,
+                    initialValue: _selectedAreaValue,
                     decoration: const InputDecoration(
                       labelText: 'Trip Area (Optional)',
                       border: OutlineInputBorder(),
@@ -865,7 +863,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
             
             // Meeting Point
             DropdownButtonFormField<int>(
-              value: _selectedMeetingPointId,
+              initialValue: _selectedMeetingPointId,
               decoration: const InputDecoration(
                 labelText: 'Meeting Point (Optional)',
                 border: OutlineInputBorder(),
@@ -880,7 +878,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
                     value: mp.id,
                     child: Text(mp.displayName),
                   );
-                }).toList(),
+                }),
               ],
               onChanged: (value) {
                 setState(() {
@@ -1346,7 +1344,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
     required String Function(T) getDisplay,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -1362,7 +1360,7 @@ class _AdminTripEditScreenState extends ConsumerState<AdminTripEditScreen> {
             value: item,
             child: Text(getDisplay(item)),
           );
-        }).toList(),
+        }),
       ],
       onChanged: onChanged,
     );

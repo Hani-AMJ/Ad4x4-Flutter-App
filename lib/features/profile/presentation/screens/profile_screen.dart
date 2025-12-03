@@ -1369,7 +1369,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                 ),
               ),
             );
-          }).toList(),
+          }),
           if (_vehicleMods.length > 3) ...[
             const SizedBox(height: 8),
             Center(

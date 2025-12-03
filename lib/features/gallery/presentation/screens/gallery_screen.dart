@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/album_model.dart';
-import '../../../../data/sample_data/sample_gallery.dart';
 import '../../../../data/repositories/gallery_api_repository.dart';
-import '../../../../core/providers/gallery_auth_provider.dart';
 import '../../../../core/config/api_config.dart';
 import '../../../../shared/widgets/widgets.dart';
 import 'photo_search_screen.dart';
@@ -413,7 +411,7 @@ class _GalleryScreenState extends ConsumerState<GalleryScreen> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<int>(
-                  value: selectedLevel,
+                  initialValue: selectedLevel,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     isDense: true,

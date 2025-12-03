@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../data/models/trip_model.dart';
-import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/repository_providers.dart';
-import '../../../../shared/widgets/widgets.dart';
 import '../../../../shared/widgets/error/error_state_widget.dart';
 
 /// Filtered Trips Screen

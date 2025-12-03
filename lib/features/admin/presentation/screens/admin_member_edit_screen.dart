@@ -384,7 +384,7 @@ class _AdminMemberEditScreenState extends ConsumerState<AdminMemberEditScreen> {
                 final brandsAsync = ref.watch(carBrandChoicesProvider);
                 return brandsAsync.when(
                   data: (brands) => DropdownButtonFormField<String>(
-                    value: _carBrandController.text.isNotEmpty ? _carBrandController.text : null,
+                    initialValue: _carBrandController.text.isNotEmpty ? _carBrandController.text : null,
                     decoration: const InputDecoration(
                       labelText: 'Car Brand',
                       border: OutlineInputBorder(),

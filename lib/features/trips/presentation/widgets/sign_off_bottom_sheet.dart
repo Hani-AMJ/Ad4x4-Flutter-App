@@ -537,7 +537,7 @@ class _SignOffBottomSheetState extends ConsumerState<SignOffBottomSheet> {
               activeColor: colors.primary,
             ),
           );
-        }).toList(),
+        }),
         
         const SizedBox(height: 24),
         

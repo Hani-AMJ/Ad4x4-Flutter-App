@@ -3,6 +3,7 @@
 /// Tests the backend-driven HERE Maps geocoding integration
 /// 
 /// Run with: dart test_here_maps_migration.dart
+library;
 
 import 'dart:io';
 import 'package:dio/dio.dart';

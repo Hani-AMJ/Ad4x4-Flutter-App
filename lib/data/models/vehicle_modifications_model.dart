@@ -4,6 +4,7 @@
 /// This is a production-ready model with mock cache storage using Hive.
 /// 
 /// Backend API Placeholder: When backend is ready, replace cache with API calls.
+library;
 
 class VehicleModifications {
   final String id; // Unique ID (UUID in cache, backend ID in production)

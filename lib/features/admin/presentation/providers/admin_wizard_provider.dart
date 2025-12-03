@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../data/models/admin_trip_search_criteria.dart';
 import '../../../../data/models/trip_model.dart';

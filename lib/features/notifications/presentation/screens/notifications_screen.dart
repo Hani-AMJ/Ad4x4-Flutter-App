@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/notification_model.dart';
-import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/repository_providers.dart';
 import 'package:intl/intl.dart';
 
@@ -179,7 +178,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final unreadCount = _notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: colors.surface,
         elevation: 0,

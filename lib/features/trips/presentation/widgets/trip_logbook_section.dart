@@ -194,7 +194,7 @@ class _TripLogbookSectionState extends ConsumerState<TripLogbookSection> {
               _buildLoadingState()
             else if (isMarshal)
               _buildMarshalView(theme)
-            else if (isRegistered)
+            else if (isRegistered && user != null)
               _buildMemberView(user!, theme)
             else
               _buildGuestView(theme),
@@ -340,7 +340,7 @@ class _TripLogbookSectionState extends ConsumerState<TripLogbookSection> {
             hasEntry: hasEntry,
             theme: theme,
           );
-        }).toList(),
+        }),
       ],
     );
   }

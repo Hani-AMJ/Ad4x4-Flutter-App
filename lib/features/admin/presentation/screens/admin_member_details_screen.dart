@@ -69,9 +69,9 @@ class _AdminMemberDetailsScreenState extends ConsumerState<AdminMemberDetailsScr
         repository.getMemberTripCounts(widget.memberId), // ✅ NEW: Load trip statistics
       ]);
 
-      final memberJson = results[0] as Map<String, dynamic>;
-      final tripHistoryJson = results[1] as Map<String, dynamic>;
-      final tripStatsJson = results[2] as Map<String, dynamic>; // ✅ NEW
+      final memberJson = results[0];
+      final tripHistoryJson = results[1];
+      final tripStatsJson = results[2]; // ✅ NEW
 
       final member = BasicMember.fromJson(memberJson);
       final tripsData = tripHistoryJson['results'] as List<dynamic>? ?? [];

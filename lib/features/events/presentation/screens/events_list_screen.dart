@@ -85,7 +85,7 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
     final colors = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: colors.surface,
         elevation: 0,

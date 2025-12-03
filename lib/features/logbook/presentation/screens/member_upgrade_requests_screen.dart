@@ -379,39 +379,44 @@ class _MemberUpgradeRequestsScreenState extends ConsumerState<MemberUpgradeReque
               
               // Voting Progress
               if (request.voteSummary != null) ...[
-                Row(
-                  children: [
-                    Icon(
-                      Icons.how_to_vote,
-                      size: 16,
-                      color: colors.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Votes: ${request.voteSummary!.totalVotes}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: LinearProgressIndicator(
-                        value: request.voteSummary!.approvalPercentage / 100,
-                        backgroundColor: Colors.red.shade100,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade400),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${request.voteSummary!.approvalPercentage.toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                Builder(
+                  builder: (context) {
+                    final voteSummary = request.voteSummary!;
+                    return Row(
+                      children: [
+                        Icon(
+                          Icons.how_to_vote,
+                          size: 16,
+                          color: colors.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Votes: ${voteSummary.totalVotes}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: LinearProgressIndicator(
+                            value: voteSummary.approvalPercentage / 100,
+                            backgroundColor: Colors.red.shade100,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade400),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${voteSummary.approvalPercentage.toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
                 ),
                 const SizedBox(height: 12),
               ],
@@ -691,49 +696,59 @@ class _MemberUpgradeRequestsScreenState extends ConsumerState<MemberUpgradeReque
 
                 // Voting progress (for pending/in-progress requests)
                 if (isPending && request.voteSummary != null) ...[
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Voting Progress',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.how_to_vote,
-                        size: 18,
-                        color: colors.onSurface.withValues(alpha: 0.6),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${request.voteSummary!.totalVotes} votes received',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: colors.onSurface.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: request.voteSummary!.approvalPercentage / 100,
-                    backgroundColor: Colors.red.shade100,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade400),
-                    minHeight: 8,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${request.voteSummary!.approvalPercentage.toStringAsFixed(0)}% approval',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: colors.onSurface.withValues(alpha: 0.8),
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final voteSummary = request.voteSummary!;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 20),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Voting Progress',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.how_to_vote,
+                                size: 18,
+                                color: colors.onSurface.withValues(alpha: 0.6),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${voteSummary.totalVotes} votes received',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colors.onSurface.withValues(alpha: 0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: voteSummary.approvalPercentage / 100,
+                            backgroundColor: Colors.red.shade100,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade400),
+                            minHeight: 8,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${voteSummary.approvalPercentage.toStringAsFixed(0)}% approval',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: colors.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
                   ),
                 ],
 

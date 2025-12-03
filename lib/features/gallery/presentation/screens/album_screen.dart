@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/album_model.dart';
-import '../../../../data/sample_data/sample_gallery.dart';
 import '../../../../data/repositories/gallery_api_repository.dart';
 import '../../../../core/providers/gallery_auth_provider.dart';
 import '../../../../shared/widgets/widgets.dart';

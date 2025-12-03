@@ -50,9 +50,9 @@ class TripRequest {
       int numericLevel = 0;
       String displayName = levelData;
 
-      if (levelData.toLowerCase().contains('beginner'))
+      if (levelData.toLowerCase().contains('beginner')) {
         numericLevel = 1;
-      else if (levelData.toLowerCase().contains('easy'))
+      } else if (levelData.toLowerCase().contains('easy'))
         numericLevel = 2;
       else if (levelData.toLowerCase().contains('intermediate'))
         numericLevel = 3;

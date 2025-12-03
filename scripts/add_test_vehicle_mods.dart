@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import '../lib/core/services/vehicle_modifications_cache_service.dart';
-import '../lib/data/models/vehicle_modifications_model.dart';
+import 'package:ad4x4_mobile/core/services/vehicle_modifications_cache_service.dart';
+import 'package:ad4x4_mobile/data/models/vehicle_modifications_model.dart';
 
 /// Quick test script to add sample vehicle modifications to SharedPreferences
 /// Run with: dart run scripts/add_test_vehicle_mods.dart

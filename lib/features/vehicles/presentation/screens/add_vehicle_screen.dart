@@ -87,7 +87,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
     final colors = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: colors.surface,
         elevation: 0,

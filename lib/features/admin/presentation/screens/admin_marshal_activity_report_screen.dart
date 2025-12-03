@@ -334,7 +334,7 @@ class _AdminMarshalActivityReportScreenState
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _sortBy,
+                    initialValue: _sortBy,
                     decoration: InputDecoration(
                       labelText: 'Sort By',
                       prefixIcon: const Icon(Icons.sort, size: 20),

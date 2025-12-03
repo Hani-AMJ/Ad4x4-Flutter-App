@@ -1637,7 +1637,7 @@ class TripDetailsScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Your level (${user?.level?.name ?? "Unknown"}) does not meet the requirement (${trip.level.name})',
+                    'Your level (${user != null ? (user.level?.name ?? "Unknown") : "Unknown"}) does not meet the requirement (${trip.level.name})',
                     style: TextStyle(
                       color: colors.onErrorContainer,
                       fontSize: 13,

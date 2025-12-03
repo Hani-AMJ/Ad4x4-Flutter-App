@@ -553,7 +553,7 @@ class _AdminMeetingPointFormScreenState extends ConsumerState<AdminMeetingPointF
             
             // Area Code Dropdown (Required field)
             DropdownButtonFormField<String>(
-              value: _selectedAreaCode,
+              initialValue: _selectedAreaCode,
               decoration: InputDecoration(
                 labelText: 'Area *',
                 hintText: 'Select area or fetch from coordinates',

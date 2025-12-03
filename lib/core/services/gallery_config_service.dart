@@ -10,6 +10,7 @@
 /// - Logs errors for debugging
 /// 
 /// Backend API: GET /api/settings/gallery-config/
+library;
 
 import 'dart:async';
 import 'dart:convert';

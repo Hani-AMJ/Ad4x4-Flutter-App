@@ -9,6 +9,7 @@
 /// - approvalStatusChoicesProvider (lib/features/admin/presentation/providers/approval_status_provider.dart)
 /// 
 /// These utility functions remain available for legacy code and quick status checks.
+library;
 
 /// Approval Status Enum - Used throughout the app for type-safe status handling
 /// 

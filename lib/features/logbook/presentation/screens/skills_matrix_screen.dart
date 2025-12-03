@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/logbook_model.dart';
-import '../../../../data/models/user_model.dart';
 import '../../../../data/repositories/main_api_repository.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/level_configuration_provider.dart';
