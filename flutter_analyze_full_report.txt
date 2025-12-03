@@ -1,0 +1,1207 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 67.0.0 (92.0.0 available)
+  analyzer 6.4.1 (9.0.0 available)
+  analyzer_plugin 0.11.3 (0.13.11 available)
+  archive 3.6.1 (4.0.7 available)
+  build 2.4.1 (4.0.3 available)
+  build_config 1.1.2 (1.2.0 available)
+  build_daemon 4.1.0 (4.1.1 available)
+  build_resolvers 2.4.2 (3.0.4 available)
+  build_runner 2.4.13 (2.10.4 available)
+  build_runner_core 7.3.2 (9.3.2 available)
+  built_value 8.12.0 (8.12.1 available)
+  characters 1.4.0 (1.4.1 available)
+  cross_file 0.3.5 (0.3.5+1 available)
+  custom_lint_core 0.6.3 (0.8.1 available)
+  dart_style 2.3.6 (3.1.3 available)
+  file_selector_linux 0.9.3+2 (0.9.4 available)
+  file_selector_macos 0.9.4+5 (0.9.5 available)
+  file_selector_platform_interface 2.6.2 (2.7.0 available)
+  file_selector_windows 0.9.3+4 (0.9.3+5 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  flutter_map 7.0.2 (8.2.2 available)
+  flutter_plugin_android_lifecycle 2.0.32 (2.0.33 available)
+  flutter_riverpod 2.6.1 (3.0.3 available)
+  freezed 2.5.2 (3.2.3 available)
+  freezed_annotation 2.4.4 (3.1.0 available)
+  go_router 13.2.5 (17.0.0 available)
+  http 1.5.0 (1.6.0 available)
+  image 4.3.0 (4.5.4 available)
+  image_cropper 8.1.0 (11.0.0 available)
+  image_cropper_for_web 6.1.0 (7.0.0 available)
+  image_cropper_platform_interface 7.2.0 (8.0.0 available)
+  image_picker 1.2.0 (1.2.1 available)
+  image_picker_android 0.8.13+7 (0.8.13+10 available)
+  image_picker_for_web 3.1.0 (3.1.1 available)
+  image_picker_ios 0.8.13+1 (0.8.13+2 available)
+  intl 0.18.1 (0.20.2 available)
+  jiffy 6.2.1 (6.4.4 available)
+  js 0.6.7 (discontinued)
+  json_serializable 6.8.0 (6.11.3 available)
+  lints 5.1.1 (6.0.0 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.17.0 available)
+  mgrs_dart 2.0.0 (3.0.0 available)
+  path_provider_android 2.2.20 (2.2.22 available)
+  path_provider_foundation 2.4.3 (2.5.1 available)
+  permission_handler 11.4.0 (12.0.1 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  proj4dart 2.1.0 (3.0.0 available)
+  protobuf 3.1.0 (6.0.0 available)
+  retrofit 4.9.0 (4.9.1 available)
+  retrofit_generator 8.2.1 (10.2.0 available)
+  riverpod 2.6.1 (3.0.3 available)
+  riverpod_analyzer_utils 0.5.1 (0.5.10 available)
+  riverpod_annotation 2.6.1 (3.0.3 available)
+  riverpod_generator 2.4.0 (3.0.3 available)
+  share_plus 10.1.4 (12.0.1 available)
+  share_plus_platform_interface 5.0.2 (6.1.0 available)
+  shared_preferences_android 2.4.15 (2.4.18 available)
+  shared_preferences_foundation 2.5.5 (2.5.6 available)
+  shelf_web_socket 2.0.1 (3.0.0 available)
+  source_gen 1.5.0 (4.1.1 available)
+  source_helper 1.3.5 (1.3.9 available)
+  syncfusion_flutter_core 27.2.5 (31.2.16 available)
+  syncfusion_flutter_xlsio 27.2.5 (31.2.16 available)
+  syncfusion_officecore 27.2.5 (31.2.16 available)
+  test_api 0.7.6 (0.7.8 available)
+  unicode 0.3.1 (1.1.8 available)
+  url_launcher_android 6.3.24 (6.3.28 available)
+  url_launcher_ios 6.3.5 (6.3.6 available)
+  url_launcher_linux 3.2.1 (3.2.2 available)
+  url_launcher_macos 3.2.4 (3.2.5 available)
+  url_launcher_windows 3.1.4 (3.1.5 available)
+Got dependencies!
+1 package is discontinued.
+73 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing flutter_app...                                        
+
+   info • Don't invoke 'print' in production code • lib/core/config/api_config.dart:40:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/config/api_config.dart:45:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/config/api_config.dart:48:7 • avoid_print
+   info • The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/services.dart' • lib/core/config/brand_tokens.dart:3:8 • unnecessary_import
+warning • The operand can't be 'null', so the condition is always 'true' • lib/core/network/api_client.dart:87:28 • unnecessary_null_comparison
+   info • Don't invoke 'print' in production code • lib/core/network/api_client.dart:117:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/network/api_client.dart:148:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/network/api_client.dart:171:13 • avoid_print
+warning • The declaration '_refreshToken' isn't referenced • lib/core/network/api_client.dart:185:16 • unused_element
+warning • The declaration '_retry' isn't referenced • lib/core/network/api_client.dart:198:29 • unused_element
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:62:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:69:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:76:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:80:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:85:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:89:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:102:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:125:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:136:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:140:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:149:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:160:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:174:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:185:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:188:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:215:5 • avoid_print
+warning • The value of the local variable 'response' isn't used • lib/core/providers/auth_provider_v2.dart:219:13 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:240:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:244:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:255:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:260:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:264:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:281:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:283:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/auth_provider_v2.dart:311:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/car_brand_provider.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/car_brand_provider.dart:44:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/country_provider.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/country_provider.dart:44:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/emirate_provider.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/emirate_provider.dart:44:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:58:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:66:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:78:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:82:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:88:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:92:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:105:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:135:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:143:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:146:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:158:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:159:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:166:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:167:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:175:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:182:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:190:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:191:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:195:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:210:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:218:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:221:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auth_provider.dart:250:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:19:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:23:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:31:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:33:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:34:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:35:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gallery_auto_auth.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gender_provider.dart:31:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/providers/gender_provider.dart:45:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:135:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:141:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:147:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:153:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:159:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:165:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:170:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:181:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:182:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:946:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/router/app_router.dart:952:7 • avoid_print
+warning • The '!' will have no effect because the receiver can't be null • lib/core/services/deletion_state_service.dart:37:35 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/core/services/deletion_state_service.dart:46:35 • unnecessary_non_null_assertion
+   info • Dangling library doc comment • lib/core/services/error_log_service.dart:1:1 • dangling_library_doc_comments
+   info • Dangling library doc comment • lib/core/services/gallery_config_service.dart:1:1 • dangling_library_doc_comments
+   info • The imported package 'http' isn't a dependency of the importing package • lib/core/services/gallery_config_service.dart:16:8 • depend_on_referenced_packages
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:46:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:52:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:60:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:73:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:74:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:75:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:76:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:81:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:82:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:86:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:90:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:94:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:95:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:105:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/gallery_config_service.dart:113:5 • avoid_print
+warning • Unused import: 'dart:typed_data' • lib/core/services/image_upload_service.dart:3:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:34:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:36:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:71:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:92:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:101:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:117:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:221:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:228:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:237:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:238:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:239:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:240:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:241:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:242:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:243:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:244:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:249:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:252:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:255:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:258:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:261:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:264:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:270:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:271:5 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/core/services/level_configuration_service.dart:289:38 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/core/services/level_configuration_service.dart:290:45 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/core/services/level_configuration_service.dart:291:78 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/core/services/level_configuration_service.dart:292:79 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/core/services/level_configuration_service.dart:293:50 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/core/services/level_configuration_service.dart:294:78 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/core/services/level_configuration_service.dart:358:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:37:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:38:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:39:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:43:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:47:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:75:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:79:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:80:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:81:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:108:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:113:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:114:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:117:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:119:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:120:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:125:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:126:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:127:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:155:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:178:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:183:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:188:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:192:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:195:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:210:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:230:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:233:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:248:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:252:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:256:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:289:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:313:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:316:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:330:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:334:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:338:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:376:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:378:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:382:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:403:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:407:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:418:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:420:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:435:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:464:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/logbook_enrichment_service.dart:469:5 • avoid_print
+warning • Unused import: 'dart:convert' • lib/core/services/trip_export_service.dart:1:8 • unused_import
+   info • 'Table.fromTextArray' is deprecated and shouldn't be used. Use TableHelper.fromTextArray() instead • lib/core/services/trip_export_service.dart:201:11 • deprecated_member_use
+   info • Dangling library doc comment • lib/core/utils/status_helpers.dart:11:1 • dangling_library_doc_comments
+   info • Don't invoke 'print' in production code • lib/core/utils/text_utils.dart:64:7 • avoid_print
+   info • Dangling library doc comment • lib/data/models/comment_moderation_model.dart:1:1 • dangling_library_doc_comments
+   info • Dangling library doc comment • lib/data/models/gallery_config_model.dart:1:1 • dangling_library_doc_comments
+   info • Dangling library doc comment • lib/data/models/logbook_model.dart:1:1 • dangling_library_doc_comments
+   info • Dangling library doc comment • lib/data/models/registration_analytics_model.dart:1:1 • dangling_library_doc_comments
+   info • Don't invoke 'print' in production code • lib/data/models/trip_comment_model.dart:53:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/data/models/trip_comment_model.dart:54:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/data/models/trip_comment_model.dart:59:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/data/models/trip_comment_model.dart:103:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/data/models/trip_comment_model.dart:104:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/data/models/trip_comment_model.dart:105:7 • avoid_print
+   info • Dangling library doc comment • lib/data/models/trip_media_model.dart:1:1 • dangling_library_doc_comments
+warning • Unused import: 'user_model.dart' • lib/data/models/trip_model.dart:1:8 • unused_import
+   info • Statements in an if should be enclosed in a block • lib/data/models/trip_request_model.dart:54:9 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/models/trip_request_model.dart:56:9 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/models/trip_request_model.dart:58:9 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/models/trip_request_model.dart:60:9 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/models/trip_request_model.dart:62:9 • curly_braces_in_flow_control_structures
+   info • Dangling library doc comment • lib/data/models/vehicle_modifications_model.dart:1:1 • dangling_library_doc_comments
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/gallery_api_repository.dart:43:7 • curly_braces_in_flow_control_structures
+warning • Unused import: 'dart:io' • lib/data/repositories/main_api_repository.dart:2:8 • unused_import
+warning • Unused import: '../models/trip_model.dart' • lib/data/repositories/main_api_repository.dart:10:8 • unused_import
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:302:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:314:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:316:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:321:7 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/data/repositories/main_api_repository.dart:330:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/data/repositories/main_api_repository.dart:341:7 • avoid_print
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:784:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:787:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:802:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:809:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:811:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:813:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:1221:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:1223:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:1225:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:1227:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:1229:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/data/repositories/main_api_repository.dart:1231:7 • curly_braces_in_flow_control_structures
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:75:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:76:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:79:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:82:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:83:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:84:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:85:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:99:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:104:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:109:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:115:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:122:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:130:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:142:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:143:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:172:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:177:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:194:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_trips_search_provider.dart:209:5 • avoid_print
+   info • The import of 'package:flutter_riverpod/flutter_riverpod.dart' is unnecessary because all of the used elements are also provided by the import of 'package:riverpod_annotation/riverpod_annotation.dart' • lib/features/admin/presentation/providers/admin_wizard_provider.dart:1:8 • unnecessary_import
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:45:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:54:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:55:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:64:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:81:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:93:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:98:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:124:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:134:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:146:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:151:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:160:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:162:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:163:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:261:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:262:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:263:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:264:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:265:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:266:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:269:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:276:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:278:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:287:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:290:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:308:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:311:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:328:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:333:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:361:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:371:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:384:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:389:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:390:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:393:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:394:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:395:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/admin_wizard_provider.dart:400:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/approval_status_provider.dart:46:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/approval_status_provider.dart:60:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/upgrade_status_provider.dart:34:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/providers/upgrade_status_provider.dart:48:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_audit_log_screen.dart:78:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_audit_log_screen.dart:81:7 • avoid_print
+   info • The private field _errors could be 'final' • lib/features/admin/presentation/screens/admin_bulk_operations_screen.dart:40:16 • prefer_final_fields
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_bulk_operations_screen.dart:79:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_bulk_operations_screen.dart:82:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/features/admin/presentation/screens/admin_bulk_operations_screen.dart:172:28 • use_build_context_synchronously
+   info • Dangling library doc comment • lib/features/admin/presentation/screens/admin_bulk_registrations_screen.dart:1:1 • dangling_library_doc_comments
+warning • Unused import: 'package:go_router/go_router.dart' • lib/features/admin/presentation/screens/admin_bulk_registrations_screen.dart:15:8 • unused_import
+warning • Unused import: '../../../../data/models/trip_model.dart' • lib/features/admin/presentation/screens/admin_bulk_registrations_screen.dart:17:8 • unused_import
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_bulk_registrations_screen.dart:356:23 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_comments_moderation_screen.dart:715:13 • deprecated_member_use
+warning • Unused import: '../../../../data/models/user_model.dart' • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:5:8 • unused_import
+warning • The value of the field '_selectedMemberName' isn't used • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:28:11 • unused_field
+warning • The value of the field '_selectedTripTitle' isn't used • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:30:11 • unused_field
+   info • The private field _selectedSkillIds could be 'final' • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:35:12 • prefer_final_fields
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:78:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:81:11 • avoid_print
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:244:11 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_create_logbook_entry_screen.dart:295:11 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_create_upgrade_request_screen.dart:274:19 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:224:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:225:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:226:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:227:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:229:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:233:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:234:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:237:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:240:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:243:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:246:5 • avoid_print
+warning • The declaration '_hasContentModerationPermissions' isn't referenced • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:672:8 • unused_element
+warning • A value for optional parameter 'badge' isn't ever given • lib/features/admin/presentation/screens/admin_dashboard_screen.dart:722:10 • unused_element_parameter
+warning • Unused import: 'dart:convert' • lib/features/admin/presentation/screens/admin_export_data_screen.dart:8:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps • lib/features/admin/presentation/screens/admin_export_data_screen.dart:62:28 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_export_data_screen.dart:89:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_export_data_screen.dart:92:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_export_data_screen.dart:156:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_export_data_screen.dart:159:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_export_data_screen.dart:220:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_export_data_screen.dart:223:5 • avoid_print
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_export_data_screen.dart:401:21 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_export_data_screen.dart:402:21 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_export_data_screen.dart:411:21 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_export_data_screen.dart:412:21 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_export_data_screen.dart:421:21 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_export_data_screen.dart:422:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_feedback_screen.dart:131:21 • deprecated_member_use
+warning • The value of the field '_allEntries' isn't used • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:29:22 • unused_field
+warning • The value of the field '_allSkills' isn't used • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:30:30 • unused_field
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:49:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:54:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:59:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:73:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:81:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:83:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:87:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:89:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:90:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:92:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:94:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:103:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:104:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:105:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:106:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:108:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:111:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:114:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:209:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:211:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_logbook_analytics_screen.dart:240:7 • avoid_print
+warning • Unused import: '../../../../data/models/user_model.dart' • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:6:8 • unused_import
+warning • The value of the field '_selectedMemberId' isn't used • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:27:8 • unused_field
+warning • The value of the field '_selectedTripId' isn't used • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:28:8 • unused_field
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:144:58 • deprecated_member_use
+warning • The value of the local variable 'memberName' isn't used • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:174:29 • unused_local_variable
+warning • The value of the local variable 'tripTitle' isn't used • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:204:29 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:304:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:451:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:476:55 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:498:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:532:53 • deprecated_member_use
+   info • 'surfaceVariant' is deprecated and shouldn't be used. Use surfaceContainerHighest instead. This feature was deprecated after v3.18.0-0.1.pre • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:553:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_logbook_entries_screen.dart:553:50 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_marshal_activity_report_screen.dart:68:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_marshal_activity_report_screen.dart:71:7 • avoid_print
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_marshal_activity_report_screen.dart:337:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_meeting_point_form_screen.dart:556:15 • deprecated_member_use
+warning • Unnecessary cast • lib/features/admin/presentation/screens/admin_member_details_screen.dart:72:26 • unnecessary_cast
+warning • Unnecessary cast • lib/features/admin/presentation/screens/admin_member_details_screen.dart:73:31 • unnecessary_cast
+warning • Unnecessary cast • lib/features/admin/presentation/screens/admin_member_details_screen.dart:74:29 • unnecessary_cast
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_member_details_screen.dart:301:46 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_member_details_screen.dart:319:46 • use_build_context_synchronously
+warning • The value of the local variable 'colors' isn't used • lib/features/admin/presentation/screens/admin_member_details_screen.dart:437:11 • unused_local_variable
+warning • The value of the field '_member' isn't used • lib/features/admin/presentation/screens/admin_member_edit_screen.dart:44:16 • unused_field
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_member_edit_screen.dart:387:21 • deprecated_member_use
+warning • The value of the field '_allEntries' isn't used • lib/features/admin/presentation/screens/admin_member_skills_report_screen.dart:27:22 • unused_field
+warning • The value of the field '_allSkills' isn't used • lib/features/admin/presentation/screens/admin_member_skills_report_screen.dart:28:30 • unused_field
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_member_skills_report_screen.dart:70:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_member_skills_report_screen.dart:72:7 • avoid_print
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_member_skills_report_screen.dart:334:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_member_skills_report_screen.dart:362:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_registration_analytics_screen.dart:119:15 • deprecated_member_use
+warning • Unused import: '../../../../data/models/user_model.dart' • lib/features/admin/presentation/screens/admin_sign_off_skills_screen.dart:4:8 • unused_import
+warning • Unused import: '../../../../core/providers/repository_providers.dart' • lib/features/admin/presentation/screens/admin_sign_off_skills_screen.dart:5:8 • unused_import
+   info • The private field _skillsToSignOff could be 'final' • lib/features/admin/presentation/screens/admin_sign_off_skills_screen.dart:38:12 • prefer_final_fields
+warning • Unused import: 'dart:convert' • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:2:8 • unused_import
+   info • The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:3:8 • unnecessary_import
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:719:15 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:764:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:833:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:843:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:868:15 • deprecated_member_use
+   info • Unnecessary use of 'toList' in a spread • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:883:20 • unnecessary_to_list_in_spreads
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:1038:7 • use_build_context_synchronously
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:1349:7 • deprecated_member_use
+   info • Unnecessary use of 'toList' in a spread • lib/features/admin/presentation/screens/admin_trip_edit_screen.dart:1365:12 • unnecessary_to_list_in_spreads
+warning • The value of the field '_selectedTripId' isn't used • lib/features/admin/presentation/screens/admin_trip_media_screen.dart:22:8 • unused_field
+warning • Unused import: 'package:go_router/go_router.dart' • lib/features/admin/presentation/screens/admin_trip_registrants_screen.dart:5:8 • unused_import
+warning • The value of the local variable 'exportService' isn't used • lib/features/admin/presentation/screens/admin_trip_registrants_screen.dart:406:31 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_trip_reports_screen.dart:518:13 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:243:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:328:45 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:410:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:488:42 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:491:44 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:644:31 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:677:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:697:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/admin/presentation/screens/admin_trip_requests_screen.dart:700:52 • deprecated_member_use
+warning • Unused import: '../providers/logbook_provider.dart' • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:10:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:60:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:71:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:117:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:118:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:119:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:123:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:124:7 • avoid_print
+warning • The declaration '_buildReportBadge' isn't referenced • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:573:10 • unused_element
+warning • The declaration '_getLevelColor' isn't referenced • lib/features/admin/presentation/screens/admin_trips_all_screen.dart:680:9 • unused_element
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_pending_screen.dart:76:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_pending_screen.dart:79:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_pending_screen.dart:80:7 • avoid_print
+warning • Unused import: '../widgets/trip_lead_autocomplete.dart' • lib/features/admin/presentation/screens/admin_trips_search_screen.dart:10:8 • unused_import
+warning • The value of the local variable 'colors' isn't used • lib/features/admin/presentation/screens/admin_trips_search_screen.dart:290:11 • unused_local_variable
+warning • The value of the local variable 'colors' isn't used • lib/features/admin/presentation/screens/admin_trips_search_screen.dart:434:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:29:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:32:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:41:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:47:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:48:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:49:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:50:5 • avoid_print
+warning • The value of the local variable 'colors' isn't used • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:53:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:66:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:71:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:76:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:81:13 • avoid_print
+warning • The value of the local variable 'colors' isn't used • lib/features/admin/presentation/screens/admin_trips_wizard_results_screen.dart:424:11 • unused_local_variable
+warning • The value of the local variable 'theme' isn't used • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:22:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:78:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:82:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:90:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:94:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:98:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:102:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:106:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:109:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:173:25 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:174:25 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:177:27 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:181:27 • avoid_print
+warning • The declaration '_executeSearch' isn't referenced • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:228:16 • unused_element
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:229:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:231:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:232:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:234:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:239:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:281:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:283:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:284:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:289:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:296:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:298:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/screens/admin_trips_wizard_screen.dart:300:7 • avoid_print
+warning • Unused import: 'package:url_launcher/url_launcher.dart' • lib/features/admin/presentation/screens/admin_upgrade_request_details_screen.dart:5:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_upgrade_request_details_screen.dart:1244:30 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_upgrade_request_details_screen.dart:1249:9 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_upgrade_request_details_screen.dart:1253:30 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/admin/presentation/screens/admin_upgrade_request_details_screen.dart:1256:39 • use_build_context_synchronously
+   info • Dangling library doc comment • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:1:1 • dangling_library_doc_comments
+warning • Unused import: 'package:go_router/go_router.dart' • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:16:8 • unused_import
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:184:23 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:185:23 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:194:23 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:195:23 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:204:23 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:205:23 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/screens/admin_waitlist_management_screen.dart:321:19 • deprecated_member_use
+warning • Unused import: '../../../../core/providers/auth_provider_v2.dart' • lib/features/admin/presentation/screens/quick_trip_report_screen.dart:7:8 • unused_import
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/widgets/admin_trip_filters_bar.dart:426:7 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/widgets/admin_trip_filters_bar.dart:427:7 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/widgets/admin_trip_filters_bar.dart:460:7 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/admin/presentation/widgets/admin_trip_filters_bar.dart:461:7 • deprecated_member_use
+warning • Unused import: '../../../../data/models/trip_search_criteria.dart' • lib/features/admin/presentation/widgets/advanced_filters_modal.dart:3:8 • unused_import
+warning • The value of the local variable 'isDesktop' isn't used • lib/features/admin/presentation/widgets/advanced_filters_modal.dart:46:11 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/admin/presentation/widgets/advanced_filters_modal.dart:347:7 • deprecated_member_use
+warning • The value of the local variable 'theme' isn't used • lib/features/admin/presentation/widgets/advanced_filters_modal.dart:377:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/features/admin/presentation/widgets/trip_lead_autocomplete.dart:93:11 • avoid_print
+warning • The value of the field '_currentPage' isn't used • lib/features/admin/presentation/widgets/trip_search_dialog.dart:31:7 • unused_field
+   info • The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/features/auth/presentation/screens/register_screen.dart:3:8 • unnecessary_import
+warning • The value of the field '_avatarUrl' isn't used • lib/features/auth/presentation/screens/register_screen.dart:64:11 • unused_field
+   info • The private field _isUploadingAvatar could be 'final' • lib/features/auth/presentation/screens/register_screen.dart:65:8 • prefer_final_fields
+   info • Don't use 'BuildContext's across async gaps • lib/features/auth/presentation/screens/register_screen.dart:140:36 • use_build_context_synchronously
+warning • The value of the local variable 'countryMap' isn't used • lib/features/auth/presentation/screens/register_screen.dart:299:19 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/presentation/screens/register_screen.dart:864:25 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/presentation/screens/register_screen.dart:903:25 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/presentation/screens/register_screen.dart:934:25 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/presentation/screens/register_screen.dart:976:25 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/auth/presentation/screens/register_screen.dart:1056:27 • deprecated_member_use
+   info • Unnecessary use of 'toList' in a spread • lib/features/debug/permission_debug_screen.dart:221:32 • unnecessary_to_list_in_spreads
+   info • 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre • lib/features/events/presentation/screens/event_details_screen.dart:100:31 • deprecated_member_use
+   info • 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre • lib/features/events/presentation/screens/events_list_screen.dart:88:31 • deprecated_member_use
+warning • Unused import: '../../../../data/sample_data/sample_gallery.dart' • lib/features/gallery/presentation/screens/album_screen.dart:5:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:76:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:77:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:82:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:85:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:107:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:145:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:146:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:151:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:154:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:160:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:161:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:162:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:180:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:247:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:267:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:300:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:321:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:349:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:356:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:359:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/album_screen.dart:362:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/favorites_screen.dart:81:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/favorites_screen.dart:147:9 • avoid_print
+warning • The value of the local variable 'colors' isn't used • lib/features/gallery/presentation/screens/favorites_screen.dart:213:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/full_screen_photo_viewer.dart:187:5 • avoid_print
+warning • The value of the local variable 'colors' isn't used • lib/features/gallery/presentation/screens/full_screen_photo_viewer.dart:281:11 • unused_local_variable
+   info • 'translate' is deprecated and shouldn't be used. Use translateByVector3, translateByVector4, or translateByDouble instead • lib/features/gallery/presentation/screens/full_screen_photo_viewer.dart:559:9 • deprecated_member_use
+   info • 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead • lib/features/gallery/presentation/screens/full_screen_photo_viewer.dart:560:9 • deprecated_member_use
+warning • The value of the local variable 'theme' isn't used • lib/features/gallery/presentation/screens/full_screen_photo_viewer.dart:644:11 • unused_local_variable
+warning • Unused import: '../../../../data/sample_data/sample_gallery.dart' • lib/features/gallery/presentation/screens/gallery_screen.dart:6:8 • unused_import
+warning • Unused import: '../../../../core/providers/gallery_auth_provider.dart' • lib/features/gallery/presentation/screens/gallery_screen.dart:8:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:48:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:49:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:72:17 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:73:17 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:74:17 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:75:17 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:76:17 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:79:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:80:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:85:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:89:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:95:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:102:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:103:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:104:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/gallery_screen.dart:105:7 • avoid_print
+warning • The declaration '_buildErrorState' isn't referenced • lib/features/gallery/presentation/screens/gallery_screen.dart:130:10 • unused_element
+warning • The declaration '_showCreateGalleryDialog' isn't referenced • lib/features/gallery/presentation/screens/gallery_screen.dart:375:16 • unused_element
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/gallery/presentation/screens/gallery_screen.dart:416:19 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/photo_search_screen.dart:86:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/gallery/presentation/screens/photo_search_screen.dart:97:7 • avoid_print
+warning • Unused import: 'package:dio/dio.dart' • lib/features/gallery/presentation/screens/photo_upload_screen.dart:5:8 • unused_import
+warning • Unused import: '../../../../core/providers/gallery_auth_provider.dart' • lib/features/gallery/presentation/screens/photo_upload_screen.dart:7:8 • unused_import
+   info • The private field _uploadItems could be 'final' • lib/features/gallery/presentation/screens/photo_upload_screen.dart:50:20 • prefer_final_fields
+warning • The declaration '_ActivityCard' isn't referenced • lib/features/home/presentation/screens/home_screen.dart:269:7 • unused_element
+   info • Missing a deprecation message • lib/features/logbook/data/models/certificate_model.dart:148:3 • provide_deprecation_message
+   info • Missing a deprecation message • lib/features/logbook/data/models/certificate_model.dart:150:3 • provide_deprecation_message
+   info • Missing a deprecation message • lib/features/logbook/data/models/certificate_model.dart:152:3 • provide_deprecation_message
+   info • Missing a deprecation message • lib/features/logbook/data/models/certificate_model.dart:154:3 • provide_deprecation_message
+   info • Missing a deprecation message • lib/features/logbook/data/models/logbook_progress_stats.dart:178:3 • provide_deprecation_message
+   info • Missing a deprecation message • lib/features/logbook/data/models/logbook_progress_stats.dart:196:3 • provide_deprecation_message
+   info • Dangling library doc comment • lib/features/logbook/data/models/skill_recommendation.dart:1:1 • dangling_library_doc_comments
+   info • Dangling library doc comment • lib/features/logbook/data/models/skills_comparison.dart:1:1 • dangling_library_doc_comments
+   info • The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' • lib/features/logbook/data/providers/certificate_provider.dart:1:8 • unnecessary_import
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:19:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:34:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:35:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:36:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:37:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:38:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:61:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:62:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:72:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:77:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:79:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:83:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:89:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:90:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:97:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:112:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:113:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:114:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:115:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:121:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:122:5 • avoid_print
+   info • Unnecessary braces in a string interpolation • lib/features/logbook/data/providers/logbook_progress_provider.dart:122:25 • unnecessary_brace_in_string_interps
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:123:5 • avoid_print
+   info • Unnecessary braces in a string interpolation • lib/features/logbook/data/providers/logbook_progress_provider.dart:123:28 • unnecessary_brace_in_string_interps
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:128:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:129:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:130:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:131:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:132:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:133:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/logbook_progress_provider.dart:186:5 • avoid_print
+warning • Unused import: '../../../../core/providers/auth_provider_v2.dart' • lib/features/logbook/data/providers/skill_planning_goals_provider.dart:5:8 • unused_import
+warning • Unused import: '../../../../core/providers/repository_providers.dart' • lib/features/logbook/data/providers/skill_planning_goals_provider.dart:6:8 • unused_import
+   info • Unnecessary escape in string literal • lib/features/logbook/data/providers/skill_planning_goals_provider.dart:24:62 • unnecessary_string_escapes
+   info • Unnecessary escape in string literal • lib/features/logbook/data/providers/skill_planning_goals_provider.dart:50:42 • unnecessary_string_escapes
+   info • Dangling library doc comment • lib/features/logbook/data/providers/skill_recommendation_provider.dart:1:1 • dangling_library_doc_comments
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/skill_recommendation_provider.dart:45:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/skill_recommendation_provider.dart:46:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/skill_recommendation_provider.dart:138:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/skill_recommendation_provider.dart:139:11 • avoid_print
+   info • Dangling library doc comment • lib/features/logbook/data/providers/skills_comparison_provider.dart:1:1 • dangling_library_doc_comments
+warning • Unused import: '../../../../core/providers/auth_provider_v2.dart' • lib/features/logbook/data/providers/skills_comparison_provider.dart:6:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:28:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:46:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:56:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:58:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:81:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:84:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:92:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:94:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/timeline_provider.dart:132:3 • avoid_print
+warning • Unused import: 'package:flutter/foundation.dart' • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:1:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:34:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:38:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:42:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:50:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:55:9 • avoid_print
+warning • The stack trace variable 'stackTrace' isn't used and can be removed • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:57:17 • unused_catch_stack
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:58:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:59:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:60:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:73:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:85:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:91:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:99:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:103:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:135:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:139:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:143:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:151:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:155:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:158:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:165:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:178:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:180:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:181:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/data/providers/trip_skill_planning_provider.dart:261:7 • avoid_print
+warning • The value of the local variable 'currentUser' isn't used • lib/features/logbook/presentation/screens/create_upgrade_request_screen.dart:183:11 • unused_local_variable
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/logbook/presentation/screens/create_upgrade_request_screen.dart:243:23 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_entry_detail_screen.dart:53:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_entry_detail_screen.dart:632:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_entry_detail_screen.dart:642:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_timeline_screen.dart:62:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_timeline_screen.dart:78:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_timeline_screen.dart:83:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_timeline_screen.dart:88:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/logbook_timeline_screen.dart:101:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/marshal_quick_signoff_screen.dart:132:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/marshal_quick_signoff_screen.dart:134:11 • avoid_print
+warning • Unnecessary cast • lib/features/logbook/presentation/screens/marshal_quick_signoff_screen.dart:193:26 • unnecessary_cast
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/marshal_quick_signoff_screen.dart:693:13 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/marshal_quick_signoff_screen.dart:696:13 • deprecated_member_use
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:381:39 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:391:52 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:400:51 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:407:45 • unnecessary_non_null_assertion
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:693:54 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:713:47 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:723:47 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null • lib/features/logbook/presentation/screens/member_upgrade_requests_screen.dart:731:43 • unnecessary_non_null_assertion
+   info • 'WillPopScope' is deprecated and shouldn't be used. Use PopScope instead. The Android predictive back feature will not work with WillPopScope. This feature was deprecated after v3.12.0-1.0.pre • lib/features/logbook/presentation/screens/skill_certificates_screen.dart:475:47 • deprecated_member_use
+   info • 'WillPopScope' is deprecated and shouldn't be used. Use PopScope instead. The Android predictive back feature will not work with WillPopScope. This feature was deprecated after v3.12.0-1.0.pre • lib/features/logbook/presentation/screens/skill_certificates_screen.dart:534:47 • deprecated_member_use
+   info • 'WillPopScope' is deprecated and shouldn't be used. Use PopScope instead. The Android predictive back feature will not work with WillPopScope. This feature was deprecated after v3.12.0-1.0.pre • lib/features/logbook/presentation/screens/skill_certificates_screen.dart:593:47 • deprecated_member_use
+   info • Dangling library doc comment • lib/features/logbook/presentation/screens/skill_recommendations_screen.dart:1:1 • dangling_library_doc_comments
+   info • Dangling library doc comment • lib/features/logbook/presentation/screens/skills_comparison_screen.dart:1:1 • dangling_library_doc_comments
+warning • Unused import: '../../../../data/models/user_model.dart' • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:6:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:100:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:101:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:104:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:106:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:114:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:116:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:117:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:118:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:121:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:125:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:129:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:132:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:147:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/skills_matrix_screen.dart:148:7 • avoid_print
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_enhanced_screen.dart:747:13 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_enhanced_screen.dart:748:13 • deprecated_member_use
+warning • Unused import: '../../../../data/models/trip_model.dart' • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:6:8 • unused_import
+warning • Unused import: '../../../../data/models/user_model.dart' • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:8:8 • unused_import
+   info • The private field _tripLogbookEntries could be 'final' • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:36:32 • prefer_final_fields
+   info • Don't invoke 'print' in production code • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:150:9 • avoid_print
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:364:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:365:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:373:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:374:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:382:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:383:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:391:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/logbook/presentation/screens/trip_history_with_logbook_screen.dart:392:15 • deprecated_member_use
+warning • The declaration '_buildRecentActivitySection' isn't referenced • lib/features/logbook/presentation/widgets/skills_progress_dashboard.dart:510:10 • unused_element
+   info • Don't invoke 'print' in production code • lib/features/logbook/services/certificate_service.dart:37:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/logbook/services/certificate_service.dart:93:7 • avoid_print
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/features/logbook/services/certificate_web_utils.dart:1:1 • deprecated_member_use
+   info • Don't use web-only libraries outside Flutter web plugins • lib/features/logbook/services/certificate_web_utils.dart:1:1 • avoid_web_libraries_in_flutter
+warning • The value of the local variable 'anchor' isn't used • lib/features/logbook/services/certificate_web_utils.dart:18:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/member_details_screen.dart:46:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/member_details_screen.dart:58:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/member_details_screen.dart:80:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/member_details_screen.dart:96:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/member_details_screen.dart:101:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/member_details_screen.dart:107:7 • avoid_print
+warning • Dead code • lib/features/members/presentation/screens/member_details_screen.dart:226:50 • dead_code
+warning • The left operand can't be null, so the right operand is never executed • lib/features/members/presentation/screens/member_details_screen.dart:226:53 • dead_null_aware_expression
+warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary • lib/features/members/presentation/screens/member_details_screen.dart:254:28 • invalid_null_aware_operator
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/members/presentation/screens/member_details_screen.dart:268:38 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null • lib/features/members/presentation/screens/member_details_screen.dart:272:47 • unnecessary_non_null_assertion
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/members_list_screen.dart:69:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/members_list_screen.dart:93:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/members_list_screen.dart:98:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/members/presentation/screens/members_list_screen.dart:111:7 • avoid_print
+warning • Dead code • lib/features/members/presentation/screens/members_list_screen.dart:533:47 • dead_code
+warning • The left operand can't be null, so the right operand is never executed • lib/features/members/presentation/screens/members_list_screen.dart:533:50 • dead_null_aware_expression
+warning • Unused import: '../../../../data/repositories/main_api_repository.dart' • lib/features/notifications/presentation/screens/notifications_screen.dart:5:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/notifications/presentation/screens/notifications_screen.dart:46:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/notifications/presentation/screens/notifications_screen.dart:79:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/notifications/presentation/screens/notifications_screen.dart:105:7 • avoid_print
+   info • 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre • lib/features/notifications/presentation/screens/notifications_screen.dart:182:31 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/profile/presentation/screens/edit_profile_screen.dart:715:11 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/profile/presentation/screens/edit_profile_screen.dart:800:11 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/profile/presentation/screens/edit_profile_screen.dart:885:11 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/profile/presentation/screens/edit_profile_screen.dart:955:7 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps • lib/features/profile/presentation/screens/edit_profile_screen.dart:1121:36 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/features/profile/presentation/screens/edit_profile_screen.dart:1140:13 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:111:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:112:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:116:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:129:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:131:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:139:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:140:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:141:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:142:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:143:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/profile/presentation/screens/profile_screen.dart:147:7 • avoid_print
+warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary • lib/features/profile/presentation/screens/profile_screen.dart:540:85 • invalid_null_aware_operator
+   info • Unnecessary use of 'toList' in a spread • lib/features/profile/presentation/screens/profile_screen.dart:1372:14 • unnecessary_to_list_in_spreads
+   info • Don't invoke 'print' in production code • lib/features/search/presentation/screens/global_search_screen.dart:75:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/search/presentation/screens/global_search_screen.dart:94:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/search/presentation/screens/global_search_screen.dart:102:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/search/presentation/screens/global_search_screen.dart:106:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/search/presentation/screens/global_search_screen.dart:110:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/search/presentation/screens/global_search_screen.dart:148:11 • avoid_print
+   info • Dangling library doc comment • lib/features/settings/presentation/screens/error_logs_screen.dart:1:1 • dangling_library_doc_comments
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/settings/presentation/screens/error_logs_screen.dart:379:63 • deprecated_member_use
+warning • Unused import: '../../../../core/services/error_log_service.dart' • lib/features/settings/presentation/screens/settings_screen.dart:10:8 • unused_import
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:186:17 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:197:17 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:212:17 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:223:17 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:238:17 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:273:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:437:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:438:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:448:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:449:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:473:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:474:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:484:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:485:15 • deprecated_member_use
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:495:15 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/features/settings/presentation/screens/settings_screen.dart:496:15 • deprecated_member_use
+warning • The value of the local variable 'colors' isn't used • lib/features/settings/presentation/screens/settings_screen.dart:748:11 • unused_local_variable
+warning • The value of the local variable 'colors' isn't used • lib/features/settings/presentation/screens/settings_screen.dart:833:11 • unused_local_variable
+warning • The declaration '_handleDeleteAccountRequest' isn't referenced • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:5:14 • unused_element
+  error • Undefined class 'BuildContext' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:5:42 • undefined_class
+  error • The function 'showDialog' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:7:27 • undefined_function
+  error • The function 'AlertDialog' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:9:27 • undefined_function
+  error • The name 'Text' isn't a class • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:10:20 • creation_with_non_type
+  error • The name 'Text' isn't a class • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:11:22 • creation_with_non_type
+  error • The function 'TextButton' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:15:9 • undefined_function
+  error • Undefined name 'Navigator' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:16:28 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:17:24 • creation_with_non_type
+  error • The function 'ElevatedButton' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:19:9 • undefined_function
+  error • Undefined name 'Navigator' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:20:28 • undefined_identifier
+  error • Undefined name 'ElevatedButton' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:21:18 • undefined_identifier
+  error • Undefined name 'Colors' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:22:30 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:24:24 • creation_with_non_type
+  error • Undefined name 'ScaffoldMessenger' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:35:3 • undefined_identifier
+  error • The name 'SnackBar' isn't a class • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:36:11 • creation_with_non_type
+  error • The function 'Row' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:37:16 • undefined_function
+  error • The function 'SizedBox' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:39:11 • undefined_function
+  error • The function 'CircularProgressIndicator' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:42:20 • undefined_function
+  error • The function 'AlwaysStoppedAnimation' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:44:27 • undefined_function
+  error • The name 'Color' isn't a type, so it can't be used as a type argument • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:44:50 • non_type_as_type_argument
+  error • Undefined name 'Colors' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:44:57 • undefined_identifier
+  error • The function 'SizedBox' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:47:11 • undefined_function
+  error • The function 'Text' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:48:11 • undefined_function
+  error • Undefined name '_repository' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:57:26 • undefined_identifier
+   info • Don't invoke 'print' in production code • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:60:5 • avoid_print
+  error • Undefined name 'ScaffoldMessenger' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:65:5 • undefined_identifier
+  error • Undefined name '_deletionService' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:76:15 • undefined_identifier
+   info • Don't invoke 'print' in production code • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:78:9 • avoid_print
+  error • Undefined name 'WidgetsBinding' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:85:9 • undefined_identifier
+  error • Undefined name 'mounted' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:86:15 • undefined_identifier
+  error • The function 'setState' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:86:24 • undefined_function
+  error • Undefined name 'ScaffoldMessenger' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:96:9 • undefined_identifier
+  error • The function 'SnackBar' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:97:11 • undefined_function
+  error • The function 'Text' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:98:22 • undefined_function
+  error • Undefined name 'Colors' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:99:30 • undefined_identifier
+  error • The function 'SnackBarAction' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:101:21 • undefined_function
+  error • Undefined name 'Colors' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:103:26 • undefined_identifier
+  error • Undefined name 'ScaffoldMessenger' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:114:9 • undefined_identifier
+  error • The function 'SnackBar' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:115:11 • undefined_function
+  error • The function 'Text' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:116:22 • undefined_function
+  error • Undefined name 'Colors' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:117:30 • undefined_identifier
+   info • Don't invoke 'print' in production code • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:125:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:126:5 • avoid_print
+  error • Undefined name 'ScaffoldMessenger' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:131:5 • undefined_identifier
+  error • Undefined name 'ScaffoldMessenger' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:134:5 • undefined_identifier
+  error • The function 'SnackBar' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:135:7 • undefined_function
+  error • The function 'Text' isn't defined • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:136:18 • undefined_function
+  error • Undefined name 'Colors' • lib/features/settings/presentation/screens/settings_screen_delete_fixed.dart:137:26 • undefined_identifier
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/levels_provider.dart:22:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/levels_provider.dart:31:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/time_of_day_provider.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/time_of_day_provider.dart:46:5 • avoid_print
+warning • Unused import: '../../../../core/providers/auth_provider_v2.dart' • lib/features/trips/presentation/providers/trip_chat_provider.dart:3:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:63:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:73:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:84:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:85:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:92:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:93:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:94:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:100:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:109:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:110:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:111:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:138:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:145:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:155:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:162:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:163:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:170:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_chat_provider.dart:171:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_request_area_provider.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trip_request_area_provider.dart:44:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:155:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:200:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:208:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:217:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:228:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:230:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:231:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:236:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:237:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:249:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:250:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:261:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:271:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:316:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:325:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:335:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:336:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:345:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:346:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:356:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:357:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:358:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:359:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:360:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/providers/trips_provider.dart:361:5 • avoid_print
+warning • Unused import: '../../../../data/models/trip_model.dart' • lib/features/trips/presentation/screens/create_trip_screen.dart:10:8 • unused_import
+warning • Unused import: '../../../../data/models/user_model.dart' • lib/features/trips/presentation/screens/create_trip_screen.dart:13:8 • unused_import
+warning • Unused import: '../../../../core/network/api_client.dart' • lib/features/trips/presentation/screens/create_trip_screen.dart:19:8 • unused_import
+warning • Unused import: '../../../../core/utils/status_helpers.dart' • lib/features/trips/presentation/screens/create_trip_screen.dart:20:8 • unused_import
+warning • The value of the field '_tripImageUrl' isn't used • lib/features/trips/presentation/screens/create_trip_screen.dart:56:11 • unused_field
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:132:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:134:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:137:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:144:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:147:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:150:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:152:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:155:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:156:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:157:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:162:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:165:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:171:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:181:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:183:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:184:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:185:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/features/trips/presentation/screens/create_trip_screen.dart:218:9 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:432:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:433:5 • avoid_print
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/trips/presentation/screens/create_trip_screen.dart:490:13 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:506:19 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:539:19 • avoid_print
+warning • The value of the local variable 'requirements' isn't used • lib/features/trips/presentation/screens/create_trip_screen.dart:1340:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1384:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1385:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1386:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1391:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/features/trips/presentation/screens/create_trip_screen.dart:1412:32 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1422:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1423:7 • avoid_print
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/trips/presentation/screens/create_trip_screen.dart:1758:7 • deprecated_member_use
+   info • Unnecessary use of 'toList' in a spread • lib/features/trips/presentation/screens/create_trip_screen.dart:1774:12 • unnecessary_to_list_in_spreads
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1799:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/create_trip_screen.dart:1801:7 • avoid_print
+warning • Unused import: '../../../../data/models/trip_model.dart' • lib/features/trips/presentation/screens/filtered_trips_screen.dart:5:8 • unused_import
+warning • Unused import: '../../../../data/repositories/main_api_repository.dart' • lib/features/trips/presentation/screens/filtered_trips_screen.dart:6:8 • unused_import
+warning • Unused import: '../../../../shared/widgets/widgets.dart' • lib/features/trips/presentation/screens/filtered_trips_screen.dart:8:8 • unused_import
+warning • The value of the field '_totalCount' isn't used • lib/features/trips/presentation/screens/filtered_trips_screen.dart:40:7 • unused_field
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:79:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:101:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:108:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:111:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:127:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:150:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:151:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:152:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/filtered_trips_screen.dart:168:7 • avoid_print
+warning • Unused import: '../../../../data/repositories/main_api_repository.dart' • lib/features/trips/presentation/screens/manage_registrants_screen.dart:5:8 • unused_import
+warning • The value of the field '_trip' isn't used • lib/features/trips/presentation/screens/manage_registrants_screen.dart:28:11 • unused_field
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/manage_registrants_screen.dart:82:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/manage_registrants_screen.dart:116:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/manage_registrants_screen.dart:154:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/manage_registrants_screen.dart:211:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/manage_registrants_screen.dart:247:7 • avoid_print
+warning • The value of the local variable 'colors' isn't used • lib/features/trips/presentation/screens/trip_chat_screen.dart:105:11 • unused_local_variable
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/trips/presentation/screens/trip_chat_screen.dart:153:20 • unnecessary_null_comparison
+warning • The value of the local variable 'colors' isn't used • lib/features/trips/presentation/screens/trip_chat_screen_v3.dart:105:11 • unused_local_variable
+warning • The operand can't be 'null', so the condition is always 'true' • lib/features/trips/presentation/screens/trip_chat_screen_v3.dart:153:20 • unnecessary_null_comparison
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/trips/presentation/screens/trip_chat_screen_v3.dart:495:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/trips/presentation/screens/trip_chat_screen_v3.dart:496:51 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/trips/presentation/screens/trip_chat_screen_v3.dart:501:43 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/trips/presentation/screens/trip_chat_screen_v3.dart:514:45 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_details_screen.dart:468:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_details_screen.dart:469:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_details_screen.dart:486:17 • avoid_print
+warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary • lib/features/trips/presentation/screens/trip_details_screen.dart:1640:40 • invalid_null_aware_operator
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:41:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:55:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:56:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:78:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:82:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:83:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:84:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:85:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:96:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:104:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:130:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:131:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:132:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:133:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:134:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:145:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:146:13 • avoid_print
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/trips/presentation/screens/trip_requests_screen.dart:149:36 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/trips/presentation/screens/trip_requests_screen.dart:155:28 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:158:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:160:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:164:13 • avoid_print
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/trips/presentation/screens/trip_requests_screen.dart:167:36 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/screens/trip_requests_screen.dart:794:7 • avoid_print
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/trips/presentation/screens/trip_requests_screen.dart:937:21 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/trips/presentation/screens/trip_requests_screen.dart:958:19 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/trips/presentation/screens/trip_requests_screen.dart:980:19 • deprecated_member_use
+   info • 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre • lib/features/trips/presentation/screens/trips_list_screen.dart:77:31 • deprecated_member_use
+warning • Dead code • lib/features/trips/presentation/screens/trips_list_screen.dart:213:55 • dead_code
+warning • The left operand can't be null, so the right operand is never executed • lib/features/trips/presentation/screens/trips_list_screen.dart:213:58 • dead_null_aware_expression
+warning • Dead code • lib/features/trips/presentation/screens/trips_list_screen.dart:304:57 • dead_code
+warning • The left operand can't be null, so the right operand is never executed • lib/features/trips/presentation/screens/trips_list_screen.dart:304:60 • dead_null_aware_expression
+   info • Unnecessary use of 'toList' in a spread • lib/features/trips/presentation/widgets/bulk_sign_off_bottom_sheet.dart:482:14 • unnecessary_to_list_in_spreads
+   info • Unnecessary use of 'toList' in a spread • lib/features/trips/presentation/widgets/bulk_sign_off_bottom_sheet.dart:561:12 • unnecessary_to_list_in_spreads
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/widgets/member_logbook_history_widget.dart:80:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/trips/presentation/widgets/member_logbook_history_widget.dart:83:7 • avoid_print
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/trips/presentation/widgets/member_logbook_history_widget.dart:354:21 • deprecated_member_use
+   info • Unnecessary use of 'toList' in a spread • lib/features/trips/presentation/widgets/sign_off_bottom_sheet.dart:540:12 • unnecessary_to_list_in_spreads
+warning • The '!' will have no effect because the receiver can't be null • lib/features/trips/presentation/widgets/trip_logbook_section.dart:198:36 • unnecessary_non_null_assertion
+   info • Unnecessary use of 'toList' in a spread • lib/features/trips/presentation/widgets/trip_logbook_section.dart:343:12 • unnecessary_to_list_in_spreads
+   info • 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre • lib/features/vehicles/presentation/screens/add_vehicle_screen.dart:90:31 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/features/vehicles/presentation/screens/edit_vehicle_modifications_screen.dart:347:7 • deprecated_member_use
+warning • The value of the local variable 'theme' isn't used • lib/shared/widgets/badges/verification_status_badge.dart:21:11 • unused_local_variable
+warning • The value of the local variable 'theme' isn't used • lib/shared/widgets/badges/verification_status_badge.dart:91:11 • unused_local_variable
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre • lib/shared/widgets/dialogs/verification_method_dialog.dart:211:21 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre • lib/shared/widgets/dialogs/verification_method_dialog.dart:212:21 • deprecated_member_use
+warning • The declaration '_StatItem' isn't referenced • lib/shared/widgets/home/member_progress_widget.dart:553:7 • unused_element
+warning • Unnecessary type check; the result is always 'true' • lib/shared/widgets/home/sponsors_carousel.dart:33:11 • unnecessary_type_check
+   info • Don't invoke 'print' in production code • lib/shared/widgets/home/sponsors_carousel.dart:39:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/shared/widgets/home/sponsors_carousel.dart:54:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/shared/widgets/home/upcoming_trips_carousel.dart:54:13 • avoid_print
+   info • Don't invoke 'print' in production code • lib/shared/widgets/home/upcoming_trips_carousel.dart:66:7 • avoid_print
+warning • Unused import: '../../../core/providers/auth_provider_v2.dart' • lib/shared/widgets/navigation/app_shell.dart:4:8 • unused_import
+   info • Can't use a relative path to import a library in 'lib' • scripts/add_test_vehicle_mods.dart:4:8 • avoid_relative_lib_imports
+   info • Can't use a relative path to import a library in 'lib' • scripts/add_test_vehicle_mods.dart:5:8 • avoid_relative_lib_imports
+   info • Don't invoke 'print' in production code • scripts/add_test_vehicle_mods.dart:12:3 • avoid_print
+  error • There's no constant named 'medium_2_3_inch' in 'LiftKitType' • scripts/add_test_vehicle_mods.dart:22:26 • undefined_enum_constant
+  error • There's no constant named 'fox' in 'ShocksType' • scripts/add_test_vehicle_mods.dart:23:28 • undefined_enum_constant
+  error • The named parameter 'longTravelArms' isn't defined • scripts/add_test_vehicle_mods.dart:24:5 • undefined_named_parameter
+  error • There's no constant named 'size_35_inch' in 'TyreSizeType' • scripts/add_test_vehicle_mods.dart:25:28 • undefined_enum_constant
+  error • There's no constant named 'hp_300_350' in 'HorsepowerType' • scripts/add_test_vehicle_mods.dart:26:32 • undefined_enum_constant
+  error • The named parameter 'performanceIntake' isn't defined • scripts/add_test_vehicle_mods.dart:27:5 • undefined_named_parameter
+  error • The named parameter 'performanceCatback' isn't defined • scripts/add_test_vehicle_mods.dart:28:5 • undefined_named_parameter
+  error • Undefined name 'LightType' • scripts/add_test_vehicle_mods.dart:29:19 • undefined_identifier
+  error • The argument type 'bool' can't be assigned to the parameter type 'WinchType'.  • scripts/add_test_vehicle_mods.dart:30:12 • argument_type_not_assignable
+  error • There's no constant named 'skid_plates' in 'ArmorType' • scripts/add_test_vehicle_mods.dart:31:22 • undefined_enum_constant
+  error • There's no constant named 'on_trip' in 'VerificationType' • scripts/add_test_vehicle_mods.dart:33:40 • undefined_enum_constant
+  error • There's no constant named 'heavy_6_plus_inch' in 'LiftKitType' • scripts/add_test_vehicle_mods.dart:42:26 • undefined_enum_constant
+  error • There's no constant named 'king' in 'ShocksType' • scripts/add_test_vehicle_mods.dart:43:28 • undefined_enum_constant
+  error • The named parameter 'longTravelArms' isn't defined • scripts/add_test_vehicle_mods.dart:44:5 • undefined_named_parameter
+  error • There's no constant named 'size_37_inch' in 'TyreSizeType' • scripts/add_test_vehicle_mods.dart:45:28 • undefined_enum_constant
+  error • There's no constant named 'hp_400_plus' in 'HorsepowerType' • scripts/add_test_vehicle_mods.dart:46:32 • undefined_enum_constant
+  error • The named parameter 'performanceIntake' isn't defined • scripts/add_test_vehicle_mods.dart:47:5 • undefined_named_parameter
+  error • The named parameter 'performanceCatback' isn't defined • scripts/add_test_vehicle_mods.dart:48:5 • undefined_named_parameter
+  error • Undefined name 'LightType' • scripts/add_test_vehicle_mods.dart:49:19 • undefined_identifier
+  error • The argument type 'bool' can't be assigned to the parameter type 'WinchType'.  • scripts/add_test_vehicle_mods.dart:50:12 • argument_type_not_assignable
+  error • There's no constant named 'full_armor' in 'ArmorType' • scripts/add_test_vehicle_mods.dart:51:22 • undefined_enum_constant
+   info • Don't invoke 'print' in production code • scripts/add_test_vehicle_mods.dart:61:3 • avoid_print
+   info • Don't invoke 'print' in production code • scripts/add_test_vehicle_mods.dart:62:3 • avoid_print
+   info • Don't invoke 'print' in production code • scripts/add_test_vehicle_mods.dart:63:3 • avoid_print
+   info • Don't invoke 'print' in production code • scripts/add_test_vehicle_mods.dart:64:3 • avoid_print
+   info • Don't invoke 'print' in production code • scripts/add_test_vehicle_mods.dart:65:3 • avoid_print
+   info • Don't invoke 'print' in production code • scripts/add_test_vehicle_mods.dart:66:3 • avoid_print
+   info • Dangling library doc comment • test_here_maps_migration.dart:1:1 • dangling_library_doc_comments
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:11:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:12:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:13:3 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:29:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:30:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:42:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:43:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:48:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:52:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:55:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:56:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:61:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:64:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:65:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:66:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:67:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:68:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:72:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:74:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:79:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:82:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:83:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:86:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:89:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:90:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:102:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:103:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:104:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:105:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:108:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:111:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:114:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:115:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:118:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:121:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:122:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:134:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:135:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:136:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:137:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:139:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:140:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:143:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:146:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:147:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:159:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:160:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:161:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:164:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:166:9 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:169:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:170:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:173:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:174:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:175:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:176:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:177:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:178:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:179:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:180:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:181:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:182:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:183:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:184:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:185:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:186:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:187:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:190:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:191:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:192:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:193:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:194:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:197:7 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:200:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:201:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:202:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:203:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:204:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:205:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:209:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:210:5 • avoid_print
+   info • Don't invoke 'print' in production code • test_here_maps_migration.dart:211:5 • avoid_print
+
+1124 issues found. (ran in 13.7s)
