@@ -3,11 +3,13 @@ import '../models/notification_model.dart';
 final List<NotificationModel> sampleNotifications = [
   // New trip notification (unread)
   NotificationModel(
-    id: 'notif_001',
+    id: 1,
     title: 'New Trip: Desert Safari Adventure',
-    message: 'Hani Al-Mansouri posted a new trip to Liwa Dunes. Join now!',
-    type: 'trip',
+    body: 'Hani Al-Mansouri posted a new trip to Liwa Dunes. Join now!',
+    type: 'NEW_TRIP',
     timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+    relatedObjectId: 6307,
+    relatedObjectType: 'Trip',
     isRead: false,
     imageUrl: 'https://picsum.photos/seed/trip1/400/300',
     actionType: 'view_trip',
@@ -16,10 +18,10 @@ final List<NotificationModel> sampleNotifications = [
 
   // Event RSVP reminder (unread)
   NotificationModel(
-    id: 'notif_002',
+    id: 2,
     title: 'Event Tomorrow: Monthly Meeting',
-    message: 'Don\'t forget! Monthly Club Meeting starts at 7:00 PM tomorrow.',
-    type: 'event',
+    body: 'Don\'t forget! Monthly Club Meeting starts at 7:00 PM tomorrow.',
+    type: 'NEW_EVENT',
     timestamp: DateTime.now().subtract(const Duration(hours: 5)),
     isRead: false,
     imageUrl: 'https://picsum.photos/seed/meeting1/400/300',
@@ -29,11 +31,13 @@ final List<NotificationModel> sampleNotifications = [
 
   // Member joined trip (read)
   NotificationModel(
-    id: 'notif_003',
+    id: 3,
     title: 'Trip Update: New Member Joined',
-    message: 'Ahmad Al-Balushi joined your trip "Empty Quarter Expedition"',
-    type: 'trip',
+    body: 'Ahmad Al-Balushi joined your trip "Empty Quarter Expedition"',
+    type: 'TRIP_UPDATE',
     timestamp: DateTime.now().subtract(const Duration(hours: 8)),
+    relatedObjectId: 6303,
+    relatedObjectType: 'Trip',
     isRead: true,
     actionType: 'view_trip',
     actionId: 'trip_003',
@@ -41,10 +45,10 @@ final List<NotificationModel> sampleNotifications = [
 
   // Photo liked (unread)
   NotificationModel(
-    id: 'notif_004',
+    id: 4,
     title: 'Photo Liked',
-    message: 'Mohammed Al-Shamsi liked your photo in "Desert Safari 2024"',
-    type: 'social',
+    body: 'Mohammed Al-Shamsi liked your photo in "Desert Safari 2024"',
+    type: 'SOCIAL',
     timestamp: DateTime.now().subtract(const Duration(hours: 12)),
     isRead: false,
     imageUrl: 'https://picsum.photos/seed/photo1/400/300',
@@ -54,11 +58,13 @@ final List<NotificationModel> sampleNotifications = [
 
   // Trip reminder (read)
   NotificationModel(
-    id: 'notif_005',
+    id: 5,
     title: 'Trip Starting Soon!',
-    message: 'Your trip "Sunset Dune Bash" starts in 2 days. Prepare your vehicle!',
-    type: 'trip',
+    body: 'Your trip "Sunset Dune Bash" starts in 2 days. Prepare your vehicle!',
+    type: 'TRIP_UPDATE',
     timestamp: DateTime.now().subtract(const Duration(days: 1)),
+    relatedObjectId: 6302,
+    relatedObjectType: 'Trip',
     isRead: true,
     actionType: 'view_trip',
     actionId: 'trip_002',
@@ -66,11 +72,13 @@ final List<NotificationModel> sampleNotifications = [
 
   // New member (read)
   NotificationModel(
-    id: 'notif_006',
+    id: 6,
     title: 'New Member Joined',
-    message: 'Welcome Saif Al-Qassimi to AD4x4 Club!',
-    type: 'social',
+    body: 'Welcome Saif Al-Qassimi to AD4x4 Club!',
+    type: 'MEMBER_APPROVED',
     timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 8)),
+    relatedObjectId: 10005,
+    relatedObjectType: 'Member',
     isRead: true,
     actionType: 'view_profile',
     actionId: 'user_005',
@@ -78,10 +86,10 @@ final List<NotificationModel> sampleNotifications = [
 
   // Event completed (read)
   NotificationModel(
-    id: 'notif_007',
+    id: 7,
     title: 'Event Completed',
-    message: 'Hope you enjoyed "Off-Road Driving Workshop"! Share your feedback.',
-    type: 'event',
+    body: 'Hope you enjoyed "Off-Road Driving Workshop"! Share your feedback.',
+    type: 'EVENT_UPDATE',
     timestamp: DateTime.now().subtract(const Duration(days: 2)),
     isRead: true,
     actionType: 'view_event',
@@ -90,31 +98,33 @@ final List<NotificationModel> sampleNotifications = [
 
   // Achievement unlocked (unread)
   NotificationModel(
-    id: 'notif_008',
+    id: 8,
     title: '🏆 Achievement Unlocked!',
-    message: 'You\'ve completed 10 trips! Keep exploring the desert.',
-    type: 'system',
+    body: 'You\'ve completed 10 trips! Keep exploring the desert.',
+    type: 'SYSTEM',
     timestamp: DateTime.now().subtract(const Duration(days: 2, hours: 5)),
     isRead: false,
   ),
 
   // Vehicle inspection reminder (read)
   NotificationModel(
-    id: 'notif_009',
+    id: 9,
     title: 'Vehicle Inspection Reminder',
-    message: 'It\'s been 6 months since your last inspection. Time for a check-up!',
-    type: 'alert',
+    body: 'It\'s been 6 months since your last inspection. Time for a check-up!',
+    type: 'ALERT',
     timestamp: DateTime.now().subtract(const Duration(days: 3)),
     isRead: true,
   ),
 
   // Trip cancelled (read)
   NotificationModel(
-    id: 'notif_010',
+    id: 10,
     title: 'Trip Cancelled',
-    message: 'Unfortunately, "Night Desert Run" has been cancelled due to weather.',
-    type: 'alert',
+    body: 'Unfortunately, "Night Desert Run" has been cancelled due to weather.',
+    type: 'TRIP_CANCELLED',
     timestamp: DateTime.now().subtract(const Duration(days: 3, hours: 12)),
+    relatedObjectId: 6307,
+    relatedObjectType: 'Trip',
     isRead: true,
     actionType: 'view_trip',
     actionId: 'trip_007',
@@ -122,10 +132,10 @@ final List<NotificationModel> sampleNotifications = [
 
   // Gallery album created (read)
   NotificationModel(
-    id: 'notif_011',
+    id: 11,
     title: 'New Album Created',
-    message: 'Khalid Al-Mazrouei created album "Big Red Adventures"',
-    type: 'social',
+    body: 'Khalid Al-Mazrouei created album "Big Red Adventures"',
+    type: 'SOCIAL',
     timestamp: DateTime.now().subtract(const Duration(days: 4)),
     isRead: true,
     imageUrl: 'https://picsum.photos/seed/album2/400/300',
@@ -135,21 +145,23 @@ final List<NotificationModel> sampleNotifications = [
 
   // System maintenance (read)
   NotificationModel(
-    id: 'notif_012',
+    id: 12,
     title: 'System Update',
-    message: 'App has been updated to v2.1.0. Check out new features!',
-    type: 'system',
+    body: 'App has been updated to v2.1.0. Check out new features!',
+    type: 'SYSTEM',
     timestamp: DateTime.now().subtract(const Duration(days: 5)),
     isRead: true,
   ),
 
   // Member birthday (read)
   NotificationModel(
-    id: 'notif_013',
+    id: 13,
     title: '🎂 Birthday Today!',
-    message: 'Wish Ahmad Al-Balushi a happy birthday!',
-    type: 'social',
+    body: 'Wish Ahmad Al-Balushi a happy birthday!',
+    type: 'SOCIAL',
     timestamp: DateTime.now().subtract(const Duration(days: 6)),
+    relatedObjectId: 10002,
+    relatedObjectType: 'Member',
     isRead: true,
     actionType: 'view_profile',
     actionId: 'user_002',
@@ -157,10 +169,10 @@ final List<NotificationModel> sampleNotifications = [
 
   // Event registration opened (read)
   NotificationModel(
-    id: 'notif_014',
+    id: 14,
     title: 'Event Registration Open',
-    message: 'Registration for "Annual Hill Climb Challenge" is now open!',
-    type: 'event',
+    body: 'Registration for "Annual Hill Climb Challenge" is now open!',
+    type: 'NEW_EVENT',
     timestamp: DateTime.now().subtract(const Duration(days: 7)),
     isRead: true,
     imageUrl: 'https://picsum.photos/seed/competition1/400/300',
@@ -170,10 +182,10 @@ final List<NotificationModel> sampleNotifications = [
 
   // Welcome notification (read)
   NotificationModel(
-    id: 'notif_015',
+    id: 15,
     title: 'Welcome to AD4x4!',
-    message: 'Thanks for joining the region\'s largest off-road community. Start exploring!',
-    type: 'system',
+    body: 'Thanks for joining the region\'s largest off-road community. Start exploring!',
+    type: 'SYSTEM',
     timestamp: DateTime.now().subtract(const Duration(days: 30)),
     isRead: true,
   ),

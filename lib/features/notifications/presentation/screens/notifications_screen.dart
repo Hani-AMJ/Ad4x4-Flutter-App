@@ -118,7 +118,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // Mark as read
     _handleMarkAsRead(notification);
 
-    // Navigate based on action type
+    // Navigate using new API fields (relatedObjectType/relatedObjectId)
+    final route = notification.navigationRoute;
+    if (route != null) {
+      context.push(route);
+      return;
+    }
+    
+    // Fallback to legacy fields (for backward compatibility)
     if (notification.actionType != null && notification.actionId != null) {
       switch (notification.actionType) {
         case 'view_trip':
@@ -138,16 +145,35 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   IconData _getNotificationIcon(String type) {
-    switch (type) {
-      case 'trip':
+    switch (type.toUpperCase()) {
+      // API notification types (uppercase)
+      case 'NEW_TRIP':
+      case 'TRIP_UPDATE':
+      case 'TRIP_CANCELLED':
         return Icons.directions_car;
-      case 'event':
+      case 'NEW_EVENT':
+      case 'EVENT_UPDATE':
         return Icons.event;
-      case 'social':
+      case 'MEMBER_REQUEST':
+      case 'MEMBER_APPROVED':
         return Icons.people;
-      case 'system':
+      case 'UPGRADE_REQUEST':
+      case 'UPGRADE_APPROVED':
+        return Icons.arrow_upward;
+      case 'COMMENT_REPLY':
+      case 'MESSAGE':
+        return Icons.chat;
+      
+      // Legacy types (lowercase, for backward compatibility)
+      case 'TRIP':
+        return Icons.directions_car;
+      case 'EVENT':
+        return Icons.event;
+      case 'SOCIAL':
+        return Icons.people;
+      case 'SYSTEM':
         return Icons.info;
-      case 'alert':
+      case 'ALERT':
         return Icons.warning;
       default:
         return Icons.notifications;
@@ -155,16 +181,44 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Color _getNotificationColor(String type, ColorScheme colors) {
-    switch (type) {
-      case 'trip':
+    switch (type.toUpperCase()) {
+      // Trip-related
+      case 'NEW_TRIP':
+      case 'TRIP_UPDATE':
         return Colors.blue;
-      case 'event':
+      case 'TRIP_CANCELLED':
+        return Colors.red;
+      
+      // Event-related
+      case 'NEW_EVENT':
+      case 'EVENT_UPDATE':
         return Colors.purple;
-      case 'social':
+      
+      // Member-related
+      case 'MEMBER_REQUEST':
+      case 'MEMBER_APPROVED':
         return Colors.green;
-      case 'system':
+      
+      // Upgrade-related
+      case 'UPGRADE_REQUEST':
+      case 'UPGRADE_APPROVED':
+        return Colors.orange;
+      
+      // Communication
+      case 'COMMENT_REPLY':
+      case 'MESSAGE':
+        return Colors.teal;
+      
+      // Legacy types
+      case 'TRIP':
+        return Colors.blue;
+      case 'EVENT':
+        return Colors.purple;
+      case 'SOCIAL':
+        return Colors.green;
+      case 'SYSTEM':
         return colors.primary;
-      case 'alert':
+      case 'ALERT':
         return Colors.orange;
       default:
         return colors.primary;

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:ui';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'app.dart';
 import 'core/config/brand_tokens.dart';
 import 'core/config/api_config.dart';
@@ -15,6 +17,15 @@ import 'dart:developer' as developer;
 void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // 🔥 Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  if (kDebugMode) {
+    developer.log('🔥 Firebase initialized successfully', name: 'Firebase');
+  }
   
   // ✅ Initialize Error Logging Service
   final errorLogService = ErrorLogService();
