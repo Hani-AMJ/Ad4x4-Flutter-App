@@ -128,51 +128,64 @@ class _MembersLandingScreenState extends State<MembersLandingScreen> {
       ),
       body: Column(
         children: [
-          // Search Bar
+          // Search Bar - Dark Theme Compatible
           Padding(
             padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(fontSize: 16),
-              decoration: InputDecoration(
-                hintText: 'Search members by name...',
-                hintStyle: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[700]),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[400]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue[600]!, width: 2),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                // Override textfield cursor and selection colors
+                textSelectionTheme: TextSelectionThemeData(
+                  cursorColor: Colors.blue[300],
+                  selectionColor: Colors.blue.withValues(alpha: 0.3),
+                  selectionHandleColor: Colors.blue[300],
                 ),
               ),
-              onChanged: (value) {
-                setState(() {}); // Update to show/hide clear button
-              },
-              onSubmitted: _navigateToSearch,
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Search members by name...',
+                  hintStyle: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 16,
+                  ),
+                  prefixIcon: Icon(Icons.search, color: Colors.blue[300]),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey[400]),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {});
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[700]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[700]!, width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue[400]!, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[850],
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {}); // Update to show/hide clear button
+                },
+                onSubmitted: _navigateToSearch,
+              ),
             ),
           ),
           

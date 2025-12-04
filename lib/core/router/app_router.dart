@@ -63,6 +63,7 @@ import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_home_screen.dart';
 import '../../features/admin/presentation/screens/admin_trips_pending_screen.dart';
 import '../../features/admin/presentation/screens/admin_trips_all_screen.dart';
+import '../../features/admin/presentation/screens/admin_trips_deleted_screen.dart'; // ✅ NEW: Deleted trips screen
 import '../../features/admin/presentation/screens/admin_trips_search_screen.dart';
 import '../../features/admin/presentation/screens/admin_trip_edit_screen.dart';
 import '../../features/admin/presentation/screens/admin_trip_registrants_screen.dart';
@@ -650,6 +651,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             name: 'admin-trips-all',
             pageBuilder: (context, state) {
               return NoTransitionPage(child: const AdminTripsAllScreen());
+            },
+          ),
+          GoRoute(
+            path: '/admin/trips/deleted',
+            name: 'admin-trips-deleted',
+            pageBuilder: (context, state) {
+              return NoTransitionPage(child: const AdminTripsDeletedScreen()); // ✅ NEW
             },
           ),
           GoRoute(

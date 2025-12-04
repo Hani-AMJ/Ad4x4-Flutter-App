@@ -63,6 +63,7 @@ class AdminWizard extends _$AdminWizard {
         print('🔍 [AdminWizard] Fetching page $currentPage...');
 
         final response = await repository.getTrips(
+          approvalStatus: 'A', // ✅ FIXED: Only show approved trips
           startTimeAfter: params['startTimeAfter'] as String?,
           startTimeBefore: params['startTimeBefore'] as String?,
           levelId: params['level_Id'] is List
@@ -289,6 +290,7 @@ class AdminWizardResults extends _$AdminWizardResults {
           print('🔍 [AdminWizard] Fetching page $currentPage...');
 
           final response = await repository.getTrips(
+            approvalStatus: 'A', // ✅ FIXED: Only show approved trips
             startTimeAfter: params['startTimeAfter'] as String?,
             startTimeBefore: params['startTimeBefore'] as String?,
             levelId: params['level_Id'] is List

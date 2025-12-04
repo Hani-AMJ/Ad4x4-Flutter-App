@@ -118,6 +118,7 @@ class _MarshalQuickSignoffScreenState extends ConsumerState<MarshalQuickSignoffS
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       final response = await repository.getTrips(
+        approvalStatus: 'A', // ✅ FIXED: Only show approved trips (exclude deleted)
         page: 1, 
         pageSize: 10,
         ordering: '-start_time', // ✅ Show newest trips first

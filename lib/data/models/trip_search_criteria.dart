@@ -69,7 +69,9 @@ class TripSearchCriteria with _$TripSearchCriteria {
         params['endTimeBefore'] = DateTime.now().toIso8601String();
         break;
       case TripSearchType.all:
-        // No approval status filter
+        // ⚠️ NOTE: API doesn't support comma-separated values
+        // Deleted trips will be filtered client-side (see needsClientFiltering)
+        // No approval status filter - fetch all trips
         break;
     }
 
@@ -95,18 +97,28 @@ class TripSearchCriteria with _$TripSearchCriteria {
     return params;
   }
 
-  /// Check if we need client-side filtering (multi-level or lead filter)
+  /// Check if we need client-side filtering (multi-level, lead filter, or deleted exclusion)
   bool get needsClientFiltering =>
       levelIds.length > 1 || // Multiple levels
-      leadUsername != null; // Lead filter
+      leadUsername != null || // Lead filter
+      searchType == TripSearchType.all; // ✅ FIXED: Exclude deleted trips for 'All'
 
   /// Apply client-side filters to trip list
   List<T> applyClientFilters<T>(
     List<T> trips,
     int Function(T) getLevelId,
     String Function(T) getLeadUsername,
+    String Function(T) getApprovalStatus, // ✅ NEW: Get approval status
   ) {
     var filtered = trips;
+
+    // ✅ FIXED: Exclude deleted trips for 'All' search type
+    if (searchType == TripSearchType.all) {
+      filtered = filtered.where((trip) {
+        final status = getApprovalStatus(trip);
+        return status != 'D'; // Exclude deleted trips
+      }).toList();
+    }
 
     // Multi-level filtering (if more than one level selected)
     if (levelIds.length > 1) {

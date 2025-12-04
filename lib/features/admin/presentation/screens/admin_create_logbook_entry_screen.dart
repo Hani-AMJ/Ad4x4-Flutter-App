@@ -64,6 +64,7 @@ class _AdminCreateLogbookEntryScreenState
       
       // Load recent trips (ordered by newest first)
       final tripsResponse = await repository.getTrips(
+        approvalStatus: 'A', // ✅ FIXED: Only show approved trips
         page: 1, 
         pageSize: 50,
         ordering: '-start_time', // ✅ Show newest trips first

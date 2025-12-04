@@ -1085,9 +1085,16 @@ class MainApiRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
+    // ✅ FIXED: Use admin feedback endpoint with user filter
+    // The /api/members/{id}/feedback endpoint is for self-only access
+    // Use /api/feedback/?user={id} to view another member's feedback (admin/marshal)
     final response = await _apiClient.get(
-      MainApiEndpoints.memberFeedback(memberId),
-      queryParameters: {'page': page, 'pageSize': pageSize},
+      MainApiEndpoints.feedback,  // Admin endpoint
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'user': memberId,  // Filter by user ID
+      },
     );
     return response.data;
   }

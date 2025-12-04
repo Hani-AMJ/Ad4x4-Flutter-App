@@ -300,6 +300,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 onTap: () => context.go('/admin/trips/wizard'),
               ),
 
+            // ✅ NEW: Deleted Trips - View deleted trips only
+            if (_hasTripPermissions(user))
+              _NavItem(
+                icon: Icons.delete_outline,
+                selectedIcon: Icons.delete,
+                label: 'Deleted Trips',
+                isSelected: currentPath == '/admin/trips/deleted',
+                isExpanded: expanded,
+                onTap: () => context.go('/admin/trips/deleted'),
+              ),
+
             // Trip Registrants Management (Phase 3B - moved here for better organization)
             if (user.hasPermission('edit_trip_registrations'))
               _NavItem(

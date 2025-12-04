@@ -57,7 +57,24 @@ class _AdminTripsAllScreenState extends ConsumerState<AdminTripsAllScreen> {
       // Sort by start_time descending (newest trips first)
       // Backend uses snake_case for field names
       print('🔍 [AdminTripsAll] Fetching trips with ordering: -start_time');
+      
+      // ✅ FIXED: Determine approval status filter
+      // ⚠️ API only accepts single values, not comma-separated
+      String? approvalStatusFilter;
+      if (_statusFilter == 'pending' || _statusFilter == 'P') {
+        approvalStatusFilter = 'P';
+      } else if (_statusFilter == 'approved' || _statusFilter == 'A') {
+        approvalStatusFilter = 'A';
+      } else if (_statusFilter == 'rejected' || _statusFilter == 'R') {
+        approvalStatusFilter = 'R';
+      } else if (_statusFilter == 'declined' || _statusFilter == 'deleted' || _statusFilter == 'D') {
+        approvalStatusFilter = 'D'; // Allow explicit deleted filter
+      }
+      // Note: When filter is 'all', we fetch all trips and filter deleted client-side
+      // Note: 'upcoming' and 'completed' use time-based filters, not status
+      
       final response = await repository.getTrips(
+        approvalStatus: approvalStatusFilter,
         startTimeAfter: _startDate?.toIso8601String(),
         startTimeBefore: _endDate?.toIso8601String(),
         levelId: _levelFilter,
@@ -74,7 +91,12 @@ class _AdminTripsAllScreenState extends ConsumerState<AdminTripsAllScreen> {
 
       // Apply client-side filters
       // ✅ FIXED: Use status helpers to check backend codes (A, P, R, D) or dynamic values
-      if (_statusFilter != 'all') {
+      
+      // ✅ CRITICAL: Exclude deleted trips when filter is 'all'
+      if (_statusFilter == 'all') {
+        trips = trips.where((t) => !isDeclined(t.approvalStatus)).toList();
+        print('📊 [AdminTripsAll] After excluding deleted: ${trips.length} trips');
+      } else if (_statusFilter != 'all') {
         // Handle legacy filter values (pending, approved, rejected, deleted) and new backend codes (P, A, R, D)
         if (_statusFilter == 'pending' || _statusFilter == 'P') {
           trips = trips.where((t) => isPending(t.approvalStatus)).toList();

@@ -111,6 +111,7 @@ class AdminTripsSearch extends _$AdminTripsSearch {
           allTrips,
           (trip) => trip.level.id,
           (trip) => trip.lead.username,
+          (trip) => trip.approvalStatus, // ✅ FIXED: Pass approval status getter
         );
         print(
           '🔍 [AdminTripsSearch] After client filtering: ${filteredTrips.length} trips',

@@ -38,6 +38,7 @@ class _AdminRegistrationAnalyticsScreenState
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       final response = await repository.getTrips(
+        approvalStatus: 'A', // ✅ FIXED: Only show approved trips
         pageSize: 50,
         ordering: '-start_time', // ✅ Show newest trips first
       );

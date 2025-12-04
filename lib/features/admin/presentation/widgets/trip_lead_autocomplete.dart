@@ -55,6 +55,7 @@ class _TripLeadAutocompleteState extends ConsumerState<TripLeadAutocomplete> {
           // Search trip leads from recent trips
           final repository = ref.read(mainApiRepositoryProvider);
           final response = await repository.getTrips(
+            approvalStatus: 'A', // ✅ FIXED: Only show approved trips
             page: 1,
             pageSize: 100, // Fetch recent trips to get lead names
             ordering: '-start_time',

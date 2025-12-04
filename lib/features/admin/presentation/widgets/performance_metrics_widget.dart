@@ -48,11 +48,11 @@ class _PerformanceMetricsWidgetState
 
       // Fetch trips count
       try {
-        final tripsResponse = await repository.getTrips(pageSize: 1);
+        final tripsResponse = await repository.getTrips(approvalStatus: 'A', pageSize: 1); // ✅ FIXED
         _totalTrips = tripsResponse['count'] as int? ?? 0;
 
         // Count upcoming trips (simple check for now)
-        final allTripsResponse = await repository.getTrips(pageSize: 100);
+        final allTripsResponse = await repository.getTrips(approvalStatus: 'A', pageSize: 100); // ✅ FIXED
         final results = allTripsResponse['results'] as List<dynamic>? ?? [];
         final now = DateTime.now();
 

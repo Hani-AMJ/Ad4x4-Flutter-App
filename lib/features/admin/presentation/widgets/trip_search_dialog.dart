@@ -80,6 +80,7 @@ class _TripSearchDialogState extends ConsumerState<TripSearchDialog> {
       // ✅ Get ALL trips initially, then filter client-side by title
       // ⚠️ CRITICAL: API uses snake_case 'start_time' NOT camelCase 'startTime'
       final response = await repository.getTrips(
+        approvalStatus: 'A', // ✅ FIXED: Only show approved trips
         ordering: '-start_time',  // Backend expects snake_case!
         page: 1,
         pageSize: 100, // Get more results since we're filtering client-side
