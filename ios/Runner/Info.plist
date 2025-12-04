@@ -45,5 +45,49 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- 🚨 CRITICAL iOS PERMISSIONS -->
+	
+	<!-- Camera Access -->
+	<key>NSCameraUsageDescription</key>
+	<string>AD4x4 needs camera access to take photos for trip reports, vehicle updates, and profile pictures.</string>
+	
+	<!-- Photo Library Access -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AD4x4 needs photo library access to select images for trip reports, vehicle updates, and profile pictures.</string>
+	
+	<!-- Photo Library Add (iOS 14+) -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>AD4x4 needs permission to save photos to your library.</string>
+	
+	<!-- Location When In Use -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>AD4x4 uses your location to show nearby off-road trips and meeting points.</string>
+	
+	<!-- URL Schemes for External Links -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>http</string>
+		<string>https</string>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>maps</string>
+		<string>comgooglemaps</string>
+	</array>
+	
+	<!-- Custom URL Scheme for Deep Linking -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.ad4x4.ad4x4Mobile</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ad4x4</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
