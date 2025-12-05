@@ -216,10 +216,13 @@ class _DeletedTripCard extends StatelessWidget {
     final dateFormatter = DateFormat('MMM d, yyyy');
     final timeFormatter = DateFormat('h:mm a');
 
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Card(
-      elevation: 1,
+      elevation: 2, // ✅ Increased elevation to match admin theme
       margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.grey[100], // Grey background to indicate deleted status
+      clipBehavior: Clip.antiAlias, // ✅ Added for better border rendering
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -243,20 +246,24 @@ class _DeletedTripCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.red[100],
+                      color: Colors.transparent, // ✅ Transparent background
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.red, // ✅ Red border instead of solid background
+                        width: 1.5,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.delete, size: 16, color: Colors.red[700]),
+                        const Icon(Icons.delete_outline, size: 16, color: Colors.red), // ✅ Outline icon
                         const SizedBox(width: 4),
-                        Text(
+                        const Text(
                           'DELETED',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Colors.red[700],
+                            color: Colors.red,
                           ),
                         ),
                       ],
@@ -271,18 +278,11 @@ class _DeletedTripCard extends StatelessWidget {
                 spacing: 16,
                 runSpacing: 8,
                 children: [
-                  // Start date
+                  // Date and time combined
                   _InfoChip(
-                    icon: Icons.calendar_today,
-                    label: dateFormatter.format(trip.startTime),
-                    color: Colors.grey,
-                  ),
-                  
-                  // Start time
-                  _InfoChip(
-                    icon: Icons.access_time,
-                    label: timeFormatter.format(trip.startTime),
-                    color: Colors.grey,
+                    icon: Icons.event,
+                    label: '${dateFormatter.format(trip.startTime)} • ${timeFormatter.format(trip.startTime)}',
+                    color: colors.primary,
                   ),
                   
                   // Level
@@ -294,16 +294,16 @@ class _DeletedTripCard extends StatelessWidget {
                   
                   // Organizer
                   _InfoChip(
-                    icon: Icons.person,
-                    label: trip.lead.displayName,
-                    color: Colors.grey,
+                    icon: Icons.person_outline,
+                    label: 'By ${trip.lead.displayName}',
+                    color: colors.secondary,
                   ),
                   
-                  // Registration count
+                  // Capacity info
                   _InfoChip(
                     icon: Icons.group,
-                    label: '${trip.registeredCount} registered',
-                    color: Colors.grey,
+                    label: '${trip.registeredCount} / ${trip.capacity}',
+                    color: colors.tertiary,
                   ),
                 ],
               ),
@@ -343,19 +343,32 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[700],
-          ),
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.transparent, // ✅ Transparent background
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3), // ✅ Subtle colored border
+          width: 1,
         ),
-      ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
