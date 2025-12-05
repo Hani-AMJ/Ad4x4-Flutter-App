@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../core/providers/repository_providers.dart';
-import '../../../../core/utils/status_helpers.dart';
+// Removed unused import: status_helpers.dart
 import '../../../../core/utils/level_display_helper.dart';
 import 'package:go_router/go_router.dart';
 
@@ -214,7 +214,6 @@ class _DeletedTripCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormatter = DateFormat('MMM d, yyyy');
-    final timeFormatter = DateFormat('h:mm a');
 
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
