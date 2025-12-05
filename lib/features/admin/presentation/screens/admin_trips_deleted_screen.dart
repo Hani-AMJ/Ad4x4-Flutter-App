@@ -220,107 +220,89 @@ class _DeletedTripCard extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return Card(
-      elevation: 2, // ✅ Increased elevation to match admin theme
+      elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias, // ✅ Added for better border rendering
+      color: theme.cardTheme.color, // ✅ Use theme card color (no white override)
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title and Deleted badge
+              // Title and Deleted badge in single row with proper spacing
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      trip.title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  // DELETED badge first (top-left)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.transparent, // ✅ Transparent background
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.red, // ✅ Red border instead of solid background
-                        width: 1.5,
-                      ),
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.red, width: 1),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.delete_outline, size: 16, color: Colors.red), // ✅ Outline icon
-                        const SizedBox(width: 4),
-                        const Text(
+                        Icon(Icons.delete_outline, size: 14, color: Colors.red),
+                        SizedBox(width: 4),
+                        Text(
                           'DELETED',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Colors.red,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  
+                  // Title (takes remaining space)
+                  Expanded(
+                    child: Text(
+                      trip.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               
-              // Trip info row
+              // Compact info chips - single row
               Wrap(
-                spacing: 16,
+                spacing: 8,
                 runSpacing: 8,
                 children: [
-                  // Date and time combined
-                  _InfoChip(
-                    icon: Icons.event,
-                    label: '${dateFormatter.format(trip.startTime)} • ${timeFormatter.format(trip.startTime)}',
+                  // Date only (shorter)
+                  _CompactChip(
+                    icon: Icons.calendar_today,
+                    label: dateFormatter.format(trip.startTime),
                     color: colors.primary,
                   ),
                   
                   // Level
-                  _InfoChip(
+                  _CompactChip(
                     icon: Icons.terrain,
                     label: trip.level.displayName ?? trip.level.name,
                     color: LevelDisplayHelper.getLevelColor(trip.level.id),
                   ),
                   
-                  // Organizer
-                  _InfoChip(
-                    icon: Icons.person_outline,
-                    label: 'By ${trip.lead.displayName}',
-                    color: colors.secondary,
-                  ),
-                  
-                  // Capacity info
-                  _InfoChip(
+                  // Participants only (no "By organizer")
+                  _CompactChip(
                     icon: Icons.group,
-                    label: '${trip.registeredCount} / ${trip.capacity}',
+                    label: '${trip.registeredCount}/${trip.capacity}',
                     color: colors.tertiary,
                   ),
                 ],
               ),
-              
-              // Description (if available)
-              if (trip.description.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(
-                  trip.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -329,13 +311,13 @@ class _DeletedTripCard extends StatelessWidget {
   }
 }
 
-/// Widget: Info Chip
-class _InfoChip extends StatelessWidget {
+/// Widget: Compact Info Chip (smaller for deleted trips)
+class _CompactChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
 
-  const _InfoChip({
+  const _CompactChip({
     required this.icon,
     required this.label,
     required this.color,
@@ -343,26 +325,21 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.transparent, // ✅ Transparent background
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3), // ✅ Subtle colored border
-          width: 1,
-        ),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 6),
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
           Text(
             label,
-            style: theme.textTheme.bodySmall?.copyWith(
+            style: TextStyle(
+              fontSize: 12,
               color: color,
               fontWeight: FontWeight.w500,
             ),
