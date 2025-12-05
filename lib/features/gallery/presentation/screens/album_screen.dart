@@ -439,16 +439,21 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
         slivers: [
           // App Bar
           SliverAppBar(
-            expandedHeight: 120,  // Increased from 80 to 120 to prevent overlap
+            expandedHeight: 140,  // Increased to 140 for more vertical space
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16, right: 16),  // Added padding to move title down
+              titlePadding: const EdgeInsets.only(
+                left: 16, 
+                bottom: 20,  // More bottom padding for better separation
+                right: 120,  // Much more right padding to avoid action buttons (2 icons * 48px each + padding)
+              ),
               title: Text(
                 _isSelectionMode
                     ? '${_selectedPhotoIds.length} selected'
                     : _album!.title,
                 maxLines: 2,  // Allow title to wrap to 2 lines if needed
                 overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 16),  // Slightly smaller font for better fit
               ),
               background: Container(
                 decoration: BoxDecoration(
