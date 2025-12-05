@@ -77,7 +77,7 @@ import '../../features/admin/presentation/screens/admin_upgrade_requests_screen.
 import '../../features/admin/presentation/screens/admin_upgrade_request_details_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_upgrade_request_screen.dart';
 import '../../features/admin/presentation/screens/admin_trip_requests_screen.dart';
-import '../../features/admin/presentation/screens/admin_feedback_screen.dart';
+// ❌ REMOVED: admin_feedback_screen.dart (no backend support)
 import '../../features/admin/presentation/screens/admin_logbook_entries_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_logbook_entry_screen.dart';
 import '../../features/admin/presentation/screens/admin_logbook_analytics_screen.dart';
@@ -92,7 +92,7 @@ import '../../features/admin/presentation/screens/admin_trip_reports_screen.dart
 import '../../features/admin/presentation/screens/quick_trip_report_screen.dart';
 // Phase 3B - Enhanced Trip Management Screens
 import '../../features/admin/presentation/screens/gallery_admin_center_screen.dart';
-import '../../features/admin/presentation/screens/admin_comments_moderation_screen.dart';
+// ❌ REMOVED: admin_comments_moderation_screen.dart (no backend support)
 import '../../features/admin/presentation/screens/admin_registration_analytics_screen.dart';
 import '../../features/admin/presentation/screens/admin_bulk_registrations_screen.dart';
 import '../../features/admin/presentation/screens/admin_waitlist_management_screen.dart';
