@@ -66,6 +66,9 @@ class _TripRequestsSummaryWidgetState extends ConsumerState<TripRequestsSummaryW
         }
       }
       
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+      
       setState(() {
         _totalRequests = total;
         _pendingRequests = pending;
@@ -76,6 +79,9 @@ class _TripRequestsSummaryWidgetState extends ConsumerState<TripRequestsSummaryW
       });
       
     } catch (e) {
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+      
       setState(() {
         _error = 'Failed to load trip request stats';
         _isLoading = false;

@@ -84,11 +84,17 @@ class _TripLeadershipLeaderboardWidgetState
       // Take top 10
       final topLeaders = leaderData.take(10).toList();
 
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+
       setState(() {
         _leaders = topLeaders;
         _isLoading = false;
       });
     } catch (e) {
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+
       setState(() {
         _error = 'Failed to load leaderboard: $e';
         _isLoading = false;
