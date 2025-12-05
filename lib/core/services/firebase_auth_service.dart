@@ -98,12 +98,18 @@ class FirebaseAuthService {
         debugPrint('🔐 [FirebaseAuth] Requesting custom token from backend...');
       }
       
-      // Get custom token from backend
+      // Get custom token from backend (gracefully handles 405 errors)
       final customToken = await _repository.getFirebaseCustomToken();
       
       if (customToken == null) {
         if (kDebugMode) {
-          debugPrint('❌ [FirebaseAuth] Backend returned null custom token');
+          debugPrint('⚠️ [FirebaseAuth] Backend returned null custom token');
+          debugPrint('   Possible causes:');
+          debugPrint('   - Backend endpoint not implemented (405 Not Allowed)');
+          debugPrint('   - Backend authentication failed');
+          debugPrint('   - Network error or timeout');
+          debugPrint('   ℹ️ App will continue without Firebase features');
+          debugPrint('   ℹ️ Chat and notifications will use REST API fallback');
         }
         return null;
       }
