@@ -6,6 +6,7 @@ import '../../../../data/repositories/gallery_api_repository.dart';
 import '../../../../core/providers/gallery_auth_provider.dart';
 import '../../../../shared/widgets/widgets.dart';
 import 'photo_upload_screen.dart';
+import 'full_screen_photo_viewer.dart';
 
 class AlbumScreen extends ConsumerStatefulWidget {
   final String albumId;
@@ -753,123 +754,25 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
     );
   }
 
-  void _showPhotoDialog(BuildContext context, int index) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final photo = _photos[index];
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.black,
-        insetPadding: EdgeInsets.zero,
-        child: Stack(
-          children: [
-            // Photo
-            Center(
-              child: InteractiveViewer(
-                child: Image.network(
-                  photo.photoUrl,  // Full resolution image for detail view
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: colors.surfaceContainerHighest,
-                      child: Icon(
-                        Icons.error,
-                        size: 48,
-                        color: colors.error,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            // Close Button
-            Positioned(
-              top: 40,
-              right: 16,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 32),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-
-            // Photo Info Overlay
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
-                  ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        photo.caption,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.person,
-                            size: 16,
-                            color: Colors.white70,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            photo.uploadedBy,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: Icon(
-                              photo.isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: photo.isLiked ? Colors.red : Colors.white,
-                            ),
-                            onPressed: () {
-                              _handleLike(index);
-                              Navigator.pop(context);
-                            },
-                          ),
-                          Text(
-                            '${photo.likes}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+  void _showPhotoDialog(BuildContext context, int index) async {
+    // Navigate to FullScreenPhotoViewer with navigation arrows and preloading
+    final updatedPhotos = await Navigator.push<List<Photo>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullScreenPhotoViewer(
+          photos: _photos,
+          initialIndex: index,
+          albumTitle: _album?.title,
         ),
       ),
     );
+
+    // Update photos if they were modified (e.g., liked, deleted)
+    if (updatedPhotos != null && mounted) {
+      setState(() {
+        _photos = updatedPhotos;
+      });
+    }
   }
 
   Widget? _buildUploadFAB() {
