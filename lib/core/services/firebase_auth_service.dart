@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../../data/repositories/main_api_repository.dart';
 
+// Import kIsWeb for platform detection
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 /// Firebase Authentication Service
 /// 
 /// Handles Firebase Authentication using custom tokens from your backend.
@@ -78,6 +81,19 @@ class FirebaseAuthService {
   /// **Returns**: Firebase User if successful, null if failed
   Future<User?> signInWithCustomToken() async {
     try {
+      // 🚨 TEMPORARY: Skip Firebase auth on web due to CORS issue
+      // The backend (ap.ad4x4.com) needs to add CORS headers to allow web requests
+      if (kIsWeb) {
+        if (kDebugMode) {
+          debugPrint('⚠️ [FirebaseAuth] SKIPPING Firebase auth on web platform');
+          debugPrint('   REASON: CORS error - backend does not allow web origin');
+          debugPrint('   🔧 SOLUTION: Backend team must add CORS headers to https://ap.ad4x4.com');
+          debugPrint('   ℹ️ Real-time chat features will NOT work on web until fixed');
+          debugPrint('   ✅ Mobile app (Android APK) will work normally');
+        }
+        return null;
+      }
+      
       if (kDebugMode) {
         debugPrint('🔐 [FirebaseAuth] Requesting custom token from backend...');
       }

@@ -132,19 +132,53 @@ class _TripChatScreenState extends ConsumerState<TripChatScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFFFFA726)),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Trip Chat',
-          style: TextStyle(
-            color: Color(0xFFFFA726),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Trip Chat',
+              style: TextStyle(
+                color: Color(0xFFFFA726),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            // Real-time indicator
+            if (chatState.isRealtime) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green, width: 1),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.circle, color: Colors.green, size: 8),
+                    SizedBox(width: 4),
+                    Text(
+                      'LIVE',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFFFFA726)),
-            onPressed: _refreshComments,
-          ),
+          // Only show refresh button if NOT in real-time mode
+          if (!chatState.isRealtime)
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Color(0xFFFFA726)),
+              onPressed: _refreshComments,
+            ),
         ],
       ),
       body: Column(

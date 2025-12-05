@@ -944,6 +944,59 @@ class MainApiRepository {
   }
 
   // ==========================================
+  // === FIREBASE INTEGRATION ===
+  // ==========================================
+
+  /// Get Firebase Custom Token
+  /// 
+  /// Retrieves a Firebase custom token from the backend to authenticate
+  /// the user with Firebase services (Firestore, FCM).
+  /// 
+  /// **Backend Endpoint**: POST /api/firebase/custom-token
+  /// **Authentication**: Requires JWT Bearer token
+  /// 
+  /// **Returns**: Firebase custom token string or null if failed
+  /// 
+  /// **Usage**:
+  /// ```dart
+  /// final token = await repository.getFirebaseCustomToken();
+  /// if (token != null) {
+  ///   await FirebaseAuthService().signInWithCustomToken(token);
+  /// }
+  /// ```
+  Future<String?> getFirebaseCustomToken() async {
+    try {
+      if (kDebugMode) {
+        debugPrint('🔐 [Repository] Requesting Firebase custom token...');
+      }
+      
+      final response = await _apiClient.post('/firebase/custom-token');
+      
+      // Backend returns { "firebaseToken": "...", "expiresIn": 3600 }
+      final firebaseToken = response.data['firebaseToken'] as String?;
+      
+      if (firebaseToken == null) {
+        if (kDebugMode) {
+          debugPrint('❌ [Repository] No firebaseToken in response');
+        }
+        return null;
+      }
+      
+      if (kDebugMode) {
+        debugPrint('✅ [Repository] Firebase token received (length: ${firebaseToken.length})');
+      }
+      
+      return firebaseToken;
+      
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ [Repository] Error getting Firebase custom token: $e');
+      }
+      return null;
+    }
+  }
+
+  // ==========================================
   // === GDPR COMPLIANCE - ACCOUNT DELETION ===
   // ==========================================
 

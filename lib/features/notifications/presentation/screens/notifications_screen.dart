@@ -64,7 +64,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      await repository.markNotificationAsRead(notification.id);
+      await repository.markNotificationAsRead(notification.id.toString());
 
       if (mounted) {
         setState(() {

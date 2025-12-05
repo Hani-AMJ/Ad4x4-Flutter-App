@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/main_api_repository.dart';
+import '../services/firebase_auth_service.dart';
+import '../services/fcm_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 /// 🔄 NEW: Clean Riverpod-based Authentication Provider
 /// 
@@ -135,6 +138,10 @@ class AuthNotifierV2 extends StateNotifier<AuthStateV2> {
 
         print('✅ [AuthV2] Login successful: ${user.username}');
         state = AuthStateV2(user: user, isLoading: false);
+        
+        // ✅ NEW: Authenticate with Firebase using custom token
+        _authenticateWithFirebase();
+        
         return true;
       } catch (e) {
         print('❌ [AuthV2] Failed to fetch profile: $e');
@@ -302,6 +309,77 @@ class AuthNotifierV2 extends StateNotifier<AuthStateV2> {
       return 'Server error. Please try again later.';
     } else {
       return 'Login failed. Please try again.';
+    }
+  }
+
+  /// Authenticate with Firebase using custom token
+  /// 
+  /// Called after successful AD4x4 login to enable Firebase services
+  /// (Firestore real-time chat, FCM push notifications).
+  /// 
+  /// This runs in the background and doesn't block the login flow.
+  /// If Firebase auth fails, the app continues to work with REST API only.
+  Future<void> _authenticateWithFirebase() async {
+    try {
+      print('🔥 [AuthV2] Authenticating with Firebase...');
+      
+      final firebaseUser = await FirebaseAuthService().signInWithCustomToken();
+      
+      if (firebaseUser != null) {
+        print('✅ [AuthV2] Firebase authentication successful');
+        print('   Firebase UID: ${firebaseUser.uid}');
+        
+        // ✅ Register FCM device token with backend
+        await _registerFCMToken();
+        
+      } else {
+        print('⚠️ [AuthV2] Firebase authentication failed - continuing without real-time features');
+      }
+      
+    } catch (e) {
+      print('❌ [AuthV2] Firebase authentication error: $e');
+      // Don't throw - app should continue working with REST API
+    }
+  }
+  
+  /// Register FCM device token with backend
+  /// 
+  /// After Firebase Auth succeeds, get the FCM device token and register it
+  /// with the AD4x4 backend so it can send push notifications to this device.
+  Future<void> _registerFCMToken() async {
+    try {
+      // Skip FCM registration on web (not supported)
+      if (kIsWeb) {
+        print('ℹ️ [AuthV2] Skipping FCM registration (web platform)');
+        return;
+      }
+      
+      print('📱 [AuthV2] Registering FCM device token...');
+      
+      // Initialize FCM Service
+      await FCMService.initialize();
+      
+      // Get device token
+      final fcmService = FCMService();
+      final deviceToken = await fcmService.getToken();
+      
+      if (deviceToken != null) {
+        print('✅ [AuthV2] FCM token obtained: ${deviceToken.substring(0, 20)}...');
+        
+        // TODO: Register device token with backend
+        // await _repository.registerFCMDevice(deviceToken);
+        
+        // For now, just log it - backend endpoint needs to be implemented
+        print('⚠️ [AuthV2] FCM token ready, but backend registration endpoint not yet implemented');
+        print('   Backend team needs to create: POST /api/notifications/device/');
+        
+      } else {
+        print('⚠️ [AuthV2] Failed to obtain FCM token');
+      }
+      
+    } catch (e) {
+      print('❌ [AuthV2] FCM registration error: $e');
+      // Don't throw - Firebase auth already succeeded
     }
   }
 }

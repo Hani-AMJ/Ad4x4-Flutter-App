@@ -1,6 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/firestore_service.dart';
 import '../../../../data/models/trip_comment_model.dart';
+import '../../../../data/models/trip_model.dart';  // For BasicMember
+import '../../../../data/models/firestore_message_model.dart';
 
 /// Trip Chat State - Manages comments/chat data
 class TripChatState {
@@ -10,6 +15,8 @@ class TripChatState {
   final String? errorMessage;
   final int currentPage;
   final bool hasMore;
+  final bool useFirestore;  // NEW: Track which backend we're using
+  final bool isRealtime;    // NEW: Track if real-time is active
 
   const TripChatState({
     this.comments = const [],
@@ -18,6 +25,8 @@ class TripChatState {
     this.errorMessage,
     this.currentPage = 0,
     this.hasMore = false,
+    this.useFirestore = false,
+    this.isRealtime = false,
   });
 
   TripChatState copyWith({
@@ -27,6 +36,8 @@ class TripChatState {
     String? errorMessage,
     int? currentPage,
     bool? hasMore,
+    bool? useFirestore,
+    bool? isRealtime,
   }) {
     return TripChatState(
       comments: comments ?? this.comments,
@@ -35,16 +46,113 @@ class TripChatState {
       errorMessage: errorMessage,
       currentPage: currentPage ?? this.currentPage,
       hasMore: hasMore ?? this.hasMore,
+      useFirestore: useFirestore ?? this.useFirestore,
+      isRealtime: isRealtime ?? this.isRealtime,
     );
   }
 }
 
-/// Trip Chat Notifier - Manages chat state and API calls
+/// Trip Chat Notifier - Hybrid Firestore + REST API implementation
+/// 
+/// Automatically detects Firebase Auth availability:
+/// - If Firebase Auth active → Use Firestore real-time streams
+/// - If Firebase Auth not available → Fall back to REST API
+/// 
+/// This ensures the chat always works, regardless of Firebase status.
 class TripChatNotifier extends StateNotifier<TripChatState> {
   final Ref _ref;
   final int _tripId;
+  StreamSubscription<List<FirestoreMessage>>? _firestoreSubscription;
+  final FirestoreService _firestoreService = FirestoreService();
 
-  TripChatNotifier(this._ref, this._tripId) : super(const TripChatState());
+  TripChatNotifier(this._ref, this._tripId) : super(const TripChatState()) {
+    _initializeChatMode();
+  }
+  
+  /// Detect if Firebase is available and decide chat mode
+  Future<void> _initializeChatMode() async {
+    try {
+      // Check if Firebase Auth is active by attempting to get messages
+      // This will throw if Firebase is not authenticated
+      _firestoreService.getMessagesStream(tripId: _tripId);
+      
+      // If we get here, Firebase is working - enable Firestore mode
+      print('✅ [TripChat] Firebase available - enabling real-time chat');
+      state = state.copyWith(useFirestore: true);
+      _subscribeToFirestore();
+      
+    } catch (e) {
+      // Firebase not available - use REST API
+      print('ℹ️  [TripChat] Firebase not available - using REST API');
+      state = state.copyWith(useFirestore: false);
+      loadComments();  // Load via REST API
+    }
+  }
+  
+  /// Subscribe to Firestore real-time updates
+  void _subscribeToFirestore() {
+    try {
+      state = state.copyWith(isLoading: true, isRealtime: true);
+      
+      print('🔥 [TripChat] Subscribing to Firestore stream for trip $_tripId');
+      
+      _firestoreSubscription = _firestoreService
+          .getMessagesStream(tripId: _tripId)
+          .listen(
+        (firestoreMessages) {
+          print('📨 [TripChat] Received ${firestoreMessages.length} Firestore messages');
+          
+          // Convert FirestoreMessage to TripComment
+          final comments = firestoreMessages.map((msg) {
+            // Split name into first and last
+            final nameParts = msg.authorName.split(' ');
+            final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+            final lastName = nameParts.length > 1 
+                ? nameParts.skip(1).join(' ') 
+                : null;
+            
+            return TripComment(
+              id: int.tryParse(msg.id) ?? 0,
+              tripId: _tripId,
+              comment: msg.text,
+              member: BasicMember(
+                id: msg.authorId,  // Already int
+                username: msg.authorUsername,
+                firstName: firstName,
+                lastName: lastName,
+                profileImage: msg.authorAvatar,
+              ),
+              created: msg.timestamp,
+            );
+          }).toList();
+          
+          state = state.copyWith(
+            comments: comments,
+            isLoading: false,
+            errorMessage: null,
+          );
+        },
+        onError: (error) {
+          print('❌ [TripChat] Firestore stream error: $error');
+          // Fall back to REST API
+          state = state.copyWith(useFirestore: false, isRealtime: false);
+          loadComments();
+        },
+      );
+      
+    } catch (e) {
+      print('❌ [TripChat] Failed to subscribe to Firestore: $e');
+      // Fall back to REST API
+      state = state.copyWith(useFirestore: false, isRealtime: false);
+      loadComments();
+    }
+  }
+  
+  @override
+  void dispose() {
+    _firestoreSubscription?.cancel();
+    super.dispose();
+  }
 
   /// Load comments for the trip
   Future<void> loadComments() async {
@@ -125,45 +233,71 @@ class TripChatNotifier extends StateNotifier<TripChatState> {
     }
   }
 
-  /// Send a new comment
+  /// Send a new comment (Hybrid: Firestore or REST API)
   Future<void> sendComment(String message) async {
     if (message.trim().isEmpty || state.isSending) return;
 
     state = state.copyWith(isSending: true);
 
     try {
-      final repository = _ref.read(mainApiRepositoryProvider);
-      
-      print('🔄 [TripChat] Sending comment: ${message.substring(0, message.length > 50 ? 50 : message.length)}...');
-      
-      final response = await repository.postTripComment(
-        tripId: _tripId,
-        comment: message.trim(),
-      );
-
-      print('📦 [TripChat] API Response: $response');
-
-      // Try to parse the new comment from response
-      // If parsing fails, just reload all comments
-      try {
-        final newComment = TripComment.fromJson(response);
+      if (state.useFirestore) {
+        // ✅ FIRESTORE MODE: Send to Firestore
+        print('🔥 [TripChat] Sending message via Firestore...');
         
-        // Add to existing comments (append to end - chronological order)
-        final updatedComments = [...state.comments, newComment];
-
-        print('✅ [TripChat] Comment sent successfully');
-
-        state = state.copyWith(
-          comments: updatedComments,
-          isSending: false,
+        // Get current user info from auth provider
+        final authState = _ref.read(authProviderV2);
+        final user = authState.user;
+        
+        if (user == null) {
+          throw Exception('User not authenticated');
+        }
+        
+        await _firestoreService.sendMessage(
+          tripId: _tripId,
+          text: message.trim(),
+          authorId: user.id,  // Already int, no need to convert
+          authorName: user.displayName,
+          authorUsername: user.username,
+          authorAvatar: user.avatar,
         );
-      } catch (parseError) {
-        print('⚠️  [TripChat] Could not parse response, reloading all comments');
-        print('   Parse error: $parseError');
         
-        // Reload all comments to get the new one
+        print('✅ [TripChat] Message sent via Firestore');
+        // Stream will automatically update the UI
         state = state.copyWith(isSending: false);
-        await loadComments();
+        
+      } else {
+        // ✅ REST API MODE: Send to backend API
+        final repository = _ref.read(mainApiRepositoryProvider);
+        
+        print('🔄 [TripChat] Sending comment via REST API: ${message.substring(0, message.length > 50 ? 50 : message.length)}...');
+        
+        final response = await repository.postTripComment(
+          tripId: _tripId,
+          comment: message.trim(),
+        );
+
+        print('📦 [TripChat] API Response: $response');
+
+        // Try to parse the new comment from response
+        try {
+          final newComment = TripComment.fromJson(response);
+          
+          // Add to existing comments (append to end - chronological order)
+          final updatedComments = [...state.comments, newComment];
+
+          print('✅ [TripChat] Comment sent successfully via REST API');
+
+          state = state.copyWith(
+            comments: updatedComments,
+            isSending: false,
+          );
+        } catch (parseError) {
+          print('⚠️  [TripChat] Could not parse response, reloading all comments');
+          
+          // Reload all comments to get the new one
+          state = state.copyWith(isSending: false);
+          await loadComments();
+        }
       }
     } catch (e, stackTrace) {
       print('❌ [TripChat] Error sending comment: $e');
