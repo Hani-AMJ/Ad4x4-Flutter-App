@@ -20,8 +20,8 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
   bool _isDrawerExpanded = false; // Start collapsed
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
+  AnimationController? _pulseController; // ✅ FIX: Made nullable to prevent LateInitializationError
+  Animation<double>? _pulseAnimation;   // ✅ FIX: Made nullable to prevent LateInitializationError
 
   @override
   void initState() {
@@ -32,18 +32,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       vsync: this,
     );
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _pulseController!, curve: Curves.easeInOut),
     );
 
     // Start pulsing after a short delay
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted && !_isDrawerExpanded) {
-        _pulseController.repeat(reverse: true);
+      if (mounted && !_isDrawerExpanded && _pulseController != null) {
+        _pulseController!.repeat(reverse: true);
         // Stop pulsing after 3 cycles
         Future.delayed(const Duration(milliseconds: 4500), () {
-          if (mounted) {
-            _pulseController.stop();
-            _pulseController.value = 0;
+          if (mounted && _pulseController != null) {
+            _pulseController!.stop();
+            _pulseController!.value = 0;
           }
         });
       }
@@ -52,7 +52,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
 
   @override
   void dispose() {
-    _pulseController.dispose();
+    _pulseController?.dispose(); // ✅ FIX: Safe disposal with null check
     super.dispose();
   }
 
@@ -103,27 +103,37 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
 
     return Scaffold(
       appBar: AppBar(
-        leading: AnimatedBuilder(
-          animation: _pulseAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _isDrawerExpanded ? 1.0 : _pulseAnimation.value,
-              child: IconButton(
+        leading: _pulseAnimation != null
+            ? AnimatedBuilder(
+                animation: _pulseAnimation!,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _isDrawerExpanded ? 1.0 : _pulseAnimation!.value,
+                    child: IconButton(
+                      icon: Icon(_isDrawerExpanded ? Icons.menu_open : Icons.menu),
+                      onPressed: () {
+                        setState(() {
+                          _isDrawerExpanded = !_isDrawerExpanded;
+                          if (_isDrawerExpanded && _pulseController != null) {
+                            _pulseController!.stop();
+                            _pulseController!.value = 0;
+                          }
+                        });
+                      },
+                      tooltip: _isDrawerExpanded ? 'Collapse Menu' : 'Expand Menu',
+                    ),
+                  );
+                },
+              )
+            : IconButton(
                 icon: Icon(_isDrawerExpanded ? Icons.menu_open : Icons.menu),
                 onPressed: () {
                   setState(() {
                     _isDrawerExpanded = !_isDrawerExpanded;
-                    if (_isDrawerExpanded) {
-                      _pulseController.stop();
-                      _pulseController.value = 0;
-                    }
                   });
                 },
                 tooltip: _isDrawerExpanded ? 'Collapse Menu' : 'Expand Menu',
               ),
-            );
-          },
-        ),
         title: Row(
           children: [
             Icon(Icons.admin_panel_settings, color: colors.primary),
