@@ -82,10 +82,16 @@ class _PerformanceMetricsWidgetState
         // Silent fail for feedback
       }
 
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+
       setState(() {
         _error = 'Failed to load metrics';
         _isLoading = false;

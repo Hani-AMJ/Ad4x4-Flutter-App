@@ -1311,14 +1311,26 @@ class MainApiRepository {
     return response.data;
   }
 
-  /// Mark notification as read
+  /// Mark notification(s) as read (supports single or bulk marking)
+  /// Backend expects: POST /api/notifications/mark-as-read/
+  /// Body: {"notificationIds": [925, 900]}
+  Future<void> markNotificationsAsRead(List<int> notificationIds) async {
+    await _apiClient.post(
+      ApiEndpoints.markNotificationsAsRead,
+      data: {'notificationIds': notificationIds},
+    );
+  }
+
+  /// Mark single notification as read (helper method)
+  /// Internally calls bulk endpoint with single ID
   Future<void> markNotificationAsRead(String notificationId) async {
-    await _apiClient.post('${ApiEndpoints.notifications}/$notificationId/read');
+    await markNotificationsAsRead([int.parse(notificationId)]);
   }
 
   /// Mark all notifications as read
-  Future<void> markAllNotificationsAsRead() async {
-    await _apiClient.post(ApiEndpoints.markAllRead);
+  /// Requires passing all notification IDs to mark
+  Future<void> markAllNotificationsAsRead(List<int> allNotificationIds) async {
+    await markNotificationsAsRead(allNotificationIds);
   }
 
   // ============================================================================

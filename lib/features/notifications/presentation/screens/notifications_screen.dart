@@ -94,7 +94,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     try {
       final repository = ref.read(mainApiRepositoryProvider);
-      await repository.markAllNotificationsAsRead();
+      
+      // Collect all notification IDs for bulk marking
+      final allNotificationIds = _notifications.map((n) => n.id).toList();
+      
+      // Call backend bulk endpoint with all IDs
+      await repository.markAllNotificationsAsRead(allNotificationIds);
 
       if (mounted) {
         setState(() {

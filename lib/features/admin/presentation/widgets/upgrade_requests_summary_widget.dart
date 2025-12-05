@@ -63,6 +63,9 @@ class _UpgradeRequestsSummaryWidgetState extends ConsumerState<UpgradeRequestsSu
         }
       }
       
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+      
       setState(() {
         _totalRequests = total;
         _newRequests = newCount;
@@ -73,6 +76,9 @@ class _UpgradeRequestsSummaryWidgetState extends ConsumerState<UpgradeRequestsSu
       });
       
     } catch (e) {
+      // Check if widget is still mounted before updating state
+      if (!mounted) return;
+      
       setState(() {
         _error = 'Failed to load upgrade request stats';
         _isLoading = false;
