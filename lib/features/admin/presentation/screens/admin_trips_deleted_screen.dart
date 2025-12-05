@@ -24,34 +24,86 @@ class AdminTripsDeletedScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminTripsDeletedScreenState extends ConsumerState<AdminTripsDeletedScreen> {
-  late Future<List<TripListItem>> _tripsAsync;
+  final List<TripListItem> _trips = [];
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoading = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+  static const int _pageSize = 10; // Load 10 items at a time
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadDeletedTrips();
+      _loadMoreTrips();
     });
   }
 
-  /// Load deleted trips from API
-  Future<void> _loadDeletedTrips() async {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Handle scroll events for pagination
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.8) {
+      if (!_isLoading && _hasMore) {
+        _loadMoreTrips();
+      }
+    }
+  }
+
+  /// Load more trips (pagination)
+  Future<void> _loadMoreTrips() async {
+    if (_isLoading || !_hasMore) return;
+
     setState(() {
-      _tripsAsync = _fetchDeletedTrips();
+      _isLoading = true;
     });
+
+    try {
+      final newTrips = await _fetchDeletedTrips(_currentPage);
+      
+      if (!mounted) return;
+
+      setState(() {
+        _trips.addAll(newTrips);
+        _currentPage++;
+        _hasMore = newTrips.length == _pageSize;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
-  /// Fetch deleted trips from API
-  Future<List<TripListItem>> _fetchDeletedTrips() async {
+  /// Refresh trips (pull to refresh)
+  Future<void> _refreshTrips() async {
+    setState(() {
+      _trips.clear();
+      _currentPage = 1;
+      _hasMore = true;
+    });
+    await _loadMoreTrips();
+  }
+
+  /// Fetch deleted trips from API (paginated)
+  Future<List<TripListItem>> _fetchDeletedTrips(int page) async {
     try {
       final repository = ref.read(mainApiRepositoryProvider);
       
-      print('🗑️ [AdminTripsDeleted] Fetching deleted trips...');
+      print('🗑️ [AdminTripsDeleted] Fetching page $page (pageSize: $_pageSize)...');
       final response = await repository.getTrips(
         approvalStatus: 'D', // ✅ Only deleted trips
         ordering: '-start_time', // Newest start date first
-        page: 1,
-        pageSize: 100, // Show up to 100 deleted trips
+        page: page,
+        pageSize: _pageSize, // Load 10 at a time
       );
 
       final tripsData = response['results'] as List<dynamic>? ?? [];
@@ -79,123 +131,59 @@ class _AdminTripsDeletedScreenState extends ConsumerState<AdminTripsDeletedScree
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh',
-            onPressed: _loadDeletedTrips,
+            onPressed: _refreshTrips,
           ),
         ],
       ),
-      body: FutureBuilder<List<TripListItem>>(
-        future: _tripsAsync,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error loading deleted trips',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    snapshot.error.toString(),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: _loadDeletedTrips,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final trips = snapshot.data ?? [];
-
-          if (trips.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.delete_outline, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No Deleted Trips',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'All trips are active or archived',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              // Header with trip count
-              Container(
-                padding: const EdgeInsets.all(16),
-                color: Colors.grey[200],
-                child: Row(
+      body: RefreshIndicator(
+        onRefresh: _refreshTrips,
+        child: _trips.isEmpty && !_isLoading
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.info_outline, color: Colors.grey[700]),
-                    const SizedBox(width: 12),
+                    Icon(Icons.delete_outline, size: 64, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
                     Text(
-                      'Showing ${trips.length} deleted trip${trips.length == 1 ? '' : 's'}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[700],
+                      'No Deleted Trips',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.grey[600],
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 8),
                     Text(
-                      'Sorted by start date (newest first)',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      'All trips are active or archived',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[500],
                       ),
                     ),
                   ],
                 ),
-              ),
-              
-              // Trips list
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: trips.length,
-                  itemBuilder: (context, index) {
-                    final trip = trips[index];
-                    return _DeletedTripCard(
-                      trip: trip,
-                      onTap: () {
-                        context.push('/admin/trips/${trip.id}');
-                      },
+              )
+            : ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: _trips.length + (_hasMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  // Show loading indicator at bottom
+                  if (index == _trips.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     );
-                  },
-                ),
+                  }
+
+                  final trip = _trips[index];
+                  return _DeletedTripCard(
+                    trip: trip,
+                    onTap: () {
+                      context.push('/admin/trips/${trip.id}');
+                    },
+                  );
+                },
               ),
-            ],
-          );
-        },
       ),
     );
   }
