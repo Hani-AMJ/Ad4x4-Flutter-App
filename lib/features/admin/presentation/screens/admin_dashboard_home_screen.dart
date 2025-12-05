@@ -513,13 +513,7 @@ class _QuickActionsSection extends StatelessWidget {
                 color: const Color(0xFFE91E63),
               ),
 
-            if (user?.hasPermission('view_members') ?? false)
-              _QuickActionButton(
-                icon: Icons.feedback_outlined,
-                label: 'Feedback',
-                onTap: () => context.go('/admin/feedback'),
-                color: Colors.purple,
-              ),
+            // ❌ REMOVED: Feedback quick action (no backend support)
 
             // Core Trip Management
             if (user?.hasPermission('approve_trip') ?? false)
@@ -560,12 +554,8 @@ class _QuickActionsSection extends StatelessWidget {
                 onTap: () => context.go('/admin/gallery-management'),
               ),
 
-            if (user?.hasPermission('delete_trip_comments') ?? false)
-              _QuickActionButton(
-                icon: Icons.comment,
-                label: 'Comments',
-                onTap: () => context.go('/admin/comments-moderation'),
-              ),
+            // ❌ REMOVED: Comments Moderation quick action (no backend support)
+            // Basic comment management (view/delete) is available in individual trip pages
           ],
         ),
       ],

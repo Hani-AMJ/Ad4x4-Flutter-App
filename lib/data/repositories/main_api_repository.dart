@@ -1185,26 +1185,8 @@ class MainApiRepository {
     return response.data;
   }
 
-  /// Get all feedback (admin only)
-  /// ✅ NEW: Phase B Task #2 - Feedback Admin Management
-  Future<Map<String, dynamic>> getAllFeedback({
-    int page = 1,
-    int pageSize = 20,
-    String? status, // Filter by status: SUBMITTED, IN_REVIEW, RESOLVED, CLOSED
-    String?
-    feedbackType, // Filter by type: BUG, FEATURE, IMPROVEMENT, COMPLAINT, PRAISE, OTHER
-  }) async {
-    final response = await _apiClient.get(
-      MainApiEndpoints.feedback,
-      queryParameters: {
-        'page': page,
-        'pageSize': pageSize,
-        if (status != null) 'status': status,
-        if (feedbackType != null) 'feedbackType': feedbackType,
-      },
-    );
-    return response.data;
-  }
+  // ❌ REMOVED: getAllFeedback() - Backend doesn't support GET /api/feedback/
+  // This method was removed as part of cleanup (no backend implementation exists)
 
   /// Update feedback status and add admin response (admin only)
   /// ✅ NEW: Phase B Task #2 - Feedback Admin Management

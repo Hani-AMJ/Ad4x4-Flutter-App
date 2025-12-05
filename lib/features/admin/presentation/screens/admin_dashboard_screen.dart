@@ -353,15 +353,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 onTap: () => context.go('/admin/gallery-management'),
               ),
 
-            if (user.hasPermission('delete_trip_comments'))
-              _NavItem(
-                icon: Icons.comment_outlined,
-                selectedIcon: Icons.comment,
-                label: 'Comments',
-                isSelected: currentPath == '/admin/comments-moderation',
-                isExpanded: expanded,
-                onTap: () => context.go('/admin/comments-moderation'),
-              ),
+            // ❌ REMOVED: Comments Moderation (no backend support for /api/trip-comments/moderation/)
+            // Basic comment management (view/delete) remains available in individual trip pages
 
             // TODO: TRIP REPORTS FEATURE - UNDER DEVELOPMENT
             // This feature is temporarily hidden until development is complete.
@@ -398,21 +391,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
             const SizedBox(height: 8),
           ],
 
-          // Feedback Section
-          if (_hasTripManagementPermissions(user)) ...[
-            _SectionHeader(label: 'FEEDBACK', isExpanded: expanded),
-
-            _NavItem(
-              icon: Icons.feedback_outlined,
-              selectedIcon: Icons.feedback,
-              label: 'Feedback',
-              isSelected: currentPath == '/admin/feedback',
-              isExpanded: expanded,
-              onTap: () => context.go('/admin/feedback'),
-            ),
-
-            const SizedBox(height: 8),
-          ],
+          // ❌ REMOVED: Feedback Section (no backend support for GET /api/feedback/)
 
           // Member Management Section
           if (user.hasPermission('view_members')) ...[

@@ -776,15 +776,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             },
           ),
 
-          // Feedback Routes
-          GoRoute(
-            path: '/admin/feedback',
-            name: 'admin-feedback',
-            pageBuilder: (context, state) {
-              return NoTransitionPage(child: const AdminFeedbackScreen());
-            },
-          ),
-
           // Marshal Panel Routes
           GoRoute(
             path: '/admin/logbook/analytics',
@@ -896,15 +887,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             name: 'admin-gallery-management',
             pageBuilder: (context, state) {
               return NoTransitionPage(child: const GalleryAdminCenterScreen());
-            },
-          ),
-          GoRoute(
-            path: '/admin/comments-moderation',
-            name: 'admin-comments-moderation',
-            pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminCommentsModerationScreen(),
-              );
             },
           ),
           // Phase 3B - Advanced Registration Management Routes
