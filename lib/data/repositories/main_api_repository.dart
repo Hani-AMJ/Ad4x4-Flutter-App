@@ -970,7 +970,7 @@ class MainApiRepository {
         debugPrint('🔐 [Repository] Requesting Firebase custom token...');
       }
       
-      final response = await _apiClient.post('/firebase/custom-token');
+      final response = await _apiClient.post('/api/firebase/custom-token');
       
       // Backend returns { "firebaseToken": "...", "expiresIn": 3600 }
       final firebaseToken = response.data['firebaseToken'] as String?;
