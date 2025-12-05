@@ -2076,14 +2076,14 @@ class TripDetailsScreen extends ConsumerWidget {
   }
 
   String _formatDateRange(DateTime start, DateTime end) {
-    final startFormat = DateFormat('MMM dd');
-    final endFormat = DateFormat('MMM dd, yyyy');
-    
+    // Shortened format for date cards - just show start date
+    // Full date details are shown in "Important Dates" section below
     if (start.year == end.year && start.month == end.month && start.day == end.day) {
-      return DateFormat('MMM dd, yyyy').format(start);
+      return DateFormat('MMM dd').format(start);
     }
     
-    return '${startFormat.format(start)} - ${endFormat.format(end)}';
+    // Multi-day trips: show just start date
+    return DateFormat('MMM dd').format(start);
   }
 
   Future<void> _launchPhone(String phone) async {

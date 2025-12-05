@@ -53,10 +53,31 @@ class _FullScreenPhotoViewerState extends ConsumerState<FullScreenPhotoViewer> {
       if (_pageController.hasClients) {
         _pageController.jumpToPage(_currentIndex);
       }
+      // Preload adjacent images for seamless swiping
+      _preloadAdjacentImages();
     });
 
     // Hide system UI for immersive experience
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+  }
+
+  /// Preload images before and after current index for seamless user experience
+  void _preloadAdjacentImages() {
+    // Preload previous image
+    if (_currentIndex > 0) {
+      precacheImage(
+        NetworkImage(_photos[_currentIndex - 1].photoUrl),
+        context,
+      );
+    }
+    
+    // Preload next image
+    if (_currentIndex < _photos.length - 1) {
+      precacheImage(
+        NetworkImage(_photos[_currentIndex + 1].photoUrl),
+        context,
+      );
+    }
   }
 
   @override
@@ -274,6 +295,26 @@ class _FullScreenPhotoViewerState extends ConsumerState<FullScreenPhotoViewer> {
     setState(() {
       _currentIndex = index;
     });
+    // Preload adjacent images when user swipes
+    _preloadAdjacentImages();
+  }
+
+  void _navigateToPrevious() {
+    if (_currentIndex > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _navigateToNext() {
+    if (_currentIndex < _photos.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -355,6 +396,58 @@ class _FullScreenPhotoViewerState extends ConsumerState<FullScreenPhotoViewer> {
               );
             },
           ),
+
+          // Left Navigation Arrow
+          if (_showControls && _currentIndex > 0)
+            Positioned(
+              left: 16,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    onPressed: _navigateToPrevious,
+                    padding: const EdgeInsets.all(12),
+                    tooltip: 'Previous Image',
+                  ),
+                ),
+              ),
+            ),
+
+          // Right Navigation Arrow
+          if (_showControls && _currentIndex < _photos.length - 1)
+            Positioned(
+              right: 16,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    onPressed: _navigateToNext,
+                    padding: const EdgeInsets.all(12),
+                    tooltip: 'Next Image',
+                  ),
+                ),
+              ),
+            ),
 
           // Bottom Controls
           if (_showControls)
