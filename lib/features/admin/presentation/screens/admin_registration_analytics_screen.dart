@@ -456,88 +456,14 @@ class _QuickActions extends ConsumerWidget {
               label: const Text('Manage Waitlist'),
               onPressed: () => context.push('/admin/waitlist-management?tripId=$tripId'),
             ),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.notifications),
-              label: const Text('Notify All'),
-              onPressed: () => _handleNotifyAll(context, ref),
-            ),
+            // ❌ REMOVED: Notify All button (bulk actions removed)
           ],
         ),
       ],
     );
   }
 
-  Future<void> _handleNotifyAll(BuildContext context, WidgetRef ref) async {
-    final message = await showDialog<String>(
-      context: context,
-      builder: (context) => _NotificationDialog(),
-    );
-
-    if (message == null || message.isEmpty) return;
-
-    try {
-      await ref.read(registrationBulkActionsProvider.notifier).notifyRegistrants(
-        tripId: tripId,
-        message: message,
-      );
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Notification sent to all registrants'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e'), backgroundColor: Colors.red),
-        );
-      }
-    }
-  }
+  // ❌ REMOVED: _handleNotifyAll method (bulk actions removed)
 }
 
 /// Notification Dialog
-class _NotificationDialog extends StatefulWidget {
-  @override
-  State<_NotificationDialog> createState() => _NotificationDialogState();
-}
-
-class _NotificationDialogState extends State<_NotificationDialog> {
-  final _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Send Notification'),
-      content: TextField(
-        controller: _controller,
-        decoration: const InputDecoration(
-          labelText: 'Message',
-          hintText: 'Type your message here...',
-          border: OutlineInputBorder(),
-        ),
-        maxLines: 4,
-        maxLength: 500,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, _controller.text),
-          child: const Text('Send'),
-        ),
-      ],
-    );
-  }
-}
