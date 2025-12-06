@@ -2341,48 +2341,12 @@ class MainApiRepository {
     return response.data;
   }
 
-  /// Bulk approve registrations
-  /// Admin endpoint - approve multiple registrations at once
-  Future<Map<String, dynamic>> bulkApproveRegistrations(
-    List<int> registrationIds,
-  ) async {
-    final response = await _apiClient.post(
-      '/api/trip-registrations/bulk-approve/',
-      data: {'registration_ids': registrationIds},
-    );
-    return response.data;
-  }
-
-  /// Bulk reject registrations
-  /// Admin endpoint
-  Future<Map<String, dynamic>> bulkRejectRegistrations({
-    required List<int> registrationIds,
-    String? reason,
-  }) async {
-    final response = await _apiClient.post(
-      '/api/trip-registrations/bulk-reject/',
-      data: {
-        'registration_ids': registrationIds,
-        if (reason != null) 'reason': reason,
-      },
-    );
-    return response.data;
-  }
-
-  /// Bulk check-in registrations
-  /// Admin endpoint - check in multiple members at once
-  Future<Map<String, dynamic>> bulkCheckinRegistrations(
-    List<int> registrationIds,
-  ) async {
-    final response = await _apiClient.post(
-      '/api/trip-registrations/bulk-checkin/',
-      data: {'registration_ids': registrationIds},
-    );
-    return response.data;
-  }
+  // ❌ REMOVED: Bulk registration operations (lines 2344-2382)
+  // Endpoints dont exist: /api/trip-registrations/bulk-approve/, bulk-reject/, bulk-checkin/
+  // Removed: bulkApproveRegistrations(), bulkRejectRegistrations(), bulkCheckinRegistrations()
 
   /// Move multiple members from waitlist to confirmed
-  /// Admin endpoint
+  /// Admin endpoint - used by Waitlist Management
   Future<Map<String, dynamic>> bulkMoveFromWaitlist({
     required int tripId,
     required List<int> memberIds,

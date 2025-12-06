@@ -94,7 +94,7 @@ import '../../features/admin/presentation/screens/quick_trip_report_screen.dart'
 import '../../features/admin/presentation/screens/gallery_admin_center_screen.dart';
 // ❌ REMOVED: admin_comments_moderation_screen.dart (no backend support)
 import '../../features/admin/presentation/screens/admin_registration_analytics_screen.dart';
-import '../../features/admin/presentation/screens/admin_bulk_registrations_screen.dart';
+// ❌ REMOVED: admin_bulk_registrations_screen.dart (no backend bulk operations support)
 import '../../features/admin/presentation/screens/admin_waitlist_management_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 // Phase B - Meeting Points Member View
@@ -899,15 +899,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
-          GoRoute(
-            path: '/admin/bulk-registrations',
-            name: 'admin-bulk-registrations',
-            pageBuilder: (context, state) {
-              return NoTransitionPage(
-                child: const AdminBulkRegistrationsScreen(),
-              );
-            },
-          ),
+          // ❌ REMOVED: /admin/bulk-registrations route (no backend bulk operations support)
           GoRoute(
             path: '/admin/waitlist-management',
             name: 'admin-waitlist-management',
