@@ -446,11 +446,7 @@ class _QuickActions extends ConsumerWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            ElevatedButton.icon(
-              icon: const Icon(Icons.list),
-              label: const Text('Manage Registrations'),
-              onPressed: () => context.push('/admin/bulk-registrations?tripId=$tripId'),
-            ),
+            // ❌ REMOVED: Manage Registrations button (bulk-registrations feature deleted)
             ElevatedButton.icon(
               icon: const Icon(Icons.people),
               label: const Text('Manage Waitlist'),

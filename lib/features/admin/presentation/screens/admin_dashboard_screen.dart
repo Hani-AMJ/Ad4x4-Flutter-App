@@ -332,16 +332,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 onTap: () => context.go('/admin/registration-analytics'),
               ),
 
-            if (user.hasPermission('edit_trip_registrations'))
-              _NavItem(
-                icon: Icons.checklist_outlined,
-                selectedIcon: Icons.checklist,
-                label: 'Bulk Actions',
-                isSelected: currentPath == '/admin/bulk-registrations',
-                isExpanded: expanded,
-                onTap: () => context.go('/admin/bulk-registrations'),
-              ),
-
+            // ❌ REMOVED: Bulk Actions menu item (feature deleted)
+            
             if (user.hasPermission('edit_trip_registrations'))
               _NavItem(
                 icon: Icons.list_outlined,
