@@ -90,29 +90,30 @@ class SkillRecommendationsScreen extends ConsumerWidget {
   Widget _buildStatsCard(RecommendationStats stats, ThemeData theme, ColorScheme colors) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Compact header with icon and title
             Row(
               children: [
-                Icon(Icons.insights, color: colors.primary, size: 28),
-                const SizedBox(width: 12),
+                Icon(Icons.insights, color: colors.primary, size: 20),
+                const SizedBox(width: 8),
                 Text(
                   'Recommendation Insights',
-                  style: theme.textTheme.titleLarge?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
-            // Stats Grid
+            // Compact 4-column stats grid in single row
             Row(
               children: [
                 Expanded(
-                  child: _buildStatItem(
+                  child: _buildCompactStatItem(
                     icon: Icons.format_list_numbered,
                     label: 'Total',
                     value: stats.totalRecommendations.toString(),
@@ -120,20 +121,15 @@ class SkillRecommendationsScreen extends ConsumerWidget {
                   ),
                 ),
                 Expanded(
-                  child: _buildStatItem(
+                  child: _buildCompactStatItem(
                     icon: Icons.priority_high,
                     label: 'High Priority',
                     value: stats.highPriorityCount.toString(),
                     color: Colors.orange,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
                 Expanded(
-                  child: _buildStatItem(
+                  child: _buildCompactStatItem(
                     icon: Icons.calendar_today,
                     label: 'Trip Opportunities',
                     value: stats.upcomingTripOpportunities.toString(),
@@ -141,7 +137,7 @@ class SkillRecommendationsScreen extends ConsumerWidget {
                   ),
                 ),
                 Expanded(
-                  child: _buildStatItem(
+                  child: _buildCompactStatItem(
                     icon: Icons.trending_up,
                     label: 'Level Progress',
                     value: '${(stats.currentLevelCompletion * 100).toStringAsFixed(0)}%',
@@ -150,87 +146,41 @@ class SkillRecommendationsScreen extends ConsumerWidget {
                 ),
               ],
             ),
-
-            if (stats.nextLevelTarget != null) ...[
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colors.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.flag, color: colors.primary, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Next Level: ${stats.nextLevelTarget} (${stats.skillsNeededForNextLevel} skills available)',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            if (stats.topCategories.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(
-                'Top Focus Areas',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: stats.topCategories.map((category) {
-                  return Chip(
-                    label: Text(category),
-                    backgroundColor: colors.secondaryContainer,
-                    labelStyle: TextStyle(
-                      color: colors.onSecondaryContainer,
-                      fontSize: 12,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatItem({
+  Widget _buildCompactStatItem({
     required IconData icon,
     required String label,
     required String value,
     required Color color,
   }) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: color, size: 28),
-        const SizedBox(height: 8),
+        Icon(icon, color: color, size: 18),
+        const SizedBox(height: 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           label,
           style: const TextStyle(
-            fontSize: 12,
+            fontSize: 10,
             color: Colors.grey,
           ),
           textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
