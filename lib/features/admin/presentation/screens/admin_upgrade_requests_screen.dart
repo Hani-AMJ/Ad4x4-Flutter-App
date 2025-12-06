@@ -493,31 +493,33 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
       child: InkWell(
         onTap: () => context.push('/admin/upgrade-requests/${request.id}'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header: Member info + Status
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Member avatar
                   CircleAvatar(
-                    radius: 24,
+                    radius: 28,
                     backgroundImage: request.member.profileImage != null
                         ? NetworkImage(request.member.profileImage!)
                         : null,
                     child: request.member.profileImage == null
                         ? Text(
                             request.member.displayName[0].toUpperCase(),
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                           )
                         : null,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   // Member name and level change
                   Expanded(
                     child: Column(
@@ -527,56 +529,54 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
                           request.member.displayName,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              request.currentLevel,
-                              style: TextStyle(
-                                color: colors.onSurface.withValues(alpha: 0.7),
-                                fontSize: 14,
+                        const SizedBox(height: 8),
+                        // Level change on separate line for better readability
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  request.currentLevel,
+                                  style: TextStyle(
+                                    color: colors.onSurface.withValues(alpha: 0.7),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.arrow_forward,
-                              size: 16,
-                              color: colors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              request.requestedLevel,
-                              style: TextStyle(
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.arrow_forward,
+                                size: 16,
                                 color: colors.primary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Status badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(statusIcon, size: 16, color: statusColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          request.status.toUpperCase(),
-                          style: TextStyle(
-                            color: statusColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  request.requestedLevel,
+                                  style: TextStyle(
+                                    color: colors.primary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -586,63 +586,150 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
               ),
               const SizedBox(height: 16),
               
-              // Vote and comment counts
+              // Status badge - full width for better visibility
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, size: 18, color: statusColor),
+                    const SizedBox(width: 8),
+                    Text(
+                      request.status.toUpperCase(),
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Divider for better separation
+              Divider(
+                color: colors.onSurface.withValues(alpha: 0.1),
+                height: 1,
+              ),
+              const SizedBox(height: 16),
+              
+              // Vote and comment counts with date
               Row(
                 children: [
                   // Approve votes
-                  Icon(
-                    Icons.thumb_up,
-                    size: 18,
-                    color: const Color(0xFF66BB6A),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${request.voteSummary.approveCount}',
-                    style: const TextStyle(
-                      color: Color(0xFF66BB6A),
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF66BB6A).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.thumb_up,
+                          size: 16,
+                          color: Color(0xFF66BB6A),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${request.voteSummary.approveCount}',
+                          style: const TextStyle(
+                            color: Color(0xFF66BB6A),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   
                   // Decline votes
-                  Icon(
-                    Icons.thumb_down,
-                    size: 18,
-                    color: colors.error,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${request.voteSummary.declineCount}',
-                    style: TextStyle(
-                      color: colors.error,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: colors.error.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.thumb_down,
+                          size: 16,
+                          color: colors.error,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${request.voteSummary.declineCount}',
+                          style: TextStyle(
+                            color: colors.error,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   
                   // Comments
-                  Icon(
-                    Icons.comment,
-                    size: 18,
-                    color: colors.onSurface.withValues(alpha: 0.6),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${request.commentCount}',
-                    style: TextStyle(
-                      color: colors.onSurface.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.comment,
+                          size: 16,
+                          color: colors.onSurface.withValues(alpha: 0.6),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${request.commentCount}',
+                          style: TextStyle(
+                            color: colors.onSurface.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
-                  
-                  // Submitted date
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Submitted date - separate line for better visibility
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today,
+                    size: 14,
+                    color: colors.onSurface.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(width: 6),
                   Text(
                     DateFormat('MMM dd, yyyy').format(request.submittedAt),
                     style: TextStyle(
                       color: colors.onSurface.withValues(alpha: 0.6),
-                      fontSize: 12,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
