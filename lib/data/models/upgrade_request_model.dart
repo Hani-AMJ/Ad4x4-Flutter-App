@@ -451,7 +451,7 @@ class MemberDetailInfo extends MemberBasicInfo {
   final String? email;
   final String? phoneNumber;
   final int tripCount;
-  final DateTime? dateJoined;
+  final String? dateJoined;  // ✅ FIXED: Changed from DateTime? to String? to match UserModel
 
   MemberDetailInfo({
     required super.id,
@@ -475,9 +475,7 @@ class MemberDetailInfo extends MemberBasicInfo {
       email: json['email'] as String?,
       phoneNumber: json['phone_number'] as String? ?? json['phoneNumber'] as String?,
       tripCount: json['trip_count'] as int? ?? json['tripCount'] as int? ?? 0,
-      dateJoined: json['date_joined'] != null 
-          ? DateTime.parse(json['date_joined'] as String)
-          : (json['dateJoined'] != null ? DateTime.parse(json['dateJoined'] as String) : null),
+      dateJoined: json['date_joined'] as String? ?? json['dateJoined'] as String?,  // ✅ FIXED: Use String directly like UserModel
     );
   }
 
@@ -488,7 +486,7 @@ class MemberDetailInfo extends MemberBasicInfo {
       'email': email,
       'phone_number': phoneNumber,
       'trip_count': tripCount,
-      'date_joined': dateJoined?.toIso8601String(),
+      'date_joined': dateJoined,  // ✅ FIXED: Already a String, no need for toIso8601String()
     };
   }
 }

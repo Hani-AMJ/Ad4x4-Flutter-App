@@ -1,6 +1,8 @@
+import 'dart:convert';  // ✅ Added for JSON encoding in debug logs
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/repository_providers.dart';
+import '../../../../core/services/error_log_service.dart';  // ✅ Added for error logging
 import '../../../../data/models/upgrade_request_model.dart';
 
 /// Upgrade Requests State - Manages upgrade requests data and loading state
@@ -166,6 +168,60 @@ final upgradeRequestDetailProvider =
     FutureProvider.family<UpgradeRequestDetail, int>((ref, requestId) async {
       final repository = ref.read(mainApiRepositoryProvider);
       final response = await repository.getUpgradeRequestDetail(requestId);
+      
+      // ✅ DEBUG LOGGING: Log API response structure to error log for investigation
+      try {
+        final errorLogService = ErrorLogService();
+        
+        // Log targetLevel structure
+        final targetLevel = response['targetLevel'];
+        final targetLevelType = targetLevel?.runtimeType.toString() ?? 'null';
+        final targetLevelValue = targetLevel != null ? jsonEncode(targetLevel) : 'null';
+        
+        // Log member date_joined field
+        final memberData = response['applicant'] ?? response['member'];
+        final dateJoined = memberData?['date_joined'] ?? memberData?['dateJoined'];
+        final dateJoinedType = dateJoined?.runtimeType.toString() ?? 'null';
+        
+        final debugMessage = '''
+🔍 UPGRADE REQUEST DETAIL API DEBUG (ID: $requestId)
+
+📊 targetLevel Analysis:
+   • Type: $targetLevelType
+   • Value: $targetLevelValue
+   • Has 'name' field: ${targetLevel is Map && targetLevel['name'] != null}
+   • Has 'id' field: ${targetLevel is Map && targetLevel['id'] != null}
+
+📊 Member dateJoined Analysis:
+   • Field 'date_joined': ${memberData?['date_joined'] ?? 'missing'}
+   • Field 'dateJoined': ${memberData?['dateJoined'] ?? 'missing'}
+   • Type: $dateJoinedType
+   
+📊 Full Response Keys:
+   ${response.keys.join(', ')}
+   
+📊 Member Keys:
+   ${memberData?.keys.join(', ') ?? 'N/A'}
+''';
+        
+        if (kDebugMode) {
+          print(debugMessage);
+        }
+        
+        // Log to error log service for Profile > Settings > Error Log
+        await errorLogService.logError(
+          message: 'Upgrade Request Detail Debug (ID: $requestId)',
+          stackTrace: debugMessage,
+          type: 'debug',
+          context: 'AdminUpgradeRequestDetail',
+        );
+      } catch (logError) {
+        // Don't fail if logging fails
+        if (kDebugMode) {
+          print('⚠️ Failed to log debug info: $logError');
+        }
+      }
+      
       return UpgradeRequestDetail.fromJson(response);
     });
 

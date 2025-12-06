@@ -312,9 +312,9 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
               Container(width: 1, height: 40, color: colors.outline),
               _buildStatItem(
                 'Member Since',
-                request.member.dateJoined != null
-                    ? DateFormat('MMM yyyy').format(request.member.dateJoined!)
-                    : 'N/A',
+                request.member.dateJoined != null && request.member.dateJoined!.isNotEmpty
+                    ? _formatMemberSinceDate(request.member.dateJoined!)
+                    : 'N/A',  // ✅ FIXED: Use helper method like member_details_screen.dart
                 Icons.calendar_today,
                 colors,
               ),
@@ -1208,6 +1208,17 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
           ),
         );
       }
+    }
+  }
+
+  /// Format member since date string to readable format
+  String _formatMemberSinceDate(String dateJoined) {
+    try {
+      final date = DateTime.parse(dateJoined);
+      return DateFormat('MMM yyyy').format(date);
+    } catch (e) {
+      // Fallback to raw string if parsing fails
+      return dateJoined;
     }
   }
 
