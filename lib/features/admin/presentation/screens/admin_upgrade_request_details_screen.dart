@@ -288,7 +288,7 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
                       request.requestedLevel,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: colors.primary,
+                        color: colors.onPrimaryContainer,  // ✅ FIXED: Use onPrimaryContainer for better contrast
                       ),
                     ),
                   ],
@@ -299,27 +299,36 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
           
           const SizedBox(height: 24),
           
-          // Member stats
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatItem(
+          // Member stats - Only show if we have data
+          if (request.member.dateJoined != null && request.member.dateJoined!.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStatItem(
+                  'Trips',
+                  '${request.member.tripCount}',
+                  Icons.explore,
+                  colors,
+                ),
+                Container(width: 1, height: 40, color: colors.outline),
+                _buildStatItem(
+                  'Member Since',
+                  _formatMemberSinceDate(request.member.dateJoined!),
+                  Icons.calendar_today,
+                  colors,
+                ),
+              ],
+            )
+          else
+            // Show only trips if no date available
+            Center(
+              child: _buildStatItem(
                 'Trips',
                 '${request.member.tripCount}',
                 Icons.explore,
                 colors,
               ),
-              Container(width: 1, height: 40, color: colors.outline),
-              _buildStatItem(
-                'Member Since',
-                request.member.dateJoined != null && request.member.dateJoined!.isNotEmpty
-                    ? _formatMemberSinceDate(request.member.dateJoined!)
-                    : 'N/A',  // ✅ FIXED: Use helper method like member_details_screen.dart
-                Icons.calendar_today,
-                colors,
-              ),
-            ],
-          ),
+            ),
         ],
       ),
     );
