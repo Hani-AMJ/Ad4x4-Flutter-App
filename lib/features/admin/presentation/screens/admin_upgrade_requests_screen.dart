@@ -492,12 +492,15 @@ Filter Logic:
       final filteredRequests = state.requests.where((r) {
         final filterStatus = status.value.toLowerCase().trim();
         
-        // Use model getters for accurate filtering (handles case variations)
-        if (filterStatus == 'declined' || filterStatus == 'rejected' || filterStatus == 'denied') {
+        // CRITICAL FIX: Backend returns single-letter codes!
+        // status.value examples: "N" (New), "D" (Declined), "A" (Approved), "P" (Pending)
+        
+        // Use model getters for accurate filtering (handles all variations including single-letter codes)
+        if (filterStatus == 'declined' || filterStatus == 'rejected' || filterStatus == 'denied' || filterStatus == 'd') {
           return r.isDeclined;  // Use getter method!
-        } else if (filterStatus == 'approved' || filterStatus == 'accepted') {
+        } else if (filterStatus == 'approved' || filterStatus == 'accepted' || filterStatus == 'a') {
           return r.isApproved;  // Use getter method!
-        } else if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress' || filterStatus == 'new') {
+        } else if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress' || filterStatus == 'new' || filterStatus == 'n' || filterStatus == 'p') {
           return r.isPending;  // Use getter method!
         }
         
