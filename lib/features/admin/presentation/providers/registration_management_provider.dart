@@ -174,8 +174,8 @@ class RegistrationListNotifier extends StateNotifier<RegistrationListState> {
       final repository = _ref.read(mainApiRepositoryProvider);
       
       // Get Trip data (includes registered list)
-      final tripResponse = await repository.getTripDetail(tripId);
-      final trip = Trip.fromJson(tripResponse['data'] as Map<String, dynamic>);
+      final tripData = await repository.getTripDetail(tripId);
+      final trip = Trip.fromJson(tripData);
       
       // Calculate days until trip for analytics
       final daysUntilTrip = trip.startTime.difference(DateTime.now()).inDays;
