@@ -172,30 +172,52 @@ class RegistrationListNotifier extends StateNotifier<RegistrationListState> {
 
     try {
       final repository = _ref.read(mainApiRepositoryProvider);
-      final response = await repository.getDetailedRegistrations(
-        tripId: tripId,
-        status: status,
-        page: page,
-        pageSize: 20,
+      
+      // Get Trip data (includes registered list)
+      final tripResponse = await repository.getTripDetail(tripId);
+      final trip = Trip.fromJson(tripResponse['data'] as Map<String, dynamic>);
+      
+      // Calculate days until trip for analytics
+      final daysUntilTrip = trip.startTime.difference(DateTime.now()).inDays;
+      
+      // Convert TripRegistration → TripRegistrationWithAnalytics
+      var allRegistrations = trip.registered.map((registration) {
+        return TripRegistrationWithAnalytics(
+          registration: registration,
+          daysUntilTrip: daysUntilTrip,
+          hasUploadedPhotos: false,  // Default: not tracked locally
+          tripCount: 0,              // Default: would need separate API call
+          emergencyContact: null,    // Default: not in basic registration data
+        );
+      }).toList();
+      
+      // Apply status filter if provided
+      if (status != null && status.isNotEmpty) {
+        allRegistrations = allRegistrations
+            .where((r) => r.registration.status == status)
+            .toList();
+      }
+      
+      // Client-side pagination
+      final totalCount = allRegistrations.length;
+      final pageSize = 20;
+      final startIndex = (page - 1) * pageSize;
+      final endIndex = startIndex + pageSize;
+      
+      final paginatedResults = allRegistrations.sublist(
+        startIndex,
+        endIndex > totalCount ? totalCount : endIndex,
       );
-
-      final results =
-          (response['results'] as List<dynamic>?)
-              ?.map(
-                (item) => TripRegistrationWithAnalytics.fromJson(
-                  item as Map<String, dynamic>,
-                ),
-              )
-              .toList() ??
-          [];
+      
+      final hasMore = endIndex < totalCount;
 
       state = state.copyWith(
         registrations: page == 1
-            ? results
-            : [...state.registrations, ...results],
-        totalCount: response['count'] as int? ?? 0,
+            ? paginatedResults
+            : [...state.registrations, ...paginatedResults],
+        totalCount: totalCount,
         currentPage: page,
-        hasMore: response['next'] != null,
+        hasMore: hasMore,
         isLoading: false,
       );
     } catch (e) {

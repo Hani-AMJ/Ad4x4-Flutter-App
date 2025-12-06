@@ -2451,22 +2451,25 @@ class MainApiRepository {
     return response.data;
   }
 
+  /// ❌ DEPRECATED: Backend endpoint does not exist
+  /// 
   /// Get detailed registration list with analytics
   /// Enhanced registration data for admin management
+  /// 
+  /// **MIGRATION:** Use `getTripDetail(tripId)` and access `trip.registered` instead.
+  /// Convert each `TripRegistration` to `TripRegistrationWithAnalytics` locally.
+  @Deprecated('Backend endpoint /registrations/detailed/ does not exist. Use getTripDetail(tripId).registered instead.')
   Future<Map<String, dynamic>> getDetailedRegistrations({
     required int tripId,
     String? status,
     int page = 1,
     int pageSize = 20,
   }) async {
-    final queryParams = <String, dynamic>{'page': page, 'page_size': pageSize};
-    if (status != null) queryParams['status'] = status;
-
-    final response = await _apiClient.get(
-      '/api/trips/$tripId/registrations/detailed/',
-      queryParameters: queryParams,
+    throw UnimplementedError(
+      'Backend endpoint /api/trips/\$tripId/registrations/detailed/ does not exist. '
+      'Use getTripDetail(tripId) and access trip.registered instead. '
+      'See registration_management_provider.dart for implementation example.',
     );
-    return response.data;
   }
 
   // ============================================================================
