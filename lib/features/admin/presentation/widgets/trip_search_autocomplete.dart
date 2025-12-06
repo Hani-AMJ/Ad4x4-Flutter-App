@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../data/models/trip_model.dart';
+import '../../../../data/models/level_model.dart';
 import '../../../../core/providers/repository_providers.dart';
 
 /// Trip Search Autocomplete Widget
@@ -54,6 +55,9 @@ class _TripSearchAutocompleteState extends ConsumerState<TripSearchAutocomplete>
   bool _showOptions = false;
   String? _errorMessage;
   
+  // Available levels from API
+  List<Level> _availableLevels = [];
+  
   // Filter states
   int? _selectedLevelId;
   DateTime? _startDateFrom;
@@ -66,6 +70,7 @@ class _TripSearchAutocompleteState extends ConsumerState<TripSearchAutocomplete>
     // Load initial data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadRecentTrips();
+      _loadAvailableLevels();
       if (widget.initialTripId != null) {
         _loadInitialTrip(widget.initialTripId!);
       }
@@ -85,6 +90,25 @@ class _TripSearchAutocompleteState extends ConsumerState<TripSearchAutocomplete>
     _focusNode.dispose();
     _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  /// Load available levels from API
+  Future<void> _loadAvailableLevels() async {
+    try {
+      final repository = ref.read(mainApiRepositoryProvider);
+      final levelsList = await repository.getLevels();
+      
+      final levels = levelsList
+          .map((json) => Level.fromJson(json as Map<String, dynamic>))
+          .where((level) => level.active)  // Only active levels
+          .toList();
+      
+      if (mounted) {
+        setState(() => _availableLevels = levels);
+      }
+    } catch (e) {
+      // Silently fail - filter will just show no levels
+    }
   }
 
   /// Load 5 most recent trips for default display
@@ -231,6 +255,7 @@ class _TripSearchAutocompleteState extends ConsumerState<TripSearchAutocomplete>
         initialLevelId: _selectedLevelId,
         initialStartDateFrom: _startDateFrom,
         initialStartDateTo: _startDateTo,
+        availableLevels: _availableLevels,
       ),
     );
 
@@ -329,7 +354,12 @@ class _TripSearchAutocompleteState extends ConsumerState<TripSearchAutocomplete>
               children: [
                 if (_selectedLevelId != null)
                   Chip(
-                    label: Text('Level: $_selectedLevelId'),
+                    label: Text(
+                      'Level: ${_availableLevels.firstWhere(
+                        (l) => l.id == _selectedLevelId,
+                        orElse: () => Level(id: 0, name: 'Unknown', numericLevel: 0),
+                      ).displayName}',
+                    ),
                     onDeleted: () {
                       setState(() => _selectedLevelId = null);
                       _performSearch(_searchController.text);
@@ -483,11 +513,13 @@ class _FilterDialog extends StatefulWidget {
   final int? initialLevelId;
   final DateTime? initialStartDateFrom;
   final DateTime? initialStartDateTo;
+  final List<Level> availableLevels;
 
   const _FilterDialog({
     this.initialLevelId,
     this.initialStartDateFrom,
     this.initialStartDateTo,
+    required this.availableLevels,
   });
 
   @override
@@ -553,13 +585,17 @@ class _FilterDialogState extends State<_FilterDialog> {
                 hintText: 'All levels',
                 isDense: true,
               ),
-              items: const [
-                DropdownMenuItem(value: null, child: Text('All levels')),
-                DropdownMenuItem(value: 1, child: Text('Level 1 - Easy')),
-                DropdownMenuItem(value: 2, child: Text('Level 2 - Moderate')),
-                DropdownMenuItem(value: 3, child: Text('Level 3 - Challenging')),
-                DropdownMenuItem(value: 4, child: Text('Level 4 - Difficult')),
-                DropdownMenuItem(value: 5, child: Text('Level 5 - Extreme')),
+              items: [
+                const DropdownMenuItem<int>(
+                  value: null,
+                  child: Text('All levels'),
+                ),
+                ...widget.availableLevels.map((level) {
+                  return DropdownMenuItem<int>(
+                    value: level.id,
+                    child: Text(level.displayName),
+                  );
+                }),
               ],
               onChanged: (value) {
                 setState(() => _levelId = value);
