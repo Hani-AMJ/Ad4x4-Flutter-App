@@ -20,6 +20,7 @@ import '../../../../data/models/registration_analytics_model.dart';
 import '../providers/registration_management_provider.dart';
 import '../../../trips/presentation/providers/trips_provider.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../widgets/trip_search_autocomplete.dart';
 
 /// Admin Waitlist Management Screen
 class AdminWaitlistManagementScreen extends ConsumerStatefulWidget {
@@ -313,36 +314,17 @@ class _AdminWaitlistManagementScreenState extends ConsumerState<AdminWaitlistMan
           bottom: BorderSide(color: Theme.of(context).dividerColor),
         ),
       ),
-      child: tripsState.isLoading && trips.isEmpty
-          ? const LinearProgressIndicator()
-          : tripsState.errorMessage != null
-              ? Text('Error loading trips: ${tripsState.errorMessage}')
-              : DropdownButtonFormField<int>(
-                  initialValue: _selectedTripId,
-                  decoration: const InputDecoration(
-                    labelText: 'Select Trip',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  items: trips.map((trip) {
-                    return DropdownMenuItem(
-                      value: trip.id,
-                      child: Text(
-                        trip.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (tripId) {
-                    setState(() {
-                      _selectedTripId = tripId;
-                    });
-                    if (tripId != null) {
-                      ref.read(waitlistManagementProvider.notifier).loadWaitlist(tripId);
-                    }
-                  },
-                ),
+      child: TripSearchAutocomplete(
+        initialTripId: _selectedTripId,
+        onTripSelected: (Trip? trip) {
+          setState(() {
+            _selectedTripId = trip?.id;
+          });
+          if (trip != null) {
+            ref.read(waitlistManagementProvider.notifier).loadWaitlist(trip.id);
+          }
+        },
+      ),
     );
   }
 
