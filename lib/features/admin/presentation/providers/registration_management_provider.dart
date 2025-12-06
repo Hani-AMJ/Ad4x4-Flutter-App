@@ -8,11 +8,84 @@ import '../../../../core/providers/repository_providers.dart';
 // ============================================================================
 
 /// Registration Analytics Provider - Family provider for trip analytics
+/// Computes analytics locally from Trip data (backend doesn't provide analytics endpoint)
 final registrationAnalyticsProvider =
     FutureProvider.family<RegistrationAnalytics, int>((ref, tripId) async {
       final repository = ref.read(mainApiRepositoryProvider);
-      final response = await repository.getRegistrationAnalytics(tripId);
-      return RegistrationAnalytics.fromJson(response);
+      
+      // Fetch trip details which includes registrations and waitlist
+      final tripData = await repository.getTripDetail(tripId);
+      final trip = Trip.fromJson(tripData);
+      
+      // Compute analytics from trip data
+      final registered = trip.registered;
+      final waitlist = trip.waitlist;
+      
+      final totalRegistrations = registered.length;
+      final confirmedRegistrations = registered.where((r) => 
+        r.status == 'confirmed' || r.status == 'registered'
+      ).length;
+      
+      final checkedIn = registered.where((r) => 
+        r.status == 'checked_in'
+      ).length;
+      
+      final checkedOut = registered.where((r) => 
+        r.status == 'checked_out'
+      ).length;
+      
+      final cancelled = registered.where((r) => 
+        r.status == 'cancelled'
+      ).length;
+      
+      final totalWaitlist = waitlist.length;
+      
+      final vehiclesOffered = registered.where((r) => 
+        r.hasVehicle == true
+      ).length;
+      
+      final totalVehicleCapacity = registered
+        .where((r) => r.hasVehicle == true && r.vehicleCapacity != null)
+        .fold<int>(0, (sum, r) => sum + (r.vehicleCapacity ?? 0));
+      
+      // Calculate rates
+      final checkInRate = confirmedRegistrations > 0 
+        ? (checkedIn / confirmedRegistrations) * 100 
+        : 0.0;
+      
+      final cancellationRate = totalRegistrations > 0
+        ? (cancelled / totalRegistrations) * 100
+        : 0.0;
+      
+      // Group by level (if trip level data is available)
+      final registrationsByLevel = <String, int>{
+        trip.level.name: totalRegistrations,
+      };
+      
+      // Create timeline (simplified - just current count)
+      final registrationTimeline = [
+        RegistrationTimelinePoint(
+          date: DateTime.now(),
+          count: totalRegistrations,
+        ),
+      ];
+      
+      return RegistrationAnalytics(
+        tripId: tripId,
+        totalRegistrations: totalRegistrations,
+        confirmedRegistrations: confirmedRegistrations,
+        checkedIn: checkedIn,
+        checkedOut: checkedOut,
+        cancelled: cancelled,
+        totalWaitlist: totalWaitlist,
+        tripCapacity: trip.capacity,
+        registrationsByLevel: registrationsByLevel,
+        registrationTimeline: registrationTimeline,
+        vehiclesOffered: vehiclesOffered,
+        totalVehicleCapacity: totalVehicleCapacity,
+        checkInRate: checkInRate,
+        cancellationRate: cancellationRate,
+      );
     });
 
 // ============================================================================

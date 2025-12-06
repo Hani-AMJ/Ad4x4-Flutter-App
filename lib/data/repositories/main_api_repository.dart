@@ -2329,6 +2329,11 @@ class MainApiRepository {
 
   /// Get registration analytics for a trip
   /// Returns comprehensive statistics and breakdown
+  /// 
+  /// ⚠️ DEPRECATED: This endpoint does not exist on the backend.
+  /// Use Trip.registered and Trip.waitlist data to compute analytics locally.
+  /// See registration_management_provider.dart for the correct implementation.
+  @Deprecated('Backend endpoint does not exist. Compute analytics from Trip data.')
   Future<Map<String, dynamic>> getRegistrationAnalytics(int tripId) async {
     final response = await _apiClient.get(
       '/api/trips/$tripId/registration-analytics/',
