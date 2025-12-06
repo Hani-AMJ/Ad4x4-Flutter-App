@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../data/models/registration_analytics_model.dart';
+import '../../../../data/models/trip_model.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
-import '../../../../core/providers/repository_providers.dart';
 import '../providers/registration_management_provider.dart';
+import '../widgets/trip_search_autocomplete.dart';
 
 /// Admin Registration Analytics Screen
 /// 
@@ -22,41 +23,6 @@ class AdminRegistrationAnalyticsScreen extends ConsumerStatefulWidget {
 class _AdminRegistrationAnalyticsScreenState
     extends ConsumerState<AdminRegistrationAnalyticsScreen> {
   int? _selectedTripId;
-  List<Map<String, dynamic>> _trips = [];
-
-  @override
-  void initState() {
-    super.initState();
-    
-    // Load trips on init
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadTrips();
-    });
-  }
-
-  Future<void> _loadTrips() async {
-    try {
-      final repository = ref.read(mainApiRepositoryProvider);
-      final response = await repository.getTrips(
-        approvalStatus: 'A', // ✅ FIXED: Only show approved trips
-        pageSize: 50,
-        ordering: '-start_time', // ✅ Show newest trips first
-      );
-      final results = response['results'] as List<dynamic>?;
-      
-      if (results != null) {
-        setState(() {
-          _trips = results.cast<Map<String, dynamic>>();
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load trips: $e')),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,27 +78,17 @@ class _AdminRegistrationAnalyticsScreenState
       ),
       body: Column(
         children: [
-          // Trip selector
+          // Trip search autocomplete
           Container(
             padding: const EdgeInsets.all(16),
             color: colors.surfaceContainerHighest,
-            child: DropdownButtonFormField<int>(
-              initialValue: _selectedTripId,
-              decoration: const InputDecoration(
-                labelText: 'Select Trip',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.directions_car),
-              ),
-              hint: const Text('Choose a trip to view analytics'),
-              items: _trips.map((trip) {
-                return DropdownMenuItem<int>(
-                  value: trip['id'] as int,
-                  child: Text(trip['title'] as String? ?? 'Unknown Trip'),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() => _selectedTripId = value);
+            child: TripSearchAutocomplete(
+              initialTripId: _selectedTripId,
+              onTripSelected: (Trip? trip) {
+                setState(() => _selectedTripId = trip?.id);
               },
+              showFilters: true,
+              hintText: 'Search trips for analytics...',
             ),
           ),
           // Analytics content
