@@ -97,6 +97,30 @@ class UpgradeRequestsNotifier extends StateNotifier<UpgradeRequestsState> {
         response,
       );
 
+      // 🔍 DEBUG: Log all request statuses from API (ALWAYS, even in release mode)
+      final errorLogService = ErrorLogService();
+      final statusDebug = upgradeRequestsResponse.results
+          .map((r) => '  #${r.id}: status="${r.status}" (${r.member.displayName})')
+          .join('\n');
+      
+      errorLogService.logError(
+        message: '''
+🔍 UPGRADE REQUESTS API RESPONSE DEBUG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Count: ${upgradeRequestsResponse.count}
+Results Count: ${upgradeRequestsResponse.results.length}
+
+All Request Statuses from API:
+$statusDebug
+
+Getter Values:
+${upgradeRequestsResponse.results.map((r) => '  #${r.id}: isPending=${r.isPending}, isApproved=${r.isApproved}, isDeclined=${r.isDeclined}').join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''',
+        type: 'debug',
+        context: 'UpgradeRequestsProvider - API Response',
+      );
+
       state = state.copyWith(
         requests: upgradeRequestsResponse.results,
         totalCount: upgradeRequestsResponse.count,

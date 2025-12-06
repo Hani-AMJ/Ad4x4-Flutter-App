@@ -39,6 +39,7 @@ dependencies:
   # UI/Animation
   flutter_animate: ^4.5.0
   shimmer: ^3.0.0
+  fl_chart: ^0.69.0  # Charts for activity timeline
 
   # Firebase (FIXED versions for Flutter 3.35.4 compatibility)
   firebase_core: 3.6.0

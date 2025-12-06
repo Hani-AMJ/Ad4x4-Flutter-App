@@ -7,7 +7,6 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
 import '../../../../core/providers/repository_providers.dart';
 import '../../../../data/models/upgrade_request_model.dart';
-import '../../../../data/models/user_model.dart';
 import '../../../../data/models/trip_model.dart';
 import '../../../../data/models/trip_statistics.dart';
 import '../../../../data/repositories/main_api_repository.dart';
@@ -39,50 +38,14 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
   // New state variables for member profile data
   List<TripListItem> _tripHistory = [];
   TripStatistics? _tripStatistics;
-  UserModel? _fullMemberProfile;  // Full member details from separate API call
   bool _isLoadingTrips = false;
   bool _isLoadingStats = false;
-  bool _isLoadingMemberProfile = false;
 
   @override
   void dispose() {
     _commentController.dispose();
     _declineReasonController.dispose();
     super.dispose();
-  }
-
-  /// Load full member profile (for complete user details including date_joined and car info)
-  Future<void> _loadFullMemberProfile(int memberId) async {
-    setState(() => _isLoadingMemberProfile = true);
-
-    try {
-      if (kDebugMode) {
-        debugPrint('👤 [AdminUpgradeDetails] Fetching full member profile for member $memberId...');
-      }
-      
-      final response = await _repository.getMemberDetail(memberId);
-      final member = UserModel.fromJson(response['data'] ?? response);
-      
-      if (kDebugMode) {
-        debugPrint('✅ [AdminUpgradeDetails] Loaded full member profile');
-        debugPrint('   Name: ${member.firstName} ${member.lastName}');
-        debugPrint('   Date Joined: ${member.dateJoined}');
-        debugPrint('   Car: ${member.carBrand} ${member.carModel}');
-      }
-      
-      setState(() {
-        _fullMemberProfile = member;
-        _isLoadingMemberProfile = false;
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [AdminUpgradeDetails] Error loading member profile: $e');
-      }
-      setState(() {
-        _fullMemberProfile = null;
-        _isLoadingMemberProfile = false;
-      });
-    }
   }
 
   /// Load trip history for the member
@@ -262,10 +225,8 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
       body: requestAsync.when(
         data: (request) {
           // Load member data when request loads
-          if (!_isLoadingTrips && !_isLoadingStats && !_isLoadingMemberProfile && 
-              _tripHistory.isEmpty && _tripStatistics == null && _fullMemberProfile == null) {
+          if (!_isLoadingTrips && !_isLoadingStats && _tripHistory.isEmpty && _tripStatistics == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _loadFullMemberProfile(request.member.id);  // Load complete member details first
               _loadTripStatistics(request.member.id);
               _loadTripHistory(request.member.id);
             });
@@ -367,24 +328,6 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
 
   /// 1️⃣ ENHANCED MEMBER PROFILE HEADER
   Widget _buildEnhancedMemberHeader(UpgradeRequestDetail request, ColorScheme colors, ThemeData theme) {
-    // Use full member profile if available, otherwise fallback to request.member
-    final fullName = _fullMemberProfile != null 
-        ? '${_fullMemberProfile!.firstName} ${_fullMemberProfile!.lastName}'.trim()
-        : request.member.displayName;
-    
-    final memberSinceDate = _fullMemberProfile?.dateJoined;
-    final profileImageUrl = _fullMemberProfile?.profileImage ?? request.member.profileImage;
-    final email = _fullMemberProfile?.email ?? request.member.email;
-    // Try both phone field variations (phone is the primary field from API)
-    final phone = _fullMemberProfile?.phone ?? _fullMemberProfile?.phoneNumber ?? 
-                  request.member.phoneNumber;
-    
-    // Car details from full profile
-    final carBrand = _fullMemberProfile?.carBrand;
-    final carModel = _fullMemberProfile?.carModel;
-    final carYear = _fullMemberProfile?.carYear;
-    final carColor = _fullMemberProfile?.carColor;
-    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -401,27 +344,40 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
         children: [
           // Large member avatar
           CircleAvatar(
-            radius: 72,
-            backgroundImage: profileImageUrl != null
-                ? NetworkImage(profileImageUrl)
+            radius: 72,  // Increased from 48px
+            backgroundImage: request.member.profileImage != null
+                ? NetworkImage(request.member.profileImage!)
                 : null,
-            child: profileImageUrl == null
+            child: request.member.profileImage == null
                 ? Text(
-                    fullName.isNotEmpty ? fullName[0].toUpperCase() : '?',
+                    request.member.displayName[0].toUpperCase(),
                     style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                   )
                 : null,
           ),
           const SizedBox(height: 16),
           
-          // Full member name (First + Last)
+          // Member name
           Text(
-            fullName,
+            request.member.displayName,
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
+          
+          // Member email
+          if (request.member.email != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                request.member.email!,
+                style: TextStyle(
+                  color: colors.onSurface.withValues(alpha: 0.7),
+                  fontSize: 14,
+                ),
+              ),
+            ),
           
           const SizedBox(height: 16),
           
@@ -432,89 +388,56 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
               numericLevel: _getNumericLevelFromName(request.currentLevel),
             ),
           
+          // Member since date
+          if (request.member.dateJoined != null && request.member.dateJoined!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.calendar_today, size: 16, color: colors.onSurface.withValues(alpha: 0.6)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Member since ${_formatMemberSinceDate(request.member.dateJoined!)}',
+                    style: TextStyle(
+                      color: colors.onSurface.withValues(alpha: 0.7),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          
           const SizedBox(height: 24),
           
-          // 📧 Contact Information Section
-          _buildInfoSection(
-            title: 'Contact Information',
-            colors: colors,
+          // Stats row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildInfoRow(
-                colors: colors,
-                children: [
-                  _buildInfoItem(
-                    icon: Icons.calendar_today,
-                    label: 'Member Since',
-                    value: memberSinceDate != null && memberSinceDate.isNotEmpty
-                        ? _formatMemberSinceDate(memberSinceDate)
-                        : 'N/A',
-                    colors: colors,
-                  ),
-                  _buildInfoItem(
-                    icon: Icons.email,
-                    label: 'Email',
-                    value: email ?? 'N/A',
-                    colors: colors,
-                  ),
-                ],
+              _buildQuickStat(
+                'Trips',
+                '${request.member.tripCount}',
+                Icons.explore,
+                colors,
               ),
-              const SizedBox(height: 16),
-              _buildInfoRow(
-                colors: colors,
-                children: [
-                  _buildInfoItem(
-                    icon: Icons.phone,
-                    label: 'Phone',
-                    value: phone ?? 'N/A',
-                    colors: colors,
-                  ),
-                ],
+              Container(width: 1, height: 40, color: colors.outline),
+              _buildQuickStat(
+                'Member Since',
+                request.member.dateJoined != null && request.member.dateJoined!.isNotEmpty
+                    ? _formatMemberSinceDate(request.member.dateJoined!)
+                    : 'N/A',
+                Icons.calendar_today,
+                colors,
               ),
-            ],
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // 🚗 Vehicle Information Section
-          _buildInfoSection(
-            title: 'Vehicle Information',
-            colors: colors,
-            children: [
-              _buildInfoRow(
-                colors: colors,
-                children: [
-                  _buildInfoItem(
-                    icon: Icons.directions_car,
-                    label: 'Car Brand',
-                    value: carBrand ?? 'N/A',
-                    colors: colors,
-                  ),
-                  _buildInfoItem(
-                    icon: Icons.car_rental,
-                    label: 'Car Model',
-                    value: carModel ?? 'N/A',
-                    colors: colors,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _buildInfoRow(
-                colors: colors,
-                children: [
-                  _buildInfoItem(
-                    icon: Icons.event,
-                    label: 'Car Year',
-                    value: carYear?.toString() ?? 'N/A',
-                    colors: colors,
-                  ),
-                  _buildInfoItem(
-                    icon: Icons.palette,
-                    label: 'Car Color',
-                    value: carColor ?? 'N/A',
-                    colors: colors,
-                  ),
-                ],
-              ),
+              if (request.member.phoneNumber != null) ...[
+                Container(width: 1, height: 40, color: colors.outline),
+                _buildQuickStat(
+                  'Phone',
+                  'Available',
+                  Icons.phone,
+                  colors,
+                ),
+              ],
             ],
           ),
         ],
@@ -540,100 +463,6 @@ class _AdminUpgradeRequestDetailsScreenState extends ConsumerState<AdminUpgradeR
           style: TextStyle(
             fontSize: 12,
             color: colors.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Info section with title (for sectioned layout)
-  Widget _buildInfoSection({
-    required String title,
-    required ColorScheme colors,
-    required List<Widget> children,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),  // Increased from 16
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.outline.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Section title
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: colors.primary,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  /// Info row (2-column grid layout)
-  Widget _buildInfoRow({
-    required ColorScheme colors,
-    required List<Widget> children,
-  }) {
-    if (children.length == 1) {
-      // Single item - full width
-      return children.first;
-    }
-    
-    // Two items - split evenly
-    return Row(
-      children: [
-        Expanded(child: children[0]),
-        const SizedBox(width: 16),  // Increased spacing between columns
-        Expanded(child: children.length > 1 ? children[1] : const SizedBox()),
-      ],
-    );
-  }
-
-  /// Individual info item widget
-  Widget _buildInfoItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required ColorScheme colors,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: colors.primary),
-        const SizedBox(width: 10),  // Increased from 8
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colors.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
-              const SizedBox(height: 2),  // Add spacing between label and value
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: colors.onSurface,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
-              ),
-            ],
           ),
         ),
       ],

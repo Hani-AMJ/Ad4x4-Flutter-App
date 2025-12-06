@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/providers/auth_provider_v2.dart';
+import '../../../../core/services/error_log_service.dart';
 import '../../../../data/models/upgrade_request_model.dart';
 import '../../../../data/models/upgrade_status_choice_model.dart';
 import '../providers/upgrade_requests_provider.dart';
@@ -104,6 +105,22 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
     final upgradeRequestsState = ref.watch(upgradeRequestsProvider);
     final statusesAsync = ref.watch(upgradeStatusChoicesProvider);
 
+    // 🔍 DEBUG: Log every build to see if widget rebuilds after data loads
+    final errorLogService = ErrorLogService();
+    errorLogService.logError(
+      message: '''
+🔍 WIDGET BUILD DEBUG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Build Time: ${DateTime.now().millisecondsSinceEpoch}
+state.requests.length: ${upgradeRequestsState.requests.length}
+state.isLoading: ${upgradeRequestsState.isLoading}
+state.totalCount: ${upgradeRequestsState.totalCount}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''',
+      type: 'debug',
+      context: 'AdminUpgradeRequestsScreen - Widget Build',
+    );
+
     return statusesAsync.when(
       data: (statuses) {
         // Initialize TabController with dynamic count (statuses + "All" tab)
@@ -193,18 +210,22 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
         backgroundColor: colors.surface,
         elevation: 0,
         title: const Text('Upgrade Requests'),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: colors.primary,
-          labelColor: colors.primary,
-          unselectedLabelColor: colors.onSurface.withValues(alpha: 0.6),
-          isScrollable: true,
-          onTap: (index) {
-            // ✅ FIXED: Don't send status filter to API (backend doesn't support it)
-            // Just switch tabs - filtering is done client-side in _buildTabViews
-            // No need to call setStatusFilter which triggers API reload
-          },
-          tabs: _buildDynamicTabs(statuses, upgradeRequestsState, colors),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48.0),
+          child: TabBar(
+            key: ValueKey('tabbar_${upgradeRequestsState.requests.length}_${upgradeRequestsState.isLoading}'),
+            controller: _tabController,
+            indicatorColor: colors.primary,
+            labelColor: colors.primary,
+            unselectedLabelColor: colors.onSurface.withValues(alpha: 0.6),
+            isScrollable: true,
+            onTap: (index) {
+              // ✅ FIXED: Don't send status filter to API (backend doesn't support it)
+              // Just switch tabs - filtering is done client-side in _buildTabViews
+              // No need to call setStatusFilter which triggers API reload
+            },
+            tabs: _buildDynamicTabs(statuses, upgradeRequestsState, colors),
+          ),
         ),
       ),
       body: upgradeRequestsState.isLoading
@@ -304,22 +325,97 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
     
     // Create tab for each status
     for (final status in statuses) {
+      // DEBUG: Always log status processing for debugging
+      final logService = ErrorLogService();
+      logService.logError(
+        message: '''
+🔧 PROCESSING TAB: ${status.label}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Status Value: "${status.value}"
+Status Label: "${status.label}"
+Filter Value (lowercase): "${status.value.toLowerCase().trim()}"
+Total Requests Available: ${state.requests.length}
+
+Request Details:
+${state.requests.map((r) => '  #${r.id}: status="${r.status}", isPending=${r.isPending}, isApproved=${r.isApproved}, isDeclined=${r.isDeclined}').join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''',
+        type: 'debug',
+        context: 'AdminUpgradeRequestsScreen - Tab Processing',
+      );
+      
       // Get count for this status
-      // ✅ UPDATED: Show "New" and "Pending"/"In Progress" separately
-      final count = state.requests.where((r) {
-        final requestStatus = r.status.toLowerCase();
-        final filterStatus = status.value.toLowerCase();
+      // ✅ FIXED: Use getter methods instead of string comparison for reliability
+      final matchingRequests = state.requests.where((r) {
+        final filterStatus = status.value.toLowerCase().trim();
+        final requestStatus = r.status.toLowerCase().trim();
         
-        // Map status values to handle variations
-        if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress') {
-          // "Pending" or "In Progress" tab shows requests with votes
-          return requestStatus == 'pending' || requestStatus == 'in progress' || requestStatus == 'in_progress';
-        } else if (filterStatus == 'new') {
-          // "New" tab shows requests without votes
-          return requestStatus == 'new';
+        // CRITICAL FIX: Backend returns single-letter codes for status.value!
+        // status.value examples: "N" (New), "D" (Declined), "A" (Approved), "P" (Pending)
+        // But request.status is the full word: "Declined", "Approved", etc.
+        
+        // Use model getters for accurate filtering (handles all variations)
+        if (filterStatus == 'declined' || filterStatus == 'rejected' || filterStatus == 'denied' || filterStatus == 'd') {
+          return r.isDeclined;  // Use getter method!
+        } else if (filterStatus == 'approved' || filterStatus == 'accepted' || filterStatus == 'a') {
+          return r.isApproved;  // Use getter method!
+        } else if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress' || filterStatus == 'new' || filterStatus == 'n' || filterStatus == 'p') {
+          return r.isPending;  // Use getter method!
         }
+        
+        // Fallback to string comparison for unknown statuses
         return requestStatus == filterStatus;
-      }).length;
+      }).toList();
+      
+      final count = matchingRequests.length;
+      
+      // 🔍 DEBUG: Log status filtering for declined/rejected requests
+      // Log ALWAYS when it's declined tab - remove restrictive conditions
+      if (status.value.toLowerCase() == 'declined' || status.value.toLowerCase() == 'rejected') {
+        final logService = ErrorLogService();
+        final allStatuses = state.requests.map((r) => '"${r.status}"').join(', ');
+        
+        // Debug the conditions themselves
+        final conditionDebug = '''
+Debug Conditions:
+  • status.value: "${status.value}"
+  • state.isLoading: ${state.isLoading}
+  • state.requests.length: ${state.requests.length}
+  • state.requests.isNotEmpty: ${state.requests.isNotEmpty}
+  • state.errorMessage: ${state.errorMessage ?? 'null'}
+  • state.totalCount: ${state.totalCount}
+  • state.statusFilter: ${state.statusFilter ?? 'null'}
+''';
+        
+        final debugMessage = '''
+🔍 STATUS FILTER DEBUG - ${status.label} (${status.value})
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Filter Value: "${status.value}"
+Matched Count: $count
+Total Requests: ${state.requests.length}
+
+$conditionDebug
+
+All Request Statuses:
+$allStatuses
+
+Matched Requests:
+${matchingRequests.map((r) => '  #${r.id}: "${r.status}" (${r.member.displayName})').join('\n')}
+
+isPending check:
+${state.requests.map((r) => '  #${r.id}: isPending=${r.isPending}, isApproved=${r.isApproved}, isDeclined=${r.isDeclined}, status="${r.status}"').join('\n')}
+
+Filter Logic:
+  requestStatus.toLowerCase().trim() == "${status.value.toLowerCase().trim()}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''';
+        
+        logService.logError(
+          message: debugMessage,
+          type: 'debug',
+          context: 'AdminUpgradeRequestsScreen - Status Filter',
+        );
+      }
       
       // Determine color based on status value
       Color badgeColor;
@@ -392,19 +488,21 @@ class _AdminUpgradeRequestsScreenState extends ConsumerState<AdminUpgradeRequest
     
     // Create view for each status
     for (final status in statuses) {
-      // ✅ UPDATED: Filter statuses with proper mapping
+      // ✅ FIXED: Use getter methods instead of string comparison for reliability
       final filteredRequests = state.requests.where((r) {
-        final requestStatus = r.status.toLowerCase();
-        final filterStatus = status.value.toLowerCase();
+        final filterStatus = status.value.toLowerCase().trim();
         
-        // Map status values to handle variations
-        if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress') {
-          // \"Pending\" or \"In Progress\" filter shows requests with votes
-          return requestStatus == 'pending' || requestStatus == 'in progress' || requestStatus == 'in_progress';
-        } else if (filterStatus == 'new') {
-          // \"New\" filter shows requests without votes
-          return requestStatus == 'new';
+        // Use model getters for accurate filtering (handles case variations)
+        if (filterStatus == 'declined' || filterStatus == 'rejected' || filterStatus == 'denied') {
+          return r.isDeclined;  // Use getter method!
+        } else if (filterStatus == 'approved' || filterStatus == 'accepted') {
+          return r.isApproved;  // Use getter method!
+        } else if (filterStatus == 'pending' || filterStatus == 'in progress' || filterStatus == 'in_progress' || filterStatus == 'new') {
+          return r.isPending;  // Use getter method!
         }
+        
+        // Fallback to string comparison for unknown statuses
+        final requestStatus = r.status.toLowerCase().trim();
         return requestStatus == filterStatus;
       }).toList();
       
